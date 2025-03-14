@@ -12,7 +12,6 @@ const readUser = async (contex:Context) => {
         "X-Bunq-Language": undefined,
         "X-Bunq-Region": undefined,
         itemId: contex.userId
-
     })
     const res = await client(contex).rEAD_User(req)
     if(res.status === 200) {
@@ -20,7 +19,6 @@ const readUser = async (contex:Context) => {
     } else {
         throw new Error("Cannot read user")
     }
-
 }
 
 async function main() {
@@ -28,9 +26,7 @@ async function main() {
     const apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
     const context = await createContext(apiKey, serverName)
     const user = await readUser(context)
-
-    console.log("Person last nome", user.UserPerson?.legal_name)
-
+    console.log("Person legal_name", user.UserPerson?.legal_name)
 }
 
 main()
