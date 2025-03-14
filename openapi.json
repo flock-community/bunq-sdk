@@ -17894,7 +17894,10 @@
             "type": "array",
             "description": "The identifiers to match the partner when payments are made to it.",
             "readOnly": false,
-            "writeOnly": true
+            "writeOnly": true,
+            "items": {
+              "type": "string"
+            },
           },
           "public_uuid": {
             "type": "string",
