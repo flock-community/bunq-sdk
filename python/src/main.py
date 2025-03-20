@@ -1,5 +1,5 @@
 from bunq_lib import BunqClient
-from api.READ_UserEndpoint import READ_UserEndpoint
+from api import READ_UserEndpoint
 from wirespec import Serialization
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
