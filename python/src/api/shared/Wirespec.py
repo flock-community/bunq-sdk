@@ -53,7 +53,6 @@ class Wirespec:
         class Headers(ABC): pass
 
         @property
-        @abstractmethod
         def path(self) -> Path: pass
 
         @property
@@ -90,25 +89,25 @@ class Wirespec:
 
     class Serializer(ABC):
         @abstractmethod
-        def serialize_param(self, value: T, t: type) -> List[str]: pass
-        @abstractmethod
         def serialize(self, value: T, t: type) -> str: pass
+        @abstractmethod
+        def serialize_param(self, value: T, t: type) -> List[str]: pass
 
     class Deserializer(ABC):
         @abstractmethod
-        def deserialize_param(self, value: List[str], t): pass
+        def deserialize(self, value: str | None, t: type) -> T: pass
         @abstractmethod
-        def deserialize(self, value: str, t: type) -> T: pass
+        def deserialize_param(self, value: List[str] | None, t): pass
 
     class Serialization(Serializer, Deserializer):
         @abstractmethod
-        def serialize_param(self, value: T, t: type) -> List[str]: pass
-        @abstractmethod
         def serialize(self, value: T, t: type) -> str: pass
         @abstractmethod
-        def deserialize_param(self, value: List[str], t): pass
+        def serialize_param(self, value: T, t: type) -> List[str]: pass
         @abstractmethod
-        def deserialize(self, value: str, t): pass
+        def deserialize(self, value: str | None, t: type) -> T: pass
+        @abstractmethod
+        def deserialize_param(self, value: List[str] | None, t): pass
 
     @dataclass
     class RawRequest:

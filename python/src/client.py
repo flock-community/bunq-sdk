@@ -8,10 +8,9 @@ from signing import sign_data, generate_rsa_key_pair
 import requests
 
 baseUrl = "https://public-api.sandbox.bunq.com/v1/"
-
 private_key_pem, public_key_pem = generate_rsa_key_pair()
 
-def handle(serialization: Wirespec.Serialization, endpoint:type, req: Wirespec.Request) -> Wirespec.Response:
+def handler(serialization: Wirespec.Serialization, endpoint:type, req: Wirespec.Request) -> Wirespec.Response:
     raw_req: Wirespec.RawRequest = endpoint.to_raw_request(serialization, req)
     headers = dict(map(lambda kv: (kv[0], kv[1][0]), raw_req.headers.items()))
     
@@ -24,12 +23,12 @@ def handle(serialization: Wirespec.Serialization, endpoint:type, req: Wirespec.R
     if headers.get("X-Bunq-Region") is None:
         del headers["X-Bunq-Region"]
 
-    signatureHeader = {'X-Bunq-Client-Signature':  sign_data(raw_req.body, private_key_pem)} if raw_req.body is not None else{}
+    signature_header = {'X-Bunq-Client-Signature':  sign_data(raw_req.body, private_key_pem)} if raw_req.body is not None else{}
 
     res  = requests.request(
         method = raw_req.method,
         url = baseUrl + '/'.join(raw_req.path),
-        headers = {**headers, **signatureHeader},
+        headers = {**headers, **signature_header},
         data = raw_req.body)
     headers = dict(map(lambda kv: (kv[0].lower(), [kv[1]]), res.headers.items()))
     raw_res = Wirespec.RawResponse(res.status_code, headers, res.text)
@@ -48,15 +47,15 @@ class Client(
         self.serialization = serialization
 
     def CREATE_Installation(self, req):
-        return handle(self.serialization, CREATE_InstallationEndpoint, req)
+        return handler(self.serialization, CREATE_InstallationEndpoint, req)
 
     def CREATE_DeviceServer(self, req):
-        return handle(self.serialization, CREATE_DeviceServerEndpoint, req)
+        return handler(self.serialization, CREATE_DeviceServerEndpoint, req)
 
     def CREATE_SessionServer(self, req):
-        return handle(self.serialization, CREATE_SessionServerEndpoint, req)
+        return handler(self.serialization, CREATE_SessionServerEndpoint, req)
 
     def READ_User(self, req):
-        return handle(self.serialization, READ_UserEndpoint, req)
+        return handler(self.serialization, READ_UserEndpoint, req)
 
 

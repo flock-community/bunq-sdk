@@ -1,12 +1,11 @@
 from api import CREATE_InstallationEndpoint, CREATE_DeviceServerEndpoint, CREATE_SessionServerEndpoint
-from src.api.DeviceServer import DeviceServer
-from src.api.Installation import Installation
-from src.api.SessionServer import SessionServer
-from src.client import Client
-from src.signing import generate_rsa_key_pair
+from api.DeviceServer import DeviceServer
+from api.Installation import Installation
+from api.SessionServer import SessionServer
+from client import Client
+from signing import generate_rsa_key_pair
 
-import api
-from src.wirespec import Serialization
+from wirespec import Serialization
 
 
 class Context:

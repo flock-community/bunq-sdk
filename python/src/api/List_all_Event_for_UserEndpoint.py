@@ -23,12 +23,12 @@ class List_all_Event_for_UserEndpoint (Wirespec.Endpoint):
         XBunqClientRequestId: Optional[str]
         XBunqGeolocation: Optional[str]
         XBunqClientAuthentication: str
- 
-    body: None = None
+
+    body: None
+    path: Path
+    queries: Queries
+    headers: Headers
     method: Wirespec.Method = Wirespec.Method.GET
-    path: Path = None
-    queries: Queries = None
-    headers: Headers = None
 
     def __init__(self, userID: int, CacheControl: Optional[str], UserAgent: str, XBunqLanguage: Optional[str], XBunqRegion: Optional[str], XBunqClientRequestId: Optional[str], XBunqGeolocation: Optional[str], XBunqClientAuthentication: str):
       self.path = List_all_Event_for_UserEndpoint.Request.Path(userID = userID)

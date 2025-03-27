@@ -23,24 +23,36 @@ class READ_UserEndpoint (Wirespec.Endpoint):
         XBunqClientRequestId: Optional[str]
         XBunqGeolocation: Optional[str]
         XBunqClientAuthentication: str
- 
-    body: None = None
+
+    @property
+    def body(self) -> None:
+      return self._body
+
+    @property
+    def path(self) -> Path:
+      return self._path
+
+    @property
+    def queries(self) -> Queries:
+      return self._queries
+
+    @property
+    def headers(self) -> Headers:
+      return self._headers
+
     method: Wirespec.Method = Wirespec.Method.GET
-    path: Path = None
-    queries: Queries = None
-    headers: Headers = None
 
     def __init__(self, itemId: int, CacheControl: Optional[str], UserAgent: str, XBunqLanguage: Optional[str], XBunqRegion: Optional[str], XBunqClientRequestId: Optional[str], XBunqGeolocation: Optional[str], XBunqClientAuthentication: str):
-      self.path = READ_UserEndpoint.Request.Path(itemId = itemId)
-      self.queries = READ_UserEndpoint.Request.Queries()
-      self.headers = READ_UserEndpoint.Request.Headers(  CacheControl = CacheControl,
+      self._path = READ_UserEndpoint.Request.Path(itemId = itemId)
+      self._queries = READ_UserEndpoint.Request.Queries()
+      self._headers = READ_UserEndpoint.Request.Headers(  CacheControl = CacheControl,
         UserAgent = UserAgent,
         XBunqLanguage = XBunqLanguage,
         XBunqRegion = XBunqRegion,
         XBunqClientRequestId = XBunqClientRequestId,
         XBunqGeolocation = XBunqGeolocation,
         XBunqClientAuthentication = XBunqClientAuthentication)
-      self.body = None
+      self._body = None
 
   @staticmethod
   def to_raw_request(serialization: Wirespec.Serializer, request: Request) -> Wirespec.RawRequest:
@@ -48,8 +60,15 @@ class READ_UserEndpoint (Wirespec.Endpoint):
       path = ["user", str(request.path.itemId)],
       method = request.method.value,
       queries = {},
-      headers = {"Cache-Control": serialization.serialize_param(request.headers.CacheControl, Optional[str]), "User-Agent": serialization.serialize_param(request.headers.UserAgent, str), "X-Bunq-Language": serialization.serialize_param(request.headers.XBunqLanguage, Optional[str]), "X-Bunq-Region": serialization.serialize_param(request.headers.XBunqRegion, Optional[str]), "X-Bunq-Client-Request-Id": serialization.serialize_param(request.headers.XBunqClientRequestId, Optional[str]), "X-Bunq-Geolocation": serialization.serialize_param(request.headers.XBunqGeolocation, Optional[str]), "X-Bunq-Client-Authentication": serialization.serialize_param(request.headers.XBunqClientAuthentication, str)},
-      body = serialization.serialize(request.body, None),
+      headers = {
+        "Cache-Control": serialization.serialize_param(request.headers.CacheControl, type(Optional[str])),
+        "User-Agent": serialization.serialize_param(request.headers.UserAgent, type(str)),
+        "X-Bunq-Language": serialization.serialize_param(request.headers.XBunqLanguage, type(Optional[str])),
+        "X-Bunq-Region": serialization.serialize_param(request.headers.XBunqRegion, type(Optional[str])),
+        "X-Bunq-Client-Request-Id": serialization.serialize_param(request.headers.XBunqClientRequestId, type(Optional[str])),
+        "X-Bunq-Geolocation": serialization.serialize_param(request.headers.XBunqGeolocation, type(Optional[str])),
+        "X-Bunq-Client-Authentication": serialization.serialize_param(request.headers.XBunqClientAuthentication, type(str))},
+      body = serialization.serialize(request.body, type(None)),
     )
 
   @staticmethod
@@ -73,15 +92,21 @@ class READ_UserEndpoint (Wirespec.Endpoint):
         XBunqClientRequestId: Optional[str]
         XBunqServerSignature: Optional[str]
 
-    body: UserRead = None
+    @property
+    def headers(self) -> Headers:
+      return self._headers
+
+    @property
+    def body(self) -> UserRead:
+      return self._body
+
     status: int = 200
-    headers: Headers = None
 
     def __init__(self, XBunqClientResponseId: Optional[str], XBunqClientRequestId: Optional[str], XBunqServerSignature: Optional[str], body: UserRead):
-      self.headers = READ_UserEndpoint.Response200.Headers(  XBunqClientResponseId = XBunqClientResponseId,
+      self._headers = READ_UserEndpoint.Response200.Headers(  XBunqClientResponseId = XBunqClientResponseId,
         XBunqClientRequestId = XBunqClientRequestId,
         XBunqServerSignature = XBunqServerSignature)
-      self.body = body
+      self._body = body
 
   @dataclass
   class Response400(Wirespec.Response[READ_User400ResponseBody]):
@@ -91,15 +116,21 @@ class READ_UserEndpoint (Wirespec.Endpoint):
         XBunqClientRequestId: Optional[str]
         XBunqServerSignature: Optional[str]
 
-    body: READ_User400ResponseBody = None
+    @property
+    def headers(self) -> Headers:
+      return self._headers
+
+    @property
+    def body(self) -> READ_User400ResponseBody:
+      return self._body
+
     status: int = 400
-    headers: Headers = None
 
     def __init__(self, XBunqClientResponseId: Optional[str], XBunqClientRequestId: Optional[str], XBunqServerSignature: Optional[str], body: READ_User400ResponseBody):
-      self.headers = READ_UserEndpoint.Response400.Headers(  XBunqClientResponseId = XBunqClientResponseId,
+      self._headers = READ_UserEndpoint.Response400.Headers(  XBunqClientResponseId = XBunqClientResponseId,
         XBunqClientRequestId = XBunqClientRequestId,
         XBunqServerSignature = XBunqServerSignature)
-      self.body = body
+      self._body = body
 
   Response = Response200 | Response400
 
@@ -109,13 +140,20 @@ class READ_UserEndpoint (Wirespec.Endpoint):
       case READ_UserEndpoint.Response200():
         return Wirespec.RawResponse(
           status_code = response.status,
-          headers = {"X-Bunq-Client-Response-Id": serialization.serialize_param(response.headers.XBunqClientResponseId, Optional[str]), "X-Bunq-Client-Request-Id": serialization.serialize_param(response.headers.XBunqClientRequestId, Optional[str]), "X-Bunq-Server-Signature": serialization.serialize_param(response.headers.XBunqServerSignature, Optional[str])},
+          headers = {
+            "X-Bunq-Client-Response-Id": serialization.serialize_param(response.headers.XBunqClientResponseId, type(Optional[str])),
+            "X-Bunq-Client-Request-Id": serialization.serialize_param(response.headers.XBunqClientRequestId, type(Optional[str])),
+            "X-Bunq-Server-Signature": serialization.serialize_param(response.headers.XBunqServerSignature, type(Optional[str]))},
           body = serialization.serialize(response.body, UserRead),
         )
       case READ_UserEndpoint.Response400():
         return Wirespec.RawResponse(
           status_code = response.status,
-          headers = {"X-Bunq-Client-Response-Id": serialization.serialize_param(response.headers.XBunqClientResponseId, Optional[str]), "X-Bunq-Client-Request-Id": serialization.serialize_param(response.headers.XBunqClientRequestId, Optional[str]), "X-Bunq-Server-Signature": serialization.serialize_param(response.headers.XBunqServerSignature, Optional[str])},
+          headers = {
+            "X-Bunq-Client-Response-Id": serialization.serialize_param(response.headers.XBunqClientResponseId, type(Optional[str])),
+            "X-Bunq-Client-Request-Id": serialization.serialize_param(response.headers.XBunqClientRequestId, type(Optional[str])),
+            "X-Bunq-Server-Signature": serialization.serialize_param(response.headers.XBunqServerSignature, type(Optional[str]))
+          },
           body = serialization.serialize(response.body, READ_User400ResponseBody),
         )
 

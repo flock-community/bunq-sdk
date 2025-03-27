@@ -3,7 +3,7 @@ from typing import List
 from functools import reduce
 from dacite import from_dict
 
-from shared import Wirespec, T
+from api.shared.Wirespec import Wirespec, T
 
 class Serialization(Wirespec.Serialization):
 
@@ -12,15 +12,6 @@ class Serialization(Wirespec.Serialization):
             return None
         else:
             return json.dumps(dataclasses.asdict(value))
-
-    def serialize_param(self, value: T, t: type) -> List[str]:
-        if value is None:
-            return [value]
-        else:
-            return [str(value)]
-
-    def deserialize_param(self, value:list[str], t: type) -> List[str]:
-        return ["TEST"]
 
     def deserialize(self, value:str, t: type):
         if t == str or t == int or t == bool:
@@ -35,3 +26,12 @@ class Serialization(Wirespec.Serialization):
                 return from_dict(data_class=t, data=j)
             else:
                 raise Exception("Invalid response")
+
+    def serialize_param(self, value: T, t: type) -> List[str]:
+        if value is None:
+            return [value]
+        else:
+            return [str(value)]
+
+    def deserialize_param(self, value:list[str], t: type) -> List[str]:
+        return value
