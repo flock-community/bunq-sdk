@@ -25,7 +25,5 @@ def serdes[T](json_srt: str, o:type):
     json_obj = json.loads(json_srt)
     return o(**json_obj)
 
-
-
 x = serdes(json_data_str, Dejlog)
 print(x)

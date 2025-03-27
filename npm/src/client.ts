@@ -62,6 +62,8 @@ const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Res
     if(!headers['X-Bunq-Region'])
         delete headers['X-Bunq-Region']
 
+    console.log(headers['X-Bunq-Client-Signature'])
+
     const options = {
         method: rawRequest.method,
         body: rawRequest.body,

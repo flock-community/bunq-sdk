@@ -27,7 +27,6 @@ export async function createContext (apiKey:string, serverName:string):Promise<C
     if (!installation.ServerPublicKey?.server_public_key) {throw new Error("No valid server public key")}
 
     const device = await createDeviceServer(serverName, apiKey, installation.Token.token)
-    // @ts-expect-error
     if(!device.Id?.id){throw new Error("Device not found")}
 
     const session = await createSessionServer(serverName, apiKey, installation.Token.token)
@@ -38,8 +37,7 @@ export async function createContext (apiKey:string, serverName:string):Promise<C
     return  {
         apiKey: apiKey,
         serverName: serverName,
-        serverPublicKey:installation.ServerPublicKey?.server_public_key,
-        // @ts-expect-error
+        serverPublicKey: installation.ServerPublicKey?.server_public_key,
         deviceId: device.Id?.id,
         sessionId: session.Id?.id,
         sessionToken: session.Token?.token,

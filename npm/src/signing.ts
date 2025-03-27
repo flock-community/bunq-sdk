@@ -42,6 +42,8 @@ export async function loadRsaKeyPair(): Promise<[string, string]> {
 export function signData(data: string, privateKeyPem: string): string {
     const privateKey = createPrivateKey(privateKeyPem);
     const encodedData = Buffer.from(data, 'utf-8');
+    console.log(data);
+    console.log(privateKeyPem);
     const signer = sign('SHA256', encodedData, {
         key: privateKey,
         padding: constants.RSA_PKCS1_PADDING,

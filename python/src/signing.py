@@ -86,8 +86,10 @@ def sign_data(data, private_key_pem):
     encoded_data = data.encode('utf-8')
 
     # Debug: Print exact bytes being signed
-    print("\n[DEBUG] Signing Data Bytes:", encoded_data)
-    print("[DEBUG] SHA256 Hash of Data:", hashlib.sha256(encoded_data).hexdigest())
+    # print(encoded_data)
+    # print(private_key)
+    # print("\n[DEBUG] Signing Data Bytes:", encoded_data)
+    # print("[DEBUG] SHA256 Hash of Data:", hashlib.sha256(encoded_data).hexdigest())
 
     # Generate signature using SHA256 and PKCS#1 v1.5 padding as required by Bunq
     signature = private_key.sign(
@@ -100,7 +102,7 @@ def sign_data(data, private_key_pem):
     encoded_signature = base64.b64encode(signature).decode('utf-8')
 
     # Debug: Print signature
-    print("[DEBUG] Base64 Encoded Signature:", encoded_signature)
+    # print("[DEBUG] Base64 Encoded Signature:", encoded_signature)
 
     return encoded_signature
 

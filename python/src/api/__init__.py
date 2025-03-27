@@ -1,1 +1,4 @@
 from .READ_UserEndpoint import READ_UserEndpoint
+from. CREATE_InstallationEndpoint import CREATE_InstallationEndpoint
+from .CREATE_DeviceServerEndpoint import CREATE_DeviceServerEndpoint
+from .CREATE_SessionServerEndpoint import CREATE_SessionServerEndpoint

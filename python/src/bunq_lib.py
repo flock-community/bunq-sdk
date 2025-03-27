@@ -72,6 +72,9 @@ class BunqClient:
         })
         signed_payload_signature = sign_data(payload, self.private_key_pem)
 
+        print("signed_payload_signature")
+        print(signed_payload_signature)
+
         headers = {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache',
@@ -82,6 +85,8 @@ class BunqClient:
             'X-Bunq-Client-Authentication': self.device_token,
             'X-Bunq-Client-Signature': signed_payload_signature
         }
+
+        print(headers)
 
         response = requests.post(url, headers=headers, data=payload)
         self.device_server_id = response.text

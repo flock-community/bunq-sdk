@@ -4269,11 +4269,19 @@
       "DeviceServerCreate": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
+          "Id": {
+            "type": "object",
             "description": "The id of the DeviceServer as created on the server.",
             "readOnly": true,
-            "writeOnly": false
+            "writeOnly": false,
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "The id of the DeviceServer as created on the server.",
+                "readOnly": true,
+                "writeOnly": false
+              }
+            }
           }
         }
       },
