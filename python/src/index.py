@@ -1,4 +1,4 @@
-from api import READ_UserEndpoint
+from api.READ_UserEndpoint import READ_UserEndpoint
 from client import Client
 from context import Context
 
@@ -12,10 +12,11 @@ api = Client(serialization)
 
 context = Context(USER_API_KEY, service_name)
 
+print(context)
 req = READ_UserEndpoint.Request(
     itemId = context.user_id,
     CacheControl = None,
-    UserAgent = context.server_name,
+    UserAgent = context.service_name,
     XBunqLanguage = None,
     XBunqRegion = None,
     XBunqClientRequestId = None,
@@ -27,4 +28,6 @@ res = api.READ_User(req)
 
 match res:
     case READ_UserEndpoint.Response200(body):
+        if body.UserPerson is None:
+            raise Exception("User not found")
         print(body.UserPerson.display_name)

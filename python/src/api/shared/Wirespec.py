@@ -3,15 +3,27 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Generic, List, Dict, Optional, TypeVar, NoReturn
 
-T = TypeVar('T', bound=Any)
-RAW = TypeVar('RAW', bound=Any)
-Req = TypeVar('Req', bound='Request')
-Res = TypeVar('Res', bound='Response')
-
+T = TypeVar('T')
 
 class Wirespec:
 
-    class Endpoint(ABC): pass
+    class Endpoint(ABC):
+
+        @staticmethod
+        @abstractmethod
+        def to_raw_request(serializer: 'Wirespec.Serializer', req: 'Wirespec.Request') -> 'Wirespec.RawRequest': pass
+
+        @staticmethod
+        @abstractmethod
+        def from_raw_response(serializer: 'Wirespec.Deserializer', req: 'Wirespec.RawResponse') -> 'Wirespec.Response': pass
+
+        @staticmethod
+        @abstractmethod
+        def to_raw_response(serializer: 'Wirespec.Serializer', req: 'Wirespec.Request') -> 'Wirespec.RawRequest': pass
+
+        @staticmethod
+        @abstractmethod
+        def from_raw_request(serializer: 'Wirespec.Deserializer[T]', req: 'Wirespec.RawRequest') -> 'Wirespec.Request': pass
 
     class Refined(ABC):
         @property
@@ -19,20 +31,6 @@ class Wirespec:
         def value(self) -> str: pass
 
     class Handler(ABC): pass
-
-    class ServerEdge(Generic[Req, Res], ABC):
-        @abstractmethod
-        def from_request(self, request: 'RawRequest') -> Req: pass
-
-        @abstractmethod
-        def to_response(self, response: Res) -> 'RawResponse': pass
-
-    class ClientEdge(Generic[Req, Res], ABC):
-        @abstractmethod
-        def to_request(self, request: Req) -> 'RawRequest': pass
-
-        @abstractmethod
-        def from_response(self, response: 'RawResponse') -> Res: pass
 
     class Method(Enum):
         GET = "GET"
@@ -53,11 +51,12 @@ class Wirespec:
         class Headers(ABC): pass
 
         @property
+        @abstractmethod
         def path(self) -> Path: pass
 
         @property
         @abstractmethod
-        def method(self) -> 'Method': pass
+        def method(self) -> 'Wirespec.Method': pass
 
         @property
         @abstractmethod
@@ -87,27 +86,27 @@ class Wirespec:
         @abstractmethod
         def body(self) -> T: pass
 
-    class Serializer(ABC):
+    class Serializer(Generic[T], ABC):
         @abstractmethod
-        def serialize(self, value: T, t: type) -> str: pass
+        def serialize(self, value: T, t: type[T]) -> str: pass
         @abstractmethod
-        def serialize_param(self, value: T, t: type) -> List[str]: pass
+        def serialize_param(self, value: T, t: type[T]) -> List[str]: pass
 
-    class Deserializer(ABC):
+    class Deserializer(Generic[T], ABC):
         @abstractmethod
-        def deserialize(self, value: str | None, t: type) -> T: pass
+        def deserialize[T](self, value: str | None, t: type[T]) -> T: pass
         @abstractmethod
-        def deserialize_param(self, value: List[str] | None, t): pass
+        def deserialize_param[T](self, value: List[str] | None, t: type[T]) -> T: pass
 
     class Serialization(Serializer, Deserializer):
         @abstractmethod
-        def serialize(self, value: T, t: type) -> str: pass
+        def serialize(self, value: T, t: type[T]) -> str: pass
         @abstractmethod
-        def serialize_param(self, value: T, t: type) -> List[str]: pass
+        def serialize_param(self, value: T, t: type[T]) -> List[str]: pass
         @abstractmethod
-        def deserialize(self, value: str | None, t: type) -> T: pass
+        def deserialize[T](self, value: str | None, t: type[T]) -> T: pass
         @abstractmethod
-        def deserialize_param(self, value: List[str] | None, t): pass
+        def deserialize_param[T](self, value: List[str] | None, t: type[T]) -> T: pass
 
     @dataclass
     class RawRequest:

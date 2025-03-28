@@ -24,8 +24,8 @@ tasks.register<ConvertWirespecTask>("wirespec-python") {
     description = "Compile Wirespec to Kotlin"
     group = "Wirespec compile"
     input = layout.projectDirectory.file("../openapi.json")
-    output = layout.projectDirectory.dir("src/api")
-    packageName = ""
+    output = layout.projectDirectory.dir("src")
+    packageName = "api"
     languages = listOf(Language.Python)
     format = Format.OpenAPIV3
     strict = true
