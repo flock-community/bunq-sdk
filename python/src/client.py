@@ -17,7 +17,7 @@ baseUrl = "https://public-api.sandbox.bunq.com/v1/"
 private_key_pem, public_key_pem = generate_rsa_key_pair()
 
 def handler(serialization: Wirespec.Serialization, endpoint:Endpoint, req: Wirespec.Request) -> Wirespec.Response:
-    raw_req: Wirespec.RawRequest = endpoint.to_raw_request(serialization, req)
+    raw_req: Wirespec.RawRequest = endpoint.Convert.to_raw_request(serialization, req)
     req_headers = dict(map(lambda kv: (kv[0], next(iter(kv[1]), None)), raw_req.headers.items()))
 
     if req_headers.get("X-Bunq-Client-Authentication") == "":
@@ -40,7 +40,7 @@ def handler(serialization: Wirespec.Serialization, endpoint:Endpoint, req: Wires
     res_headers:Dict[str, List[str]] = dict(map(lambda kv: (kv[0].lower(), list(kv[1])), res.headers.items()))
     raw_res = Wirespec.RawResponse(res.status_code, res_headers, res.text)
 
-    return endpoint.from_raw_response(serialization, raw_res)
+    return endpoint.Convert.from_raw_response(serialization, raw_res)
 
 class Client(
     CREATE_InstallationEndpoint.Handler,

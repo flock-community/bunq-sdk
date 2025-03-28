@@ -1,5 +1,6 @@
-import json, dataclasses
-from typing import List
+import json
+from dataclasses import asdict, dataclass, is_dataclass
+from typing import List, TypeVar, Dict
 from functools import reduce
 from dacite import from_dict
 
@@ -7,11 +8,16 @@ from api.shared.Wirespec import Wirespec, T
 
 class Serialization(Wirespec.Serialization):
 
-    def serialize(self, value: T, t: type) -> str:
+    def serialize(self, value: T, t: type[T]) -> str:
         if value is None:
             return ""
         else:
-            return json.dumps(dataclasses.asdict(value))
+            if is_dataclass(value) and not isinstance(value, type):
+                dataclass_dict = asdict(value)
+                return json.dumps(dataclass_dict)
+            else:
+                raise Exception('Unsupported type')
+
 
     def deserialize(self, value: str | None, t: type[T]):
         if t == str or t == int or t == bool:
@@ -36,7 +42,7 @@ class Serialization(Wirespec.Serialization):
         else:
             return [str(value)]
 
-    def deserialize_param(self, value:list[str] | None, t: type[T]) -> List[str]:
+    def deserialize_param(self, value:list[str] | None, t: type[T]):
         if value is None:
             return []
         else:

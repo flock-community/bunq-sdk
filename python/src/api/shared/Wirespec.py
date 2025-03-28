@@ -4,33 +4,37 @@ from enum import Enum
 from typing import Any, Generic, List, Dict, Optional, TypeVar, NoReturn
 
 T = TypeVar('T')
+REQ = TypeVar('REQ')
+RES = TypeVar('RES')
 
 class Wirespec:
-
-    class Endpoint(ABC):
-
-        @staticmethod
-        @abstractmethod
-        def to_raw_request(serializer: 'Wirespec.Serializer', req: 'Wirespec.Request') -> 'Wirespec.RawRequest': pass
-
-        @staticmethod
-        @abstractmethod
-        def from_raw_response(serializer: 'Wirespec.Deserializer', req: 'Wirespec.RawResponse') -> 'Wirespec.Response': pass
-
-        @staticmethod
-        @abstractmethod
-        def to_raw_response(serializer: 'Wirespec.Serializer', req: 'Wirespec.Request') -> 'Wirespec.RawRequest': pass
-
-        @staticmethod
-        @abstractmethod
-        def from_raw_request(serializer: 'Wirespec.Deserializer[T]', req: 'Wirespec.RawRequest') -> 'Wirespec.Request': pass
 
     class Refined(ABC):
         @property
         @abstractmethod
         def value(self) -> str: pass
 
-    class Handler(ABC): pass
+    class Endpoint(ABC):
+
+        class Handler(ABC):
+            pass
+
+        class Convert(ABC, Generic[REQ, RES]):
+            @staticmethod
+            @abstractmethod
+            def to_raw_request(serializer: 'Wirespec.Serializer', req: REQ) -> 'Wirespec.RawRequest': pass
+
+            @staticmethod
+            @abstractmethod
+            def from_raw_response(serializer: 'Wirespec.Deserializer', res: 'Wirespec.RawResponse') -> RES: pass
+
+            @staticmethod
+            @abstractmethod
+            def to_raw_response(serializer: 'Wirespec.Serializer', res: RES) -> 'Wirespec.RawResponse': pass
+
+            @staticmethod
+            @abstractmethod
+            def from_raw_request(serializer: 'Wirespec.Deserializer[T]', req: 'Wirespec.RawRequest') -> REQ: pass
 
     class Method(Enum):
         GET = "GET"
