@@ -1,6 +1,6 @@
 import unittest
 
-from src.api import READ_UserEndpoint
+from src.api import READ_UserEndpoint, List_all_MonetaryAccountBank_for_UserEndpoint
 from src.client import Client
 from src.context import Context
 from src.wirespec import Serialization
@@ -34,6 +34,25 @@ class Testing(unittest.TestCase):
             case READ_UserEndpoint.Response200(body):
                 if body.UserPerson is None: raise Exception("User not found")
                 self.assertEqual(body.UserPerson.display_name, "D. Byrne")
+
+    def test_list_all_monetary_account_bank_for_User(self):
+
+        req = List_all_MonetaryAccountBank_for_UserEndpoint.Request(
+            userID = context.user_id,
+            CacheControl = None,
+            UserAgent = context.service_name,
+            XBunqLanguage = None,
+            XBunqRegion = None,
+            XBunqClientRequestId = None,
+            XBunqGeolocation = None,
+            XBunqClientAuthentication = context.session_token,
+        )
+
+        res = api.List_all_MonetaryAccountBank_for_User(req)
+
+        match res:
+            case List_all_MonetaryAccountBank_for_UserEndpoint.Response200(body):
+                self.assertEqual(body[0].display_name, "D. Byrne")
 
 def main():
     unittest.main()

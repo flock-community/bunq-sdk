@@ -1,10 +1,10 @@
 from typing import Dict, List, TypeVar, Type
 
-from src.api import CREATE_InstallationEndpoint
-from src.api import CREATE_DeviceServerEndpoint
-from src.api import CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint
-from src.api import CREATE_SessionServerEndpoint
-from src.api import READ_UserEndpoint
+from src.api import (CREATE_InstallationEndpoint,
+                     CREATE_DeviceServerEndpoint,
+                     CREATE_SessionServerEndpoint,
+                     List_all_MonetaryAccountBank_for_UserEndpoint,
+                     READ_UserEndpoint)
 
 from src.api.shared.Wirespec import Wirespec
 
@@ -46,7 +46,7 @@ class Client(
     CREATE_InstallationEndpoint.Handler,
     CREATE_DeviceServerEndpoint.Handler,
     CREATE_SessionServerEndpoint.Handler,
-    CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint.Handler,
+    List_all_MonetaryAccountBank_for_UserEndpoint.Handler,
     READ_UserEndpoint.Handler
 ):
 
@@ -62,8 +62,8 @@ class Client(
     def CREATE_SessionServer(self, req):
         return handler(self.serialization, CREATE_SessionServerEndpoint, req)
 
-    def CREATE_RequestInquiry_for_User_MonetaryAccount(self, req):
-        return handler(self.serialization, CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint, req)
+    def List_all_MonetaryAccountBank_for_User(self, req):
+        return handler(self.serialization, List_all_MonetaryAccountBank_for_UserEndpoint, req)
 
     def READ_User(self, req):
         return handler(self.serialization, READ_UserEndpoint, req)
