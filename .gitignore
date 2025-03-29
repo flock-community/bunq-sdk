@@ -30,3 +30,6 @@ replay_pid*
 *.iml
 
 node_modules
+
+private_key.pem
+public_key.pem
