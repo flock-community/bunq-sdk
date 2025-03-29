@@ -27,6 +27,7 @@ jobs:
           architecture: x64
       - working-directory: ./python
         run: |
+          pip install -r requirements.txt
           pip install mypy
           mypy .
           python % python -m unittest ./test/api_test.py
