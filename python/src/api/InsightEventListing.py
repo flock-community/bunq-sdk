@@ -1,0 +1,18 @@
+from abc import abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional
+
+from .shared.Wirespec import T, Wirespec
+
+@dataclass
+class InsightEventListing:
+  id: 'Optional[int]'
+  created: 'Optional[str]'
+  updated: 'Optional[str]'
+  action: 'Optional[str]'
+  user_id: 'Optional[str]'
+  monetary_account_id: 'Optional[str]'
+  object: 'Optional[EventObject]'
+  status: 'Optional[str]'
+
+from .EventObject import EventObject
