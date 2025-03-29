@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 
-from api.CREATE_InstallationEndpoint import CREATE_InstallationEndpoint
-from api.CREATE_DeviceServerEndpoint import CREATE_DeviceServerEndpoint
-from api.CREATE_SessionServerEndpoint import CREATE_SessionServerEndpoint
+from src.api import CREATE_InstallationEndpoint
+from src.api import CREATE_DeviceServerEndpoint
+from src.api import CREATE_SessionServerEndpoint
 
-from api.DeviceServer import DeviceServer
-from api.Installation import Installation
-from api.SessionServer import SessionServer
-from client import Client
-from signing import generate_rsa_key_pair
+from src.api import DeviceServer
+from src.api import Installation
+from src.api import SessionServer
 
-from wirespec import Serialization
+from src.client import Client
+from src.signing import generate_rsa_key_pair
+
+from src.wirespec import Serialization
 
 @dataclass
 class Context:

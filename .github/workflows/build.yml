@@ -1,0 +1,33 @@
+name: Build pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches:
+  release:
+    types: [ "created" ]
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  build-python:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+          architecture: x64
+      - working-directory: ./python
+        run: |
+          pip install mypy
+          mypy .
+          python % python -m unittest ./test/api_test.py
+          

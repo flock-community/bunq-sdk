@@ -1,12 +1,14 @@
 from typing import Dict, List, TypeVar, Type
 
-from api.CREATE_InstallationEndpoint import CREATE_InstallationEndpoint
-from api.CREATE_DeviceServerEndpoint import CREATE_DeviceServerEndpoint
-from api.CREATE_SessionServerEndpoint import CREATE_SessionServerEndpoint
-from api.READ_UserEndpoint import READ_UserEndpoint
+from src.api import CREATE_InstallationEndpoint
+from src.api import CREATE_DeviceServerEndpoint
+from src.api import CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint
+from src.api import CREATE_SessionServerEndpoint
+from src.api import READ_UserEndpoint
 
-from api.shared.Wirespec import Wirespec
-from signing import sign_data, generate_rsa_key_pair
+from src.api.shared.Wirespec import Wirespec
+
+from src.signing import sign_data, generate_rsa_key_pair
 
 import requests
 
@@ -30,13 +32,11 @@ def handler(serialization: Wirespec.Serialization, endpoint:Endpoint, req: Wires
         del req_headers["X-Bunq-Region"]
 
     signature_header = {'X-Bunq-Client-Signature':  sign_data(raw_req.body, private_key_pem)} if raw_req.body is not None else{}
-
     res  = requests.request(
         method = raw_req.method,
         url = baseUrl + '/'.join(raw_req.path),
         headers = {**req_headers, **signature_header},
         data = raw_req.body)
-
     res_headers:Dict[str, List[str]] = dict(map(lambda kv: (kv[0].lower(), list(kv[1])), res.headers.items()))
     raw_res = Wirespec.RawResponse(res.status_code, res_headers, res.text)
 
@@ -46,6 +46,7 @@ class Client(
     CREATE_InstallationEndpoint.Handler,
     CREATE_DeviceServerEndpoint.Handler,
     CREATE_SessionServerEndpoint.Handler,
+    CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint.Handler,
     READ_UserEndpoint.Handler
 ):
 
@@ -60,6 +61,9 @@ class Client(
 
     def CREATE_SessionServer(self, req):
         return handler(self.serialization, CREATE_SessionServerEndpoint, req)
+
+    def CREATE_RequestInquiry_for_User_MonetaryAccount(self, req):
+        return handler(self.serialization, CREATE_RequestInquiry_for_User_MonetaryAccountEndpoint, req)
 
     def READ_User(self, req):
         return handler(self.serialization, READ_UserEndpoint, req)

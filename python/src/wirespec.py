@@ -4,7 +4,7 @@ from typing import List, TypeVar, Dict
 from functools import reduce
 from dacite import from_dict
 
-from api.shared.Wirespec import Wirespec, T
+from src.api.shared.Wirespec import Wirespec, T
 
 class Serialization(Wirespec.Serialization):
 
