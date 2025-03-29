@@ -29,7 +29,6 @@ class Serialization(Wirespec.Serialization):
 
             data = json.loads(value)
 
-
             if "Response" in data:
                 res_data = data.get("Response")
                 origin = get_origin(t)
