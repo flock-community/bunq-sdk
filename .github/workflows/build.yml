@@ -25,11 +25,17 @@ jobs:
         with:
           python-version: 3.12.9
           architecture: x64
-      - working-directory: ./python
+      - name: install
+        working-directory: ./python
         run: |
           pip install -r requirements.txt
           pip install mypy
           pip install types-requests
+      - name: mypy
+        working-directory: ./python  
+        run: |
           mypy .
-          python -m unittest ./test/api_test.py
-          
+      - name: unittest
+        working-directory: ./python
+        run: |
+          python -m unittest ./test/api_test.py  
