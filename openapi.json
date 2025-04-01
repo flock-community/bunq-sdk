@@ -19768,10 +19768,10 @@
           },
           "counterparty_alias": {
             "type": "object",
-            "description": "The LabelMonetaryAccount with the public information of the MonetaryAccount the money was requested from.",
+            "description": "The counter party this request should be sent to.",
             "readOnly": false,
             "writeOnly": false,
-            "$ref": "#/components/schemas/LabelMonetaryAccount"
+            "$ref": "#/components/schemas/Pointer"
           },
           "description": {
             "type": "string",
@@ -20079,11 +20079,12 @@
       "RequestInquiryCreate": {
         "type": "object",
         "properties": {
-          "id": {
+          "Id": {
             "type": "integer",
             "description": "The id of the created RequestInquiry.",
             "readOnly": true,
-            "writeOnly": false
+            "writeOnly": false,
+            "$ref": "#/components/schemas/BunqId"
           }
         }
       },
