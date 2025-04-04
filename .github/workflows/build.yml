@@ -51,14 +51,14 @@ jobs:
         with:
           node-version: 20
       - name: install
-        working-directory: ./python
+        working-directory: ./npm
         run: |
           npm install
       - name: compile
-        working-directory: ./python
+        working-directory: ./npm
         run: |
           npm run compile
       - name: test
-        working-directory: ./python
+        working-directory: ./npm
         run: |
           npm test
