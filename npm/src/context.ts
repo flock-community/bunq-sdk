@@ -6,7 +6,7 @@ import {
     DeviceServer,
     Installation,
     SessionServer
-} from "./openapi";
+} from "./Openapi";
 import {client} from "./client";
 
 

@@ -7,17 +7,17 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ./src/index.ts",
-    "generate": "wirespec convert OpenAPIV3 -i ../openapi.json -o src -l TypeScript -p '' ",
+    "test": "vitest",
+    "generate": "wirespec convert OpenAPIV3 -i ../openapi.json -o src -l TypeScript -p '' --strict",
     "compile": "tsc"
   },
   "dependencies": {
-    "@flock/wirespec": "^0.12.1"
+    "@flock/wirespec": "^0.12.9"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
   }
 }

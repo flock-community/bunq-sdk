@@ -21,10 +21,10 @@ buildscript {
 }
 
 tasks.register<ConvertWirespecTask>("wirespec-python") {
-    description = "Compile Wirespec to Kotlin"
+    description = "Compile Wirespec to Python"
     group = "Wirespec compile"
-    input = layout.projectDirectory.file("../openapi.json")
     output = layout.projectDirectory.dir("src")
+    input = layout.projectDirectory.file("../openapi.json")
     packageName = "api"
     languages = listOf(Language.Python)
     format = Format.OpenAPIV3

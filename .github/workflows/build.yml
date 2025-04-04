@@ -35,7 +35,30 @@ jobs:
         working-directory: ./python  
         run: |
           mypy .
-      - name: unittest
+      - name: test
         working-directory: ./python
         run: |
           python -m unittest ./test/api_test.py  
+
+  build-npm:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: install
+        working-directory: ./python
+        run: |
+          npm install
+      - name: compile
+        working-directory: ./python
+        run: |
+          npm run compile
+      - name: test
+        working-directory: ./python
+        run: |
+          npm test

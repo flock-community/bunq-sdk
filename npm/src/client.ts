@@ -3,8 +3,9 @@ import {
     CREATE_Installation,
     CREATE_SessionServer,
     READ_User,
+    List_all_MonetaryAccountBank_for_User,
     Wirespec
-} from "./openapi";
+} from "./Openapi";
 import {loadRsaKeyPair, signData, verifyResponse} from "./signing";
 import {Context} from "./context";
 
@@ -12,7 +13,8 @@ type Client =
     CREATE_Installation.Handler &
     CREATE_DeviceServer.Handler &
     CREATE_SessionServer.Handler &
-    READ_User.Handler
+    READ_User.Handler &
+    List_all_MonetaryAccountBank_for_User.Handler
 
 
 function headersIteratorToRecord(headersIterator: Headers): Record<string, string> {
@@ -28,7 +30,18 @@ const serialization: Wirespec.Serialization = {
         if (raw === undefined) {
             return undefined as T;
         } else {
-            return JSON.parse(raw) as T;
+            type Body = {Response: object[]} | {Error: object[]}
+            const body:Body = JSON.parse(raw)
+
+            if("Error" in body){
+                throw new Error(JSON.stringify(body["Error"]))
+            }
+
+            const response = body["Response"]
+            if("MonetaryAccountBank" in response[0]) {
+                return [response[0]["MonetaryAccountBank"]] as T;
+            }
+            return response.reduce((acc,cur) => ({...acc, ...cur}), {}) as T;
         }
     },
     serialize<T>(type: T): string {
@@ -62,8 +75,6 @@ const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Res
     if(!headers['X-Bunq-Region'])
         delete headers['X-Bunq-Region']
 
-    console.log(headers['X-Bunq-Client-Signature'])
-
     const options = {
         method: rawRequest.method,
         body: rawRequest.body,
@@ -79,26 +90,20 @@ const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Res
             }
         }
 
-        type Body = {Response: object[]} | {Error: object[]}
-        const body:Body = JSON.parse(raw)
-
-        if("Error" in body){
-            throw new Error(JSON.stringify(body["Error"]))
-        }
         const rawResponse: Wirespec.RawResponse = {
-            body: JSON.stringify(body["Response"].reduce((acc,cur) => ({...acc, ...cur}), {})),
+            body: raw,
             headers: headersIteratorToRecord(res.headers),
             status: res.status
         }
-
 
         return client(serialization).from(rawResponse)
     })
 };
 
 export const client: (context?:Context) => Client = (context) => ({
-    rEAD_User: handleFetch(context, READ_User.client),
     cREATE_Installation: handleFetch(context, CREATE_Installation.client),
     cREATE_DeviceServer: handleFetch(context, CREATE_DeviceServer.client),
     cREATE_SessionServer: handleFetch(context, CREATE_SessionServer.client),
+    rEAD_User: handleFetch(context, READ_User.client),
+    list_all_MonetaryAccountBank_for_User: handleFetch(context, List_all_MonetaryAccountBank_for_User.client)
 });
