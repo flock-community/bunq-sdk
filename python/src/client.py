@@ -32,6 +32,7 @@ def handler(serialization: Wirespec.Serialization, endpoint:Endpoint, req: Wires
         del req_headers["X-Bunq-Region"]
 
     signature_header = {'X-Bunq-Client-Signature':  sign_data(raw_req.body, private_key_pem)} if raw_req.body is not None else{}
+
     res  = requests.request(
         method = raw_req.method,
         url = baseUrl + '/'.join(raw_req.path),

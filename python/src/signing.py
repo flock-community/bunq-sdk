@@ -10,8 +10,8 @@ import hashlib
 
 # Function to generate RSA key pair
 def generate_rsa_key_pair():
-    private_key_file = '../private_key.pem'
-    public_key_file = '../public_key.pem'
+    private_key_file = '../../private_key.pem'
+    public_key_file = '../../public_key.pem'
     
     # Check if the key files exist
     if os.path.exists(private_key_file) and os.path.exists(public_key_file):

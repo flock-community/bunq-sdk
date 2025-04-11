@@ -4,3 +4,8 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+include(
+    "kotlin",
+    "python"
+)
