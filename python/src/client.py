@@ -1,14 +1,14 @@
 from typing import Dict, List, TypeVar, Type
 
-from src.api import (CREATE_InstallationEndpoint,
-                     CREATE_DeviceServerEndpoint,
-                     CREATE_SessionServerEndpoint,
-                     List_all_MonetaryAccountBank_for_UserEndpoint,
-                     READ_UserEndpoint)
+from .api.endpoint.CREATE_Installation import CREATE_Installation
+from .api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
+from .api.endpoint.CREATE_SessionServer import CREATE_SessionServer
+from .api.endpoint.List_all_MonetaryAccountBank_for_User import List_all_MonetaryAccountBank_for_User
+from .api.endpoint.READ_User import READ_User
 
-from src.api.shared.Wirespec import Wirespec
+from .api.wirespec import Wirespec
 
-from src.signing import sign_data, generate_rsa_key_pair
+from .signing import sign_data, generate_rsa_key_pair
 
 import requests
 
@@ -44,29 +44,27 @@ def handler(serialization: Wirespec.Serialization, endpoint:Endpoint, req: Wires
     return endpoint.Convert.from_raw_response(serialization, raw_res)
 
 class Client(
-    CREATE_InstallationEndpoint.Handler,
-    CREATE_DeviceServerEndpoint.Handler,
-    CREATE_SessionServerEndpoint.Handler,
-    List_all_MonetaryAccountBank_for_UserEndpoint.Handler,
-    READ_UserEndpoint.Handler
+    CREATE_Installation.Handler,
+    CREATE_DeviceServer.Handler,
+    CREATE_SessionServer.Handler,
+    List_all_MonetaryAccountBank_for_User.Handler,
+    READ_User.Handler
 ):
 
     def __init__(self, serialization: Wirespec.Serialization):
         self.serialization = serialization
 
     def CREATE_Installation(self, req):
-        return handler(self.serialization, CREATE_InstallationEndpoint, req)
+        return handler(self.serialization, CREATE_Installation, req)
 
     def CREATE_DeviceServer(self, req):
-        return handler(self.serialization, CREATE_DeviceServerEndpoint, req)
+        return handler(self.serialization, CREATE_DeviceServer, req)
 
     def CREATE_SessionServer(self, req):
-        return handler(self.serialization, CREATE_SessionServerEndpoint, req)
+        return handler(self.serialization, CREATE_SessionServer, req)
 
     def List_all_MonetaryAccountBank_for_User(self, req):
-        return handler(self.serialization, List_all_MonetaryAccountBank_for_UserEndpoint, req)
+        return handler(self.serialization, List_all_MonetaryAccountBank_for_User, req)
 
     def READ_User(self, req):
-        return handler(self.serialization, READ_UserEndpoint, req)
-
-
+        return handler(self.serialization, READ_User, req)

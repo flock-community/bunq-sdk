@@ -1,0 +1,16 @@
+from abc import abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional
+
+from ..wirespec import T, Wirespec
+
+@dataclass
+class CardGeneratedCvc2Read:
+  id: 'Optional[int]'
+  created: 'Optional[str]'
+  updated: 'Optional[str]'
+  type: 'Optional[str]'
+  cvc2: 'Optional[str]'
+  status: 'Optional[str]'
+  expiry_time: 'Optional[str]'
+

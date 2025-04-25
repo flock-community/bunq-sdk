@@ -4,8 +4,7 @@ from typing import List, TypeVar, Dict, Type, get_origin, get_args
 from functools import reduce
 from dacite import from_dict
 
-from src.api import MonetaryAccountBank
-from src.api.shared.Wirespec import Wirespec, T
+from .api.wirespec import Wirespec, T
 
 class Serialization(Wirespec.Serialization):
 
