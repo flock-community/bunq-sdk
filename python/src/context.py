@@ -1,6 +1,7 @@
 from .api.endpoint.CREATE_Installation import CREATE_Installation
 from .api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
 from .api.endpoint.CREATE_SessionServer import CREATE_SessionServer
+from .api.model import InstallationCreate, DeviceServerCreate, SessionServerCreate
 
 from .api.model.DeviceServer import DeviceServer
 from .api.model.Installation import Installation
@@ -23,15 +24,27 @@ class Context:
         self.api_key = api_key
         self.service_name = service_name
         installation = self.create_installation(service_name)
+        if installation.ServerPublicKey is None:
+            raise Exception("Installation does not have server public key")
+        if installation.Token is None or installation.Token.token is None:
+            raise Exception("Installation does not have token")
         self.server_public_key = installation.ServerPublicKey.server_public_key
         device_server = self.create_device_server(service_name, api_key, installation.Token.token)
+        if device_server.Id is None:
+            raise Exception("Device server does not have id")
         self.device_id = device_server.Id.id
         session_server = self.create_session_server(service_name, api_key, installation.Token.token)
+        if session_server.Id is None:
+            raise Exception("Session server does not have id")
         self.session_id = session_server.Id.id
+        if session_server.Token is None:
+            raise Exception("Session server does not have token")
         self.session_token = session_server.Token.token
+        if session_server.UserPerson is None:
+            raise Exception("Session server does not have user person")
         self.user_id = session_server.UserPerson.id
 
-    def create_installation(self, service_name:str) -> Installation:
+    def create_installation(self, service_name:str) -> InstallationCreate:
         body = Installation(
             client_public_key = self.public_key_pem
         )
@@ -52,7 +65,7 @@ class Context:
             case _:
                 raise Exception("Cannot create installation")
 
-    def create_device_server(self, service_name:str, api_key:str, token:str) -> DeviceServer:
+    def create_device_server(self, service_name:str, api_key:str, token:str) -> DeviceServerCreate:
         body = DeviceServer(
             description = service_name,
             secret = api_key,
@@ -74,7 +87,7 @@ class Context:
             case _:
                 raise Exception("Cannot create device server")
 
-    def create_session_server(self, service_name:str, api_key:str, token:str) -> SessionServer:
+    def create_session_server(self, service_name:str, api_key:str, token:str) -> SessionServerCreate:
         body = SessionServer(
             secret = api_key,
         )
