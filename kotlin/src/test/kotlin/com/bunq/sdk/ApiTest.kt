@@ -1,7 +1,9 @@
 package com.bunq.sdk
 
-import com.bunq.sdk.generated.READ_UserEndpoint
-import kotlinx.coroutines.runBlocking
+import com.bunq.sdk.generated.endpoint.List_all_MonetaryAccountBank_for_User
+import com.bunq.sdk.generated.endpoint.READ_User
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -13,12 +15,13 @@ private val config = Config(
 class ApiTest {
 
     @Test
-    fun test(): Unit = runBlocking {
+    fun test(): Unit = runTest {
         val signing = Signing(config)
         val context = initContext(config)
         val client = Client(signing, context)
 
-        val req = READ_UserEndpoint.Request(
+
+        val req = READ_User.Request(
             itemId = context.userId,
             CacheControl = null,
             UserAgent = config.serviceName,
@@ -31,11 +34,39 @@ class ApiTest {
         val res = client.rEAD_User(req)
 
         val body = when (res) {
-            is READ_UserEndpoint.Response200 -> res.body
-            is READ_UserEndpoint.Response400 -> error("Cannot read user")
+            is READ_User.Response200 -> res.body
+            is READ_User.Response400 -> error("Cannot read user")
         }
 
         assertEquals("Donald Byrne", body.UserPerson?.legal_name)
-
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun testListAllMonetaryAccountBankForUser()= runTest {
+        val signing = Signing(config)
+        val context = initContext(config)
+        val client = Client(signing, context)
+
+        val req = List_all_MonetaryAccountBank_for_User.Request(
+            context.userId,
+            null,
+            config.serviceName,
+            null,
+            null,
+            null,
+            null,
+            context.sessionToken,
+        )
+
+        val res: List_all_MonetaryAccountBank_for_User.Response<*> =
+            client.list_all_MonetaryAccountBank_for_User(req)
+
+        if (res is List_all_MonetaryAccountBank_for_User.Response200) {
+            Assertions.assertEquals("D. Byrne", res.body[0].display_name)
+        } else {
+            throw RuntimeException("Cannot list monetary accounts")
+        }
+    }
+
 }

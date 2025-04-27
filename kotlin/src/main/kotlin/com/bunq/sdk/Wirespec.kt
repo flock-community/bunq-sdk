@@ -60,7 +60,7 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .let {
             // Sign request
             if(req.body != null){
-                it + arrayOf("X-Bunq-Client-Signature", signing.signData(req.body))
+                it + arrayOf("X-Bunq-Client-Signature", signing.signData(req.body!!))
             } else {
                 it
             }

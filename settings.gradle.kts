@@ -7,5 +7,6 @@ pluginManagement {
 
 include(
     "kotlin",
-    "python"
+    "python",
+    "java"
 )

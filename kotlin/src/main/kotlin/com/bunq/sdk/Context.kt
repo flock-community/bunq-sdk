@@ -1,14 +1,14 @@
 package com.bunq.sdk
 
-import com.bunq.sdk.generated.CREATE_DeviceServerEndpoint
-import com.bunq.sdk.generated.CREATE_InstallationEndpoint
-import com.bunq.sdk.generated.CREATE_SessionServerEndpoint
-import com.bunq.sdk.generated.DeviceServer
-import com.bunq.sdk.generated.DeviceServerCreate
-import com.bunq.sdk.generated.Installation
-import com.bunq.sdk.generated.InstallationCreate
-import com.bunq.sdk.generated.SessionServer
-import com.bunq.sdk.generated.SessionServerCreate
+import com.bunq.sdk.generated.endpoint.CREATE_DeviceServer
+import com.bunq.sdk.generated.endpoint.CREATE_Installation
+import com.bunq.sdk.generated.endpoint.CREATE_SessionServer
+import com.bunq.sdk.generated.model.DeviceServer
+import com.bunq.sdk.generated.model.DeviceServerCreate
+import com.bunq.sdk.generated.model.Installation
+import com.bunq.sdk.generated.model.InstallationCreate
+import com.bunq.sdk.generated.model.SessionServer
+import com.bunq.sdk.generated.model.SessionServerCreate
 
 data class Context(
     val apiKey: String,
@@ -28,7 +28,7 @@ fun initContext(config: Config): Context {
         val body = Installation(
             client_public_key = publicKeyPem
         )
-        val request = CREATE_InstallationEndpoint.Request(
+        val request = CREATE_Installation.Request(
             CacheControl = null,
             UserAgent = serviceName,
             XBunqLanguage = null,
@@ -39,13 +39,13 @@ fun initContext(config: Config): Context {
             body = body,
         )
 
-        val rawRequest = CREATE_InstallationEndpoint.toRequest(serialization, request)
+        val rawRequest = CREATE_Installation.toRequest(serialization, request)
         val rawResponse = send(signing, rawRequest)
-        val res = CREATE_InstallationEndpoint.fromResponse(serialization, rawResponse)
+        val res = CREATE_Installation.fromResponse(serialization, rawResponse)
 
         when (res) {
-            is CREATE_InstallationEndpoint.Response200 -> return res.body
-            is CREATE_InstallationEndpoint.Response400 -> error("Cannot create installation")
+            is CREATE_Installation.Response200 -> return res.body
+            is CREATE_Installation.Response400 -> error("Cannot create installation")
         }
     }
 
@@ -55,7 +55,7 @@ fun initContext(config: Config): Context {
             secret = apiKey,
             permitted_ips = listOf("*")
         )
-        val request = CREATE_DeviceServerEndpoint.Request(
+        val request = CREATE_DeviceServer.Request(
             CacheControl = null,
             UserAgent = serviceName,
             XBunqLanguage = null,
@@ -66,13 +66,13 @@ fun initContext(config: Config): Context {
             body = body,
         )
 
-        val rawRequest = CREATE_DeviceServerEndpoint.toRequest(serialization, request)
+        val rawRequest = CREATE_DeviceServer.toRequest(serialization, request)
         val rawResponse = send(signing, rawRequest)
-        val res =  CREATE_DeviceServerEndpoint.fromResponse(serialization, rawResponse)
+        val res =  CREATE_DeviceServer.fromResponse(serialization, rawResponse)
 
         when (res) {
-            is CREATE_DeviceServerEndpoint.Response200 -> return res.body
-            is CREATE_DeviceServerEndpoint.Response400 -> error("Cannot create device server")
+            is CREATE_DeviceServer.Response200 -> return res.body
+            is CREATE_DeviceServer.Response400 -> error("Cannot create device server")
         }
     }
 
@@ -80,7 +80,7 @@ fun initContext(config: Config): Context {
         val body = SessionServer(
             secret = apiKey,
         )
-        val request = CREATE_SessionServerEndpoint.Request(
+        val request = CREATE_SessionServer.Request(
             CacheControl = null,
             UserAgent = serviceName,
             XBunqLanguage = null,
@@ -91,13 +91,13 @@ fun initContext(config: Config): Context {
             body = body,
         )
 
-        val rawRequest = CREATE_SessionServerEndpoint.toRequest(serialization, request)
+        val rawRequest = CREATE_SessionServer.toRequest(serialization, request)
         val rawResponse = send(signing, rawRequest)
-        val res = CREATE_SessionServerEndpoint.fromResponse(serialization, rawResponse)
+        val res = CREATE_SessionServer.fromResponse(serialization, rawResponse)
 
         when (res) {
-            is CREATE_SessionServerEndpoint.Response200 -> return res.body
-            is CREATE_SessionServerEndpoint.Response400 -> error("Cannot create session server")
+            is CREATE_SessionServer.Response200 -> return res.body
+            is CREATE_SessionServer.Response400 -> error("Cannot create session server")
         }
     }
 

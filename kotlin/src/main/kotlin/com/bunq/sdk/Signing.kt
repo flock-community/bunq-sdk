@@ -4,7 +4,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemReader
 import org.bouncycastle.util.io.pem.PemWriter
-import java.io.File
 import java.io.StringReader
 import java.io.StringWriter
 import java.nio.charset.StandardCharsets
@@ -17,7 +16,7 @@ import java.security.Security
 import java.security.Signature
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
-import java.util.*
+import java.util.Base64
 
 class Signing(private val config: Config) {
     init {

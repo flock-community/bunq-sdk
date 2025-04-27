@@ -43,7 +43,7 @@ describe("api test", async () => {
         })
         const res = await client(context).list_all_MonetaryAccountBank_for_User(req)
         if(res.status === 200) {
-            expect(res.body).toBe("D. Byrne")
+            expect(res.body[0].display_name).toBe("D. Byrne")
         } else {
             throw new Error("Cannot read user")
         }

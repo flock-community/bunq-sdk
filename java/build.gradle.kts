@@ -4,10 +4,10 @@ import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
     alias(libs.plugins.wirespec)
-    kotlin("jvm") version "2.1.0"
+    id("java")
 }
 
-group = "community.flock.wirespec.example.gradle"
+group = "community.flock.wirespec.example.java"
 version = libs.versions.wirespec.get()
 
 repositories {
@@ -18,33 +18,29 @@ repositories {
 dependencies{
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${libs.versions.jackson.get()}")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${libs.versions.jackson.get()}")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
     implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
-
 }
 
 sourceSets {
     main {
         java {
-            srcDir("${layout.buildDirectory.get()}/generated")
+            srcDirs(
+                layout.buildDirectory.dir("generated").get(),
+                "src/main/customGenerated"
+            )
         }
     }
 }
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-kotlin {
-    compilerOptions {
-        freeCompilerArgs.addAll("-Xjsr305=strict")
     }
 }
 
@@ -52,17 +48,17 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.register<ConvertWirespecTask>("wirespec-kotlin") {
-    description = "Compile Wirespec to Kotlin"
+tasks.register<ConvertWirespecTask>("wirespec-java") {
+    description = "Compile Wirespec to Java"
     output = layout.buildDirectory.dir("generated")
     input = layout.projectDirectory.file("../openapi.json")
     packageName = "com.bunq.sdk.generated"
-    languages = listOf(Language.Kotlin)
+    languages = listOf(Language.Java)
     format = Format.OpenAPIV3
     strict = true
     shared = true
 }
 
-tasks.named("compileKotlin") {
-    dependsOn("wirespec-kotlin")
+tasks.named("compileJava") {
+    dependsOn("wirespec-java")
 }
