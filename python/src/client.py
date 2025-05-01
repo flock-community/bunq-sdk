@@ -1,14 +1,14 @@
 from typing import Dict, List, TypeVar, Type
 
-from .api.endpoint.CREATE_Installation import CREATE_Installation
-from .api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
-from .api.endpoint.CREATE_SessionServer import CREATE_SessionServer
-from .api.endpoint.List_all_MonetaryAccountBank_for_User import List_all_MonetaryAccountBank_for_User
-from .api.endpoint.READ_User import READ_User
+from api.endpoint.CREATE_Installation import CREATE_Installation
+from api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
+from api.endpoint.CREATE_SessionServer import CREATE_SessionServer
+from api.endpoint.List_all_MonetaryAccountBank_for_User import List_all_MonetaryAccountBank_for_User
+from api.endpoint.READ_User import READ_User
 
-from .api.wirespec import Wirespec
+from api.wirespec import Wirespec
 
-from .signing import sign_data, generate_rsa_key_pair
+from signing import sign_data, generate_rsa_key_pair
 
 import requests
 

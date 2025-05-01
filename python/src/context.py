@@ -1,16 +1,16 @@
-from .api.endpoint.CREATE_Installation import CREATE_Installation
-from .api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
-from .api.endpoint.CREATE_SessionServer import CREATE_SessionServer
-from .api.model import InstallationCreate, DeviceServerCreate, SessionServerCreate
+from api.endpoint.CREATE_Installation import CREATE_Installation
+from api.endpoint.CREATE_DeviceServer import CREATE_DeviceServer
+from api.endpoint.CREATE_SessionServer import CREATE_SessionServer
+from api.model import InstallationCreate, DeviceServerCreate, SessionServerCreate
 
-from .api.model.DeviceServer import DeviceServer
-from .api.model.Installation import Installation
-from .api.model.SessionServer import SessionServer
+from api.model.DeviceServer import DeviceServer
+from api.model.Installation import Installation
+from api.model.SessionServer import SessionServer
 
-from .client import Client
-from .signing import generate_rsa_key_pair
+from client import Client
+from signing import generate_rsa_key_pair
 
-from .wirespec import Serialization
+from wirespec import Serialization
 
 class Context:
     serialization = Serialization()

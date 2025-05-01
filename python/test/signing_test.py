@@ -1,9 +1,9 @@
 import unittest
 
-from src.client import Client
-from src.context import Context
-from src.signing import generate_rsa_key_pair, sign_data
-from src.wirespec import Serialization
+from client import Client
+from context import Context
+from signing import generate_rsa_key_pair, sign_data
+from wirespec import Serialization
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
 service_name='PeterScript'

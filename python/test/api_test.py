@@ -1,10 +1,10 @@
 import unittest
 
-from src.api.endpoint.READ_User import READ_User
-from src.api.endpoint.List_all_MonetaryAccountBank_for_User import List_all_MonetaryAccountBank_for_User
-from src.client import Client
-from src.context import Context
-from src.wirespec import Serialization
+from api.endpoint.READ_User import READ_User
+from api.endpoint.List_all_MonetaryAccountBank_for_User import List_all_MonetaryAccountBank_for_User
+from client import Client
+from context import Context
+from wirespec import Serialization
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
 service_name='PeterScript'
