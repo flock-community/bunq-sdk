@@ -43,10 +43,10 @@ jobs:
         run: |
           mypy .
       - name: test
-        working-directory: ./python
+        working-directory: ./python/src
         run: |
-          python -m unittest ./src/client_test.py
-          python -m unittest ./src/signing_test.py
+          python -m unittest ./client_test.py
+          python -m unittest ./signing_test.py
 
   build-npm:
 
