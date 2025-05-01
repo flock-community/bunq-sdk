@@ -38,7 +38,8 @@ jobs:
       - name: test
         working-directory: ./python
         run: |
-          python -m unittest ./test/api_test.py  
+          python -m unittest ./src/client_test.py
+          python -m unittest ./src/signing_test.py
 
   build-npm:
 
