@@ -1,6 +1,6 @@
 [versions]
-wirespec = "0.0.0-SNAPSHOT"
-jackson = "0.14.10"
+wirespec = "0.14.10"
+jackson = "2.19.0"
 
 [libraries]
 wirespec_compiler = { module = "community.flock.wirespec.compiler:core-jvm", version.ref = "wirespec" }
