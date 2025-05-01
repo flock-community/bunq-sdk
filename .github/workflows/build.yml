@@ -26,7 +26,6 @@ jobs:
           python-version: 3.12.9
           architecture: x64
       - name: generate
-        working-directory: ./python
         run: |
           ./gradlew wirespec-python
       - name: install
