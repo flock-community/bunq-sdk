@@ -1,7 +1,9 @@
 package com.bunq.sdk;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
@@ -10,6 +12,7 @@ import community.flock.wirespec.java.Wirespec;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -99,7 +102,11 @@ public class WirespecBase {
     private static class BunqSerialization implements Wirespec.Serialization<String>, DefaultParamSerialization {
         @Override
         public <T> String serialize(T t, Type type) {
+            if (t == null) {
+                return null;
+            }
             try {
+
                 return objectMapper.writeValueAsString(t);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize object", e);
@@ -116,27 +123,42 @@ public class WirespecBase {
             try {
                 var tree = objectMapper.readTree(raw);
                 var response = tree.get("Response");
-
-                // Convert the response to an iterable and filter for ObjectNode instances
-                Iterable<ObjectNode> objectNodes = () -> StreamSupport.stream(response.spliterator(), false)
-                        .filter(node -> node instanceof ObjectNode)
-                        .map(node -> (ObjectNode) node)
-                        .iterator();
-
-                // Reduce the ObjectNodes to a single ObjectNode
-                ObjectNode json = null;
-                for (ObjectNode node : objectNodes) {
-                    if (json == null) {
-                        json = node;
-                    } else {
-                        json.setAll(node);
-                    }
-                }
-
+                Object json = aggregateJsonNodes(type, response);
                 return objectMapper.convertValue(json, objectMapper.constructType(type));
             } catch (IOException e) {
                 throw new RuntimeException("Failed to deserialize JSON", e);
             }
         }
+
+        private static Object aggregateJsonNodes(Type type, JsonNode response) {
+            // Convert the response to an iterable and filter for ObjectNode instances
+            Iterable<ObjectNode> objectNodes = () -> StreamSupport.stream(response.spliterator(), false)
+                    .filter(node -> node instanceof ObjectNode)
+                    .map(node -> (ObjectNode) node)
+                    .iterator();
+
+            if (type instanceof ParameterizedType parameterizedType && parameterizedType.getRawType() == List.class) {
+                ArrayNode json = objectMapper.createArrayNode();
+                // Reduce the ObjectNodes to a single ObjectNode
+                for (ObjectNode node : objectNodes) {
+                    node.fieldNames().forEachRemaining(fieldName -> {
+                        json.add(node.get(fieldName));
+                    });
+                }
+                return json;
+            }
+
+            ObjectNode json = null;
+            // Reduce the ObjectNodes to a single ObjectNode
+            for (ObjectNode node : objectNodes) {
+                if (json == null) {
+                    json = node;
+                } else {
+                    json.setAll(node);
+                }
+            }
+            return json;
+        }
+
     }
 }

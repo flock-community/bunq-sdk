@@ -62,7 +62,7 @@ public class ApiTest {
         List_all_MonetaryAccountBank_for_User.Response<?> res = client.list_all_MonetaryAccountBank_for_User(req).get();
 
         if (res instanceof List_all_MonetaryAccountBank_for_User.Response200 response) {
-            assertEquals("D. Byrne", response.getBody().get(0).display_name());
+            assertEquals("D. Byrne", response.getBody().get(0).display_name().orElseThrow());
         } else {
             throw new RuntimeException("Cannot list monetary accounts");
         }
