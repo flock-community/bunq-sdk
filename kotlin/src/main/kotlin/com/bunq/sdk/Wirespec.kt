@@ -4,6 +4,8 @@ package com.bunq.sdk
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
@@ -11,6 +13,7 @@ import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
 import kotlin.reflect.KType
+import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.javaType
 
 val baseUrl = "https://public-api.sandbox.bunq.com/v1/"
@@ -24,15 +27,24 @@ val objectMapper: ObjectMapper = ObjectMapper()
 val serialization: Wirespec.Serialization<String> =
     object : Wirespec.Serialization<String>, ParamSerialization by DefaultParamSerialization() {
         override fun <T> serialize(t: T, kType: KType): String {
+            if(t is Unit) return ""
             return objectMapper.writeValueAsString(t)
         }
 
         override fun <T> deserialize(raw: String, kType: KType): T {
             val tree = objectMapper.readTree(raw)
             val response = tree.get("Response").asIterable()
-            val json = response.filterIsInstance<ObjectNode>().reduce { acc, jsonNode ->
-                acc.apply { setAll<ObjectNode>(jsonNode) }
+
+            val json = if (kType.classifier == List::class) {
+                response.filterIsInstance<ObjectNode>().fold(objectMapper.createArrayNode()) { acc, jsonNode ->
+                    acc.addAll(jsonNode.fieldNames().asSequence().map{ jsonNode.get(it) }.toList())
+                }
+            }else {
+                response.filterIsInstance<ObjectNode>().reduce { acc, jsonNode ->
+                    acc.apply { setAll<ObjectNode>(jsonNode) }
+                }
             }
+
             return objectMapper
                 .constructType(kType.javaType)
                 .let { objectMapper.treeToValue(json, it) }
@@ -82,6 +94,17 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
         headers = response.headers().map(),
         body = response.body()
     )
-
-
 }
+
+fun <Req: Wirespec.Request<*>, Res:Wirespec.Response<*> >handle(signing: Signing, context: Context, request:Req): Res{
+    val declaringClass = request::class.java.declaringClass
+    val handler = declaringClass.declaredClasses.toList().find { it.simpleName == "Handler" } ?: error("Handler not found")
+    val instance = handler.kotlin.companionObjectInstance as Wirespec.Client<Wirespec.Request<*>, Wirespec.Response<*>>
+    val client = instance.client(serialization)
+    val rawRequest = client.to(request as Wirespec.Request<*>)
+    val reqToken = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(context.sessionToken)))
+    val rawResponse = send(signing, reqToken)
+    return client.from(rawResponse) as Res
+}
+
+fun handler(signing: Signing, context: Context):(Wirespec.Request<*>) -> Wirespec.Response<*> = {req -> handle(signing,context,req)}

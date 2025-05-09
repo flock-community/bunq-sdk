@@ -1,3 +1,11 @@
+import arrow.core.NonEmptyList
+import community.flock.wirespec.compiler.core.emit.KotlinEmitter
+import community.flock.wirespec.compiler.core.emit.PythonEmitter
+import community.flock.wirespec.compiler.core.emit.common.EmitShared
+import community.flock.wirespec.compiler.core.emit.common.Emitted
+import community.flock.wirespec.compiler.core.emit.common.PackageName
+import community.flock.wirespec.compiler.core.parse.Endpoint
+import community.flock.wirespec.compiler.core.parse.Module
 import community.flock.wirespec.plugin.Format
 import community.flock.wirespec.plugin.Language
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
@@ -52,17 +60,41 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.register<ConvertWirespecTask>("wirespec-kotlin") {
+tasks.register<ConvertWirespecTask>("wirespec") {
     description = "Compile Wirespec to Kotlin"
     output = layout.buildDirectory.dir("generated")
     input = layout.projectDirectory.file("../openapi.json")
     packageName = "com.bunq.sdk.generated"
-    languages = listOf(Language.Kotlin)
+    emitterClass = SdkKotlinEmitter::class.java
     format = Format.OpenAPIV3
     strict = true
     shared = true
 }
 
 tasks.named("compileKotlin") {
-    dependsOn("wirespec-kotlin")
+    dependsOn("wirespec")
 }
+
+class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared): KotlinEmitter(packageName, emitShared) {
+    override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
+        return super.emit(module, logger)
+            .let { it + Emitted("${packageName.toDir()}/Sdk", """
+                |package ${packageName.value}
+                |
+                |import community.flock.wirespec.kotlin.Wirespec
+                |
+                |${module.emitEndpoint("\n"){endpoint ->  "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
+                |
+                |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ): ${module.emitEndpoint(","){endpoint ->  "${emit(endpoint.identifier)}.Handler" }}{
+                |${module.emitEndpoint("\n"){endpoint ->  "override suspend fun ${emit(endpoint.identifier).firstToLower()}(req :${emit(endpoint.identifier)}.Request) = handler(req) as ${emit(endpoint.identifier)}.Response<*>" }.spacer(1)}
+                |}
+                |
+            """.trimMargin()) }
+    }
+
+    fun Module.emitEndpoint(separator: kotlin.CharSequence, emit:(Endpoint) -> String) = statements
+        .filterIsInstance<Endpoint>()
+        .joinToString(separator){emit(it)}
+}
+
+

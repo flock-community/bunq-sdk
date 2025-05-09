@@ -1,5 +1,5 @@
 [versions]
-wirespec = "0.14.10"
+wirespec = "0.0.0-SNAPSHOT"
 jackson = "2.19.0"
 
 [libraries]

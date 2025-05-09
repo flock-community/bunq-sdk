@@ -1,5 +1,6 @@
 package com.bunq.sdk
 
+import com.bunq.sdk.generated.Sdk
 import com.bunq.sdk.generated.endpoint.List_all_MonetaryAccountBank_for_User
 import com.bunq.sdk.generated.endpoint.READ_User
 import kotlinx.coroutines.test.runTest
@@ -15,11 +16,10 @@ private val config = Config(
 class ApiTest {
 
     @Test
-    fun test(): Unit = runTest {
+    fun `testREADUser`(): Unit = runTest {
         val signing = Signing(config)
         val context = initContext(config)
-        val client = Client(signing, context)
-
+        val sdk = Sdk(handler(signing, context))
 
         val req = READ_User.Request(
             itemId = context.userId,
@@ -31,7 +31,7 @@ class ApiTest {
             XBunqGeolocation = null,
             XBunqClientAuthentication = config.apiKey
         )
-        val res = client.rEAD_User(req)
+        val res = sdk.rEAD_User(req)
 
         val body = when (res) {
             is READ_User.Response200 -> res.body
@@ -46,7 +46,7 @@ class ApiTest {
     fun testListAllMonetaryAccountBankForUser()= runTest {
         val signing = Signing(config)
         val context = initContext(config)
-        val client = Client(signing, context)
+        val sdk = Sdk(handler(signing, context))
 
         val req = List_all_MonetaryAccountBank_for_User.Request(
             context.userId,
@@ -60,7 +60,7 @@ class ApiTest {
         )
 
         val res: List_all_MonetaryAccountBank_for_User.Response<*> =
-            client.list_all_MonetaryAccountBank_for_User(req)
+            sdk.list_all_MonetaryAccountBank_for_User(req)
 
         if (res is List_all_MonetaryAccountBank_for_User.Response200) {
             Assertions.assertEquals("D. Byrne", res.body[0].display_name)
