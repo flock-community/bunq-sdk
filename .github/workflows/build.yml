@@ -31,7 +31,7 @@ jobs:
           java-version: '21'
       - name: generate
         run: |
-          ./gradlew wirespec-python
+          ./gradlew wirespec
       - name: install
         working-directory: ./python
         run: |
