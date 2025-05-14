@@ -45,7 +45,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.register<ConvertWirespecTask>("wirespec-java") {
+tasks.register<ConvertWirespecTask>("wirespec") {
     description = "Compile Wirespec to Java"
     output = layout.buildDirectory.dir("generated")
     input = layout.projectDirectory.file("../openapi.json")
@@ -57,5 +57,5 @@ tasks.register<ConvertWirespecTask>("wirespec-java") {
 }
 
 tasks.named("compileJava") {
-    dependsOn("wirespec-java")
+    dependsOn("wirespec")
 }

@@ -25,8 +25,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
-import static com.bunq.sdk.WirespecBase.send;
-import static com.bunq.sdk.WirespecBase.serialization;
+import static com.bunq.sdk.Wirespec.send;
+import static com.bunq.sdk.Wirespec.serialization;
 
 
 public class Context {

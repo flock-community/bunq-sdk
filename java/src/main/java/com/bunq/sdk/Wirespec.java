@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import community.flock.wirespec.integration.jackson.java.WirespecModuleJava;
-import community.flock.wirespec.java.Wirespec;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class WirespecBase {
+public class Wirespec {
     public static final String baseUrl = "https://public-api.sandbox.bunq.com/v1/";
 
     public static final ObjectMapper objectMapper;
@@ -39,9 +38,9 @@ public class WirespecBase {
                 .registerModule(new Jdk8Module());
     }
 
-    public static final Wirespec.Serialization<String> serialization = new BunqSerialization();
+    public static final community.flock.wirespec.java.Wirespec.Serialization<String> serialization = new BunqSerialization();
 
-    public static CompletableFuture<Wirespec.RawResponse> send(Signing signing, Wirespec.RawRequest req) {
+    public static CompletableFuture<community.flock.wirespec.java.Wirespec.RawResponse> send(Signing signing, community.flock.wirespec.java.Wirespec.RawRequest req) {
         HttpClient client = HttpClient.newBuilder().build();
 
         // Build the URI
@@ -92,14 +91,14 @@ public class WirespecBase {
                 .headers(headers);
 
         return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> new Wirespec.RawResponse(
+                .thenApply(response -> new community.flock.wirespec.java.Wirespec.RawResponse(
                         response.statusCode(),
                         response.headers().map(),
                         response.body()
                 ));
     }
 
-    private static class BunqSerialization implements Wirespec.Serialization<String>, DefaultParamSerialization {
+    private static class BunqSerialization implements community.flock.wirespec.java.Wirespec.Serialization<String>, DefaultParamSerialization {
         @Override
         public <T> String serialize(T t, Type type) {
             if (t == null) {

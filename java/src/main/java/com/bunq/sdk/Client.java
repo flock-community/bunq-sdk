@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static com.bunq.sdk.WirespecBase.send;
-import static com.bunq.sdk.WirespecBase.serialization;
+import static com.bunq.sdk.Wirespec.send;
+import static com.bunq.sdk.Wirespec.serialization;
 
 
 public class Client implements List_all_MonetaryAccountBank_for_User.Handler, READ_User.Handler {
