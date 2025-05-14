@@ -62,6 +62,10 @@ jobs:
         working-directory: ./npm
         run: |
           npm install
+      - name: generate
+        working-directory: ./npm
+        run: |
+          npm run generate
       - name: compile
         working-directory: ./npm
         run: |
