@@ -7,9 +7,6 @@ plugins {
     id("java")
 }
 
-group = "community.flock.wirespec.example.java"
-version = libs.versions.wirespec.get()
-
 repositories {
     mavenCentral()
     mavenLocal()

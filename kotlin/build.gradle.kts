@@ -92,7 +92,7 @@ class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared): Ko
             """.trimMargin()) }
     }
 
-    fun Module.emitEndpoint(separator: kotlin.CharSequence, emit:(Endpoint) -> String) = statements
+    fun Module.emitEndpoint(separator: CharSequence, emit:(Endpoint) -> String) = statements
         .filterIsInstance<Endpoint>()
         .joinToString(separator){emit(it)}
 }
