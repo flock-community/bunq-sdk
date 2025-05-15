@@ -11,6 +11,7 @@ import community.flock.wirespec.integration.jackson.java.WirespecModuleJava;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -20,8 +21,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -159,5 +164,77 @@ public class Wirespec {
             return json;
         }
 
+    }
+
+    public static <Req extends community.flock.wirespec.java.Wirespec.Request<?>, Res extends community.flock.wirespec.java.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(
+            Signing signing, Context context) {
+        return (request -> {
+            try {
+                // Get the declaring class of the request
+                Class<?> declaringClass = request.getClass().getDeclaringClass();
+
+                // Find the Handler class
+                Class<?> handlerClass = Arrays.stream(declaringClass.getDeclaredClasses())
+                        .filter(clazz -> clazz.getSimpleName().equals("Handler"))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Handler not found"));
+
+                // Find the Handlers class
+                Class<?> handlersClass = Arrays.stream(handlerClass.getDeclaredClasses())
+                        .filter(clazz -> clazz.getSimpleName().equals("Handlers"))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Handler not found"));
+
+                //create instance of handlers class
+                Object handlersInstance = handlersClass.getDeclaredConstructor().newInstance();
+
+                // Get the client method from the Handler class
+                // From the Handlers interface, there is a class Handlers, inside a getClient Method
+                Method clientMethod = Arrays.stream(handlersClass.getDeclaredMethods())
+                        .filter(method -> method.getName().equals("getClient"))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("client method not found"));
+
+                // Invoke the client method to get the client instance
+                Object client = clientMethod.invoke(handlersInstance, serialization);
+
+                // Get the to method from the client
+                Method toMethod = client.getClass().getMethod("to", community.flock.wirespec.java.Wirespec.Request.class);
+                toMethod.setAccessible(true);
+
+                // Invoke the to method to get the raw request
+                community.flock.wirespec.java.Wirespec.RawRequest rawRequest = (community.flock.wirespec.java.Wirespec.RawRequest) toMethod.invoke(client, request);
+
+                // Add the authentication header
+                Map<String, List<String>> headers = new HashMap<>(rawRequest.headers());
+                headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.getSessionToken()));
+
+                // Create a new raw request with the updated headers
+                community.flock.wirespec.java.Wirespec.RawRequest reqToken = new community.flock.wirespec.java.Wirespec.RawRequest(
+                        rawRequest.method(),
+                        rawRequest.path(),
+                        rawRequest.queries(),
+                        headers,
+                        rawRequest.body()
+                );
+
+                // Send the request
+                return send(signing, reqToken).thenApply(raw -> {
+                            try {
+                                // Get the from method from the client
+                                Method fromMethod = client.getClass().getMethod("from", community.flock.wirespec.java.Wirespec.RawResponse.class);
+                                fromMethod.setAccessible(true);
+                                // Invoke the from method to get the response
+                                return (Res) fromMethod.invoke(client, raw);
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to handle request", e);
+                            }
+                        }
+                );
+
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to handle request", e);
+            }
+        });
     }
 }

@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
 import static com.bunq.sdk.Wirespec.send;
@@ -76,17 +75,22 @@ public class Context {
         return userId;
     }
 
-    public static Context initContext(Config config) throws ExecutionException, InterruptedException {
+    public static Context initContext(Config config) {
         Signing signing = new Signing(config);
 
-        InstallationCreate installation = createInstallation(signing, config.getServiceName(), signing.generateRsaKeyPair().getSecond()).get();
-        var installationToken = Optional.ofNullable(installation.Token()).flatMap(it -> it).flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
+        try {
+            InstallationCreate installation = createInstallation(signing, config.getServiceName(), signing.generateRsaKeyPair().getSecond()).get();
+            var installationToken = Optional.ofNullable(installation.Token()).flatMap(it -> it).flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
 
 
-        DeviceServerCreate deviceServer = createDeviceServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
-        SessionServerCreate serverSession = createSessionServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
+            DeviceServerCreate deviceServer = createDeviceServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
+            SessionServerCreate serverSession = createSessionServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
 
-        return new Context(config.getApiKey(), config.getServiceName(), installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")), deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")), serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")), serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")), serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));
+            return new Context(config.getApiKey(), config.getServiceName(), installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")), deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")), serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")), serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")), serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static <T> T throwRuntimeException(String message) {
