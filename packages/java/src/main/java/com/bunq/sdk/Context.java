@@ -15,7 +15,7 @@ import com.bunq.sdk.generated.model.SessionServer;
 import com.bunq.sdk.generated.model.SessionServerCreate;
 import com.bunq.sdk.generated.model.SessionServerToken;
 import com.bunq.sdk.generated.model.UserPerson;
-import community.flock.wirespec.Wirespec.RawRequest;
+import community.flock.wirespec.java.Wirespec.RawRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;

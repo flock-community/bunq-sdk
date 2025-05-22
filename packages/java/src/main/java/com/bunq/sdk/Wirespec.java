@@ -43,9 +43,9 @@ public class Wirespec {
                 .registerModule(new Jdk8Module());
     }
 
-    public static final community.flock.wirespec.Wirespec.Serialization<String> serialization = new BunqSerialization();
+    public static final community.flock.wirespec.java.Wirespec.Serialization<String> serialization = new BunqSerialization();
 
-    public static CompletableFuture<community.flock.wirespec.Wirespec.RawResponse> send(Signing signing, community.flock.wirespec.Wirespec.RawRequest req) {
+    public static CompletableFuture<community.flock.wirespec.java.Wirespec.RawResponse> send(Signing signing, community.flock.wirespec.java.Wirespec.RawRequest req) {
         HttpClient client = HttpClient.newBuilder().build();
 
         // Build the URI
@@ -96,14 +96,14 @@ public class Wirespec {
                 .headers(headers);
 
         return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> new community.flock.wirespec.Wirespec.RawResponse(
+                .thenApply(response -> new community.flock.wirespec.java.Wirespec.RawResponse(
                         response.statusCode(),
                         response.headers().map(),
                         response.body()
                 ));
     }
 
-    private static class BunqSerialization implements community.flock.wirespec.Wirespec.Serialization<String>, DefaultParamSerialization {
+    private static class BunqSerialization implements community.flock.wirespec.java.Wirespec.Serialization<String>, DefaultParamSerialization {
         @Override
         public <T> String serialize(T t, Type type) {
             if (t == null) {
@@ -166,7 +166,7 @@ public class Wirespec {
 
     }
 
-    public static <Req extends community.flock.wirespec.Wirespec.Request<?>, Res extends community.flock.wirespec.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(
+    public static <Req extends community.flock.wirespec.java.Wirespec.Request<?>, Res extends community.flock.wirespec.java.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(
             Signing signing, Context context) {
         return (request -> {
             try {
@@ -199,18 +199,18 @@ public class Wirespec {
                 Object client = clientMethod.invoke(handlersInstance, serialization);
 
                 // Get the to method from the client
-                Method toMethod = client.getClass().getMethod("to", community.flock.wirespec.Wirespec.Request.class);
+                Method toMethod = client.getClass().getMethod("to", community.flock.wirespec.java.Wirespec.Request.class);
                 toMethod.setAccessible(true);
 
                 // Invoke the to method to get the raw request
-                community.flock.wirespec.Wirespec.RawRequest rawRequest = (community.flock.wirespec.Wirespec.RawRequest) toMethod.invoke(client, request);
+                community.flock.wirespec.java.Wirespec.RawRequest rawRequest = (community.flock.wirespec.java.Wirespec.RawRequest) toMethod.invoke(client, request);
 
                 // Add the authentication header
                 Map<String, List<String>> headers = new HashMap<>(rawRequest.headers());
                 headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.getSessionToken()));
 
                 // Create a new raw request with the updated headers
-                community.flock.wirespec.Wirespec.RawRequest reqToken = new community.flock.wirespec.Wirespec.RawRequest(
+                community.flock.wirespec.java.Wirespec.RawRequest reqToken = new community.flock.wirespec.java.Wirespec.RawRequest(
                         rawRequest.method(),
                         rawRequest.path(),
                         rawRequest.queries(),
@@ -222,7 +222,7 @@ public class Wirespec {
                 return send(signing, reqToken).thenApply(raw -> {
                             try {
                                 // Get the from method from the client
-                                Method fromMethod = client.getClass().getMethod("from", community.flock.wirespec.Wirespec.RawResponse.class);
+                                Method fromMethod = client.getClass().getMethod("from", community.flock.wirespec.java.Wirespec.RawResponse.class);
                                 fromMethod.setAccessible(true);
                                 // Invoke the from method to get the response
                                 return (Res) fromMethod.invoke(client, raw);
