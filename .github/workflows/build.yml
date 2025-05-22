@@ -26,7 +26,7 @@ jobs:
           java-version: '21'
       - name: build
         run: |
-          ./gradlew :java:build
+          ./gradlew :packages:java:build
 
   build-kotlin:
 
@@ -40,7 +40,7 @@ jobs:
           java-version: '21'
       - name: build
         run: |
-          ./gradlew :kotlin:build
+          ./gradlew :packages:kotlin:build
 
   build-python:
 
@@ -59,9 +59,9 @@ jobs:
           java-version: '21'
       - name: generate
         run: |
-          ./gradlew wirespec
+          ./gradlew :packages:python:wirespec
       - name: install
-        working-directory: ./python
+        working-directory: ./packages/python
         run: |
           pip install -r requirements.txt
           pip install mypy
@@ -71,9 +71,9 @@ jobs:
         run: |
           mypy .
       - name: test
-        working-directory: ./python/src
+        working-directory: ./packages/python/src
         run: |
-          python -m unittest ./client_test.py
+          python -m unittest ./sdk_test.py
           python -m unittest ./signing_test.py
 
   build-npm:
