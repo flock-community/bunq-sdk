@@ -3,12 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "author": "",
-  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "generate": "wirespec convert OpenAPIV3 -i ../../openapi.json -o src -l TypeScript -p '' --strict",
+    "generate": "wirespec convert OpenAPIV3 -i ../../openapi.json -o src -l TypeScript",
     "compile": "tsc"
   },
   "dependencies": {
