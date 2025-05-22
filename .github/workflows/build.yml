@@ -67,7 +67,7 @@ jobs:
           pip install mypy
           pip install types-requests
       - name: mypy
-        working-directory: ./python  
+        working-directory: packages/python
         run: |
           mypy .
       - name: test
