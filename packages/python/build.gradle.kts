@@ -40,7 +40,7 @@ class SdkPythonEmitter(val packageName: PackageName): PythonEmitter(packageName)
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
             .let { it + Emitted("${packageName.toDir()}/sdk", """
-                |import endpoint
+                |from . import endpoint
                 |
                 |class Sdk(
                 |${module.statements.filterIsInstance<Endpoint>().joinToString(",\n") {endpoint ->  "endpoint.${emit(endpoint.identifier)}.Handler" }.spacer(1)}
