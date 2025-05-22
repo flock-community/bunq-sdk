@@ -61,7 +61,7 @@ jobs:
         run: |
           ./gradlew :packages:python:wirespec
       - name: install
-        working-directory: ./packages/python
+        working-directory: packages/python
         run: |
           pip install -r requirements.txt
           pip install mypy
@@ -71,7 +71,7 @@ jobs:
         run: |
           mypy .
       - name: test
-        working-directory: ./packages/python/src
+        working-directory: packages/python/src
         run: |
           python -m unittest ./sdk_test.py
           python -m unittest ./signing_test.py
@@ -87,18 +87,18 @@ jobs:
         with:
           node-version: 20
       - name: install
-        working-directory: ./npm
+        working-directory: packages/npm
         run: |
           npm install
       - name: generate
-        working-directory: ./npm
+        working-directory: packages/npm
         run: |
           npm run generate
       - name: compile
-        working-directory: ./npm
+        working-directory: packages/npm
         run: |
           npm run compile
       - name: test
-        working-directory: ./npm
+        working-directory: packages/npm
         run: |
           npm test
