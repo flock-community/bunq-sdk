@@ -12,8 +12,8 @@ class SigningTest {
         val config = Config(
             serviceName = "",
             apiKey = "",
-            publicKeyFile = File("../public_key.pem"),
-            privateKeyFile = File("../private_key.pem"),
+            publicKeyFile = File("../../public_key.pem"),
+            privateKeyFile = File("../../private_key.pem"),
 
         )
         val signing = Signing(config)

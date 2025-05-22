@@ -6,11 +6,14 @@ import com.bunq.sdk.generated.endpoint.READ_User
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.test.assertEquals
 
 private val config = Config(
     apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
-    serviceName = "PeterScript"
+    serviceName = "PeterScript",
+    publicKeyFile = File("../../public_key.pem"),
+    privateKeyFile = File("../../private_key.pem"),
 )
 
 class ApiTest {

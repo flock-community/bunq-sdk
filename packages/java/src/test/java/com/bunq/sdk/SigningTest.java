@@ -10,8 +10,8 @@ public class SigningTest {
 
     @Test
     public void testSigning() {
-        File privateKeyFile = new File("../private_key.pem");
-        File publicKeyFile = new File("../public_key.pem");
+        File privateKeyFile = new File("../../private_key.pem");
+        File publicKeyFile = new File("../../public_key.pem");
 
         Config config = new Config(
                 "",

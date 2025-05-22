@@ -1,5 +1,6 @@
 import arrow.core.NonEmptyList
 import community.flock.wirespec.compiler.core.emit.PythonEmitter
+import community.flock.wirespec.compiler.core.emit.common.EmitShared
 import community.flock.wirespec.compiler.core.emit.common.Emitted
 import community.flock.wirespec.compiler.core.emit.common.PackageName
 import community.flock.wirespec.compiler.core.parse.Endpoint
@@ -36,7 +37,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     shared = true
 }
 
-class SdkPythonEmitter(val packageName: PackageName): PythonEmitter(packageName) {
+class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): PythonEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
             .let { it + Emitted("${packageName.toDir()}/sdk", """
