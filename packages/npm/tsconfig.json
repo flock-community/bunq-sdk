@@ -5,5 +5,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./lib",
-  }
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*", "test/**/*"]
 }
