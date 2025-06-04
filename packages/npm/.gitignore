@@ -2,3 +2,5 @@ private_key.pem
 public_key.pem
 
 src/Openapi.ts
+
+lib
