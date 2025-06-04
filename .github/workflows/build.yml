@@ -82,18 +82,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: generate
+        run: |
+          ./gradlew :packages:python:wirespec
       - name: install
         working-directory: packages/npm
         run: |
           npm install
-      - name: generate
-        working-directory: packages/npm
-        run: |
-          npm run generate
       - name: compile
         working-directory: packages/npm
         run: |
