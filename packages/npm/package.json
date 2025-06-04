@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest",
-    "generate": "wirespec convert OpenAPIV3 -i ../../openapi.json -o src -l TypeScript --strict",
+    "generate": "wirespec convert OpenAPIV3 -i ../../openapi.json -o src -l TypeScript -p '' --strict",
     "compile": "tsc"
   },
   "dependencies": {
