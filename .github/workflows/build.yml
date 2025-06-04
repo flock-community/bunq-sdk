@@ -92,7 +92,7 @@ jobs:
           node-version: 20
       - name: generate
         run: |
-          ./gradlew :packages:python:wirespec
+          ./gradlew :packages:npm:wirespec
       - name: install
         working-directory: packages/npm
         run: |
