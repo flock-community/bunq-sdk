@@ -22,14 +22,14 @@ buildscript {
 }
 
 tasks.register<ConvertWirespecTask>("wirespec") {
-    output = layout.projectDirectory.dir("src")
+    output = layout.projectDirectory.dir("src/gen")
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "api"
     emitterClass = SdkTypeScriptEmitter::class.java
     format = Format.OpenAPIV3
     strict = true
     shared = true
-    preProcessor = { it -> it }
+    preProcessor = OpenApiPreProcessor
 }
 
 class SdkTypeScriptEmitter(emitShared: EmitShared) : TypeScriptEmitter(emitShared) {

@@ -1,6 +1,7 @@
 private_key.pem
 public_key.pem
 
-src/Openapi.ts
+src/gen/endpoint
+src/gen/model
 
 lib

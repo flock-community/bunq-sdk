@@ -1,21 +1,5 @@
-import {
-    CREATE_DeviceServer,
-    CREATE_Installation,
-    CREATE_SessionServer,
-    READ_User,
-    List_all_MonetaryAccountBank_for_User,
-    Wirespec
-} from "./Openapi";
+import {Wirespec} from "./gen/Wirespec";
 import {loadRsaKeyPair, signData, verifyResponse} from "./signing";
-import {Context} from "./context";
-
-type Client =
-    CREATE_Installation.Handler &
-    CREATE_DeviceServer.Handler &
-    CREATE_SessionServer.Handler &
-    READ_User.Handler &
-    List_all_MonetaryAccountBank_for_User.Handler
-
 
 function headersIteratorToRecord(headersIterator: Headers): Record<string, string> {
     const record: Record<string, string> = {};
@@ -25,7 +9,7 @@ function headersIteratorToRecord(headersIterator: Headers): Record<string, strin
     return record;
 }
 
-const serialization: Wirespec.Serialization = {
+export const serialization: Wirespec.Serialization = {
     deserialize<T>(raw: string | undefined): T {
         if (raw === undefined) {
             return undefined as T;
@@ -53,28 +37,14 @@ const serialization: Wirespec.Serialization = {
     }
 };
 
-const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Response<any>>(context:Context | undefined, client: Wirespec.Client<Req, Res>) => async (request: Req): Promise<Res> => {
-    const rawRequest = client(serialization).to(request);
+export const rawHandler: (rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (rawRequest) => {
     const url = "https://public-api.sandbox.bunq.com/v1/" + rawRequest.path.join("/")
-
     const [privateKey, _] = await loadRsaKeyPair()
     const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  signData(rawRequest.body, privateKey)} : {}
     const headers: Record<string, string> = {
         ...rawRequest.headers,
         ...signatureHeader,
     }
-
-    if(headers['X-Bunq-Client-Authentication'] === ''){
-        delete headers['X-Bunq-Client-Authentication']
-        delete headers['X-Bunq-Client-Signature']
-    }
-
-    if(!headers['X-Bunq-Geolocation'])
-        delete headers['X-Bunq-Geolocation']
-
-    if(!headers['X-Bunq-Region'])
-        delete headers['X-Bunq-Region']
-
     const options = {
         method: rawRequest.method,
         body: rawRequest.body,
@@ -84,11 +54,11 @@ const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Res
         const raw = await res.text()
 
         const serverSignature = res.headers.get('X-Bunq-Server-Signature')
-        if(serverSignature && context) {
-            if(!await verifyResponse(raw, serverSignature, context.serverPublicKey)){
-                throw new Error("Response not verified")
-            }
-        }
+        // if(serverSignature && context) {
+        //     if(!await verifyResponse(raw, serverSignature, context.serverPublicKey)){
+        //         throw new Error("Response not verified")
+        //     }
+        // }
 
         const rawResponse: Wirespec.RawResponse = {
             body: raw,
@@ -96,14 +66,11 @@ const handleFetch = <Req extends Wirespec.Request<any>, Res extends Wirespec.Res
             status: res.status
         }
 
-        return client(serialization).from(rawResponse)
+        return rawResponse
     })
+}
+export const handler = <Req extends Wirespec.Request<any>, Res extends Wirespec.Response<any>>(client: Wirespec.Client<Req, Res>) => async (request: Req): Promise<Res> => {
+    const rawRequest = client(serialization).to(request);
+    const rawResponse = await rawHandler(rawRequest)
+    return client(serialization).from(rawResponse)
 };
-
-export const client: (context?:Context) => Client = (context) => ({
-    cREATE_Installation: handleFetch(context, CREATE_Installation.client),
-    cREATE_DeviceServer: handleFetch(context, CREATE_DeviceServer.client),
-    cREATE_SessionServer: handleFetch(context, CREATE_SessionServer.client),
-    rEAD_User: handleFetch(context, READ_User.client),
-    list_all_MonetaryAccountBank_for_User: handleFetch(context, List_all_MonetaryAccountBank_for_User.client)
-});

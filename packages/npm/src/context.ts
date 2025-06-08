@@ -1,13 +1,17 @@
 import {loadRsaKeyPair} from "./signing";
 import {
-    CREATE_DeviceServer,
-    CREATE_Installation,
-    CREATE_SessionServer,
     DeviceServer,
     Installation,
     SessionServer
-} from "./Openapi";
-import {client} from "./client";
+} from "./gen/model";
+import {
+    CREATE_DeviceServer,
+    CREATE_Installation,
+    CREATE_SessionServer,
+} from "./gen/endpoint";
+import {rawHandler, serialization} from "./wirespec";
+import {Wirespec} from "./gen/Wirespec";
+import RawRequest = Wirespec.RawRequest;
 
 
 export type Context = {
@@ -47,42 +51,11 @@ export async function createContext (apiKey:string, serverName:string):Promise<C
 
 const createInstallation = async (serverName: string,) => {
     const [_, publicKeyPem] = await loadRsaKeyPair()
-    const body: Installation = {
-        client_public_key: publicKeyPem
-    }
-    const req = CREATE_Installation.request({
-        "Cache-Control": undefined,
-        "X-Bunq-Client-Request-Id": undefined,
-        "X-Bunq-Geolocation": undefined,
-        "X-Bunq-Language": undefined,
-        "X-Bunq-Region": undefined,
-        "X-Bunq-Client-Authentication": "",
-        "User-Agent": serverName,
-        body
-    })
-    const res = await client().cREATE_Installation(req)
-    if (res.status === 200) {
-        return res.body
-    } else {
-        throw new Error("Installation failed")
-    }
-}
-
-const createSessionServer = async (serverName: string, apiKey: string, token: string) => {
-    const body: SessionServer = {
-        secret: apiKey,
-    }
-    const req = CREATE_SessionServer.request({
-        "Cache-Control": undefined,
-        "X-Bunq-Client-Request-Id": undefined,
-        "X-Bunq-Geolocation": undefined,
-        "X-Bunq-Language": undefined,
-        "X-Bunq-Region": undefined,
-        "X-Bunq-Client-Authentication": token,
-        "User-Agent": serverName,
-        body
-    })
-    const res = await client().cREATE_SessionServer(req)
+    const body: Installation = {client_public_key: publicKeyPem}
+    const req = CREATE_Installation.request({body})
+    const rawReq = CREATE_Installation.client(serialization).to(req)
+    const rawRes = await rawHandler(rawReq)
+    const res = CREATE_Installation.client(serialization).from(rawRes)
     if (res.status === 200) {
         return res.body
     } else {
@@ -96,17 +69,40 @@ const createDeviceServer = async (serverName: string, apiKey: string, token: str
         secret: apiKey,
         permitted_ips: ["*"]
     }
-    const req = CREATE_DeviceServer.request({
-        "Cache-Control": undefined,
-        "X-Bunq-Client-Request-Id": undefined,
-        "X-Bunq-Geolocation": undefined,
-        "X-Bunq-Language": undefined,
-        "X-Bunq-Region": undefined,
-        "X-Bunq-Client-Authentication": token,
-        "User-Agent": serverName,
-        body
-    })
-    const res = await client().cREATE_DeviceServer(req)
+    const req = CREATE_DeviceServer.request({body})
+    const rawReq = CREATE_DeviceServer.client(serialization).to(req)
+    const authReq: Wirespec.RawRequest = {
+        ...rawReq,
+        headers:{
+            ...rawReq.headers,
+            "X-Bunq-Client-Authentication": token,
+        }
+    }
+    const rawRes = await rawHandler(authReq)
+    const res = CREATE_DeviceServer.client(serialization).from(rawRes)
+    if (res.status === 200) {
+        return res.body
+    } else {
+        throw new Error("Installation failed")
+    }
+}
+
+const createSessionServer = async (serverName: string, apiKey: string, token: string) => {
+    const body: SessionServer = {
+        secret: apiKey,
+    }
+    const req = CREATE_SessionServer.request({body})
+    const rawReq = CREATE_SessionServer.client(serialization).to(req)
+    const authReq: Wirespec.RawRequest = {
+        ...rawReq,
+        headers:{
+            ...rawReq.headers,
+            "UserAgent": serverName,
+            "X-Bunq-Client-Authentication": token,
+        }
+    }
+    const rawRes = await rawHandler(authReq)
+    const res = CREATE_SessionServer.client(serialization).from(rawRes)
     if (res.status === 200) {
         return res.body
     } else {
