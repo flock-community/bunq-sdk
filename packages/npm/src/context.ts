@@ -11,8 +11,6 @@ import {
 } from "./gen/endpoint";
 import {rawHandler, serialization} from "./wirespec";
 import {Wirespec} from "./gen/Wirespec";
-import RawRequest = Wirespec.RawRequest;
-
 
 export type Context = {
     apiKey:string,
