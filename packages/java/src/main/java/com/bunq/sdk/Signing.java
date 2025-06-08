@@ -28,9 +28,9 @@ public class Signing {
 
     public Pair<String, String> generateRsaKeyPair() {
         try {
-            if (config.getPrivateKeyFile().exists() && config.getPublicKeyFile().exists()) {
-                String privateKeyPem = Files.readString(config.getPrivateKeyFile().toPath());
-                String publicKeyPem = Files.readString(config.getPublicKeyFile().toPath());
+            if (config.privateKeyFile().exists() && config.publicKeyFile().exists()) {
+                String privateKeyPem = Files.readString(config.privateKeyFile().toPath());
+                String publicKeyPem = Files.readString(config.publicKeyFile().toPath());
                 return new Pair<>(privateKeyPem, publicKeyPem);
             }
 
@@ -41,8 +41,8 @@ public class Signing {
             String privateKeyPem = convertPrivateKeyToPem(keyPair.getPrivate());
             String publicKeyPem = convertPublicKeyToPem(keyPair.getPublic());
 
-            Files.writeString(config.getPrivateKeyFile().toPath(), privateKeyPem);
-            Files.writeString(config.getPublicKeyFile().toPath(), publicKeyPem);
+            Files.writeString(config.privateKeyFile().toPath(), privateKeyPem);
+            Files.writeString(config.publicKeyFile().toPath(), publicKeyPem);
 
             System.out.println("bunq - creating new keypair [KEEP THESE FILES SAFE]");
             return new Pair<>(privateKeyPem, publicKeyPem);
@@ -68,7 +68,7 @@ public class Signing {
     }
 
     private PrivateKey loadPrivateKey() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-        String privateKeyPem = Files.readString(config.getPrivateKeyFile().toPath());
+        String privateKeyPem = Files.readString(config.privateKeyFile().toPath());
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "BC");
         PemObject pemContent = new PemReader(new StringReader(privateKeyPem)).readPemObject();
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(pemContent.getContent());
@@ -76,7 +76,7 @@ public class Signing {
     }
 
     private PublicKey loadPublicKey() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-        String publicKeyPem = Files.readString(config.getPublicKeyFile().toPath());
+        String publicKeyPem = Files.readString(config.publicKeyFile().toPath());
         KeyFactory keyFactory = KeyFactory.getInstance("RSA", "BC");
         PemObject pemContent = new PemReader(new StringReader(publicKeyPem)).readPemObject();
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(pemContent.getContent());

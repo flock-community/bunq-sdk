@@ -79,14 +79,14 @@ public class Context {
         Signing signing = new Signing(config);
 
         try {
-            InstallationCreate installation = createInstallation(signing, config.getServiceName(), signing.generateRsaKeyPair().getSecond()).get();
+            InstallationCreate installation = createInstallation(signing, config.serviceName(), signing.generateRsaKeyPair().getSecond()).get();
             var installationToken = Optional.ofNullable(installation.Token()).flatMap(it -> it).flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
 
 
-            DeviceServerCreate deviceServer = createDeviceServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
-            SessionServerCreate serverSession = createSessionServer(signing, config.getServiceName(), config.getApiKey(), installationToken).get();
+            DeviceServerCreate deviceServer = createDeviceServer(signing, config.serviceName(), config.apiKey(), installationToken).get();
+            SessionServerCreate serverSession = createSessionServer(signing, config.serviceName(), config.apiKey(), installationToken).get();
 
-            return new Context(config.getApiKey(), config.getServiceName(), installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")), deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")), serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")), serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")), serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));
+            return new Context(config.apiKey(), config.serviceName(), installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")), deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")), serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")), serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")), serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));
 
         } catch (Exception e) {
             throw new RuntimeException(e);

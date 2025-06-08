@@ -1,13 +1,11 @@
 import arrow.core.NonEmptyList
 import community.flock.wirespec.compiler.core.emit.KotlinEmitter
-import community.flock.wirespec.compiler.core.emit.PythonEmitter
 import community.flock.wirespec.compiler.core.emit.common.EmitShared
 import community.flock.wirespec.compiler.core.emit.common.Emitted
 import community.flock.wirespec.compiler.core.emit.common.PackageName
 import community.flock.wirespec.compiler.core.parse.Endpoint
 import community.flock.wirespec.compiler.core.parse.Module
 import community.flock.wirespec.plugin.Format
-import community.flock.wirespec.plugin.Language
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
@@ -23,7 +21,7 @@ repositories {
     mavenLocal()
 }
 
-dependencies{
+dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+")
@@ -33,7 +31,6 @@ dependencies{
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
-
 }
 
 sourceSets {
@@ -69,32 +66,49 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     format = Format.OpenAPIV3
     strict = true
     shared = true
+    preProcessor = OpenApiPreProcessor
 }
 
 tasks.named("compileKotlin") {
     dependsOn("wirespec")
 }
 
-class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared): KotlinEmitter(packageName, emitShared) {
+class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
-            .let { it + Emitted("${packageName.toDir()}/Sdk", """
-                |package ${packageName.value}
-                |
-                |import community.flock.wirespec.kotlin.Wirespec
-                |
-                |${module.emitEndpoint("\n"){endpoint ->  "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
-                |
-                |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ): ${module.emitEndpoint(","){endpoint ->  "${emit(endpoint.identifier)}.Handler" }}{
-                |${module.emitEndpoint("\n"){endpoint ->  "override suspend fun ${emit(endpoint.identifier).firstToLower()}(req :${emit(endpoint.identifier)}.Request) = handler(req) as ${emit(endpoint.identifier)}.Response<*>" }.spacer(1)}
-                |}
-                |
-            """.trimMargin()) }
+            .let {
+                it + Emitted(
+                    "${packageName.toDir()}/Sdk",
+                    """
+                        |package ${packageName.value}
+                        |
+                        |import community.flock.wirespec.kotlin.Wirespec
+                        |
+                        |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
+                        |
+                        |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value}" }}
+                        |
+                        |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ){
+                        |${module.emitEndpointRequest("\n") { (endpoint, request) -> emitFunction(endpoint, request) }.spacer(1)}
+                        |}
+                        |
+                    """.trimMargin()
+                )
+            }
     }
 
-    fun Module.emitEndpoint(separator: CharSequence, emit:(Endpoint) -> String) = statements
-        .filterIsInstance<Endpoint>()
-        .joinToString(separator){emit(it)}
+    fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
+        this.paramList(endpoint).joinToString(", ") { "${emit(it.identifier)}: ${it.reference.emit()}" }
+
+    fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
+        |suspend fun ${emit(endpoint.identifier).firstToLower()}(${request.emitSdkInterface(endpoint)}) = 
+        |   ${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
+        |     .let{req -> handler(req) as ${emit(endpoint.identifier)}.Response<*> }
+    """.trimMargin()
+
+    fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =
+        statements
+            .filterIsInstance<Endpoint>()
+            .flatMap { endpoint -> endpoint.requests.map { request -> Pair(endpoint, request) } }
+            .joinToString(separator) { endpointRequest -> emit(endpointRequest) }
 }
-
-

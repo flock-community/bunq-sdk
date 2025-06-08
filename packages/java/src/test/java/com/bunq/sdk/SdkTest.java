@@ -27,12 +27,12 @@ public class SdkTest {
         READ_User.Request req = new READ_User.Request(
                 context.getUserId(),
                 Optional.empty(),
-                config.getServiceName(),
+                config.serviceName(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                config.getApiKey()
+                config.apiKey()
         );
 
         READ_User.Response<?> res = sdk.rEAD_User(req).get();
@@ -50,7 +50,7 @@ public class SdkTest {
         List_all_MonetaryAccountBank_for_User.Request req = new List_all_MonetaryAccountBank_for_User.Request(
                 context.getUserId(),
                 Optional.empty(),
-                config.getServiceName(),
+                config.serviceName(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),

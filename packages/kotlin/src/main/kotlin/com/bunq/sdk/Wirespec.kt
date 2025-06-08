@@ -4,8 +4,6 @@ package com.bunq.sdk
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
@@ -27,7 +25,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 val serialization: Wirespec.Serialization<String> =
     object : Wirespec.Serialization<String>, ParamSerialization by DefaultParamSerialization() {
         override fun <T> serialize(t: T, kType: KType): String {
-            if(t is Unit) return ""
+            if (t is Unit) return ""
             return objectMapper.writeValueAsString(t)
         }
 
@@ -37,9 +35,9 @@ val serialization: Wirespec.Serialization<String> =
 
             val json = if (kType.classifier == List::class) {
                 response.filterIsInstance<ObjectNode>().fold(objectMapper.createArrayNode()) { acc, jsonNode ->
-                    acc.addAll(jsonNode.fieldNames().asSequence().map{ jsonNode.get(it) }.toList())
+                    acc.addAll(jsonNode.fieldNames().asSequence().map { jsonNode.get(it) }.toList())
                 }
-            }else {
+            } else {
                 response.filterIsInstance<ObjectNode>().reduce { acc, jsonNode ->
                     acc.apply { setAll<ObjectNode>(jsonNode) }
                 }
@@ -71,7 +69,7 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .flatMap { listOf(it.first, it.second) }.toTypedArray()
         .let {
             // Sign request
-            if(req.body != null){
+            if (req.body != null) {
                 it + arrayOf("X-Bunq-Client-Signature", signing.signData(req.body!!))
             } else {
                 it
@@ -80,9 +78,10 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
 
     val requestBuilder = java.net.http.HttpRequest.newBuilder()
         .uri(uri)
-        .method(req.method.uppercase(), req.body
-            ?.let { java.net.http.HttpRequest.BodyPublishers.ofString(it) }
-            ?: java.net.http.HttpRequest.BodyPublishers.noBody())
+        .method(
+            req.method.uppercase(), req.body
+                ?.let { java.net.http.HttpRequest.BodyPublishers.ofString(it) }
+                ?: java.net.http.HttpRequest.BodyPublishers.noBody())
         .headers(*headers)
 
     // Send HTTP request
@@ -96,15 +95,39 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
     )
 }
 
-fun <Req: Wirespec.Request<*>, Res:Wirespec.Response<*> >handle(signing: Signing, context: Context, request:Req): Res{
+fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
+    "X-Bunq-Client-Authentication" to sessionToken,
+    userAgent?.let { "UserAgent" to it },
+    cacheControl?.let { "CacheControl" to it },
+    language?.let { "X-Bunq-Language" to it },
+    region?.let { "X-Bunq-Region" to it },
+    clientRequestId?.let { "X-Bunq-Client-Request-Id" to it },
+    geolocation?.let { "X-Bunq-GeoLocation" to it },
+)
+    .toMap()
+    .mapValues { (_, value) -> listOf(value) }
+
+fun <Req : Wirespec.Request<*>, Res : Wirespec.Response<*>> handle(
+    signing: Signing,
+    context: Context,
+    request: Req
+): Res {
     val declaringClass = request::class.java.declaringClass
-    val handler = declaringClass.declaredClasses.toList().find { it.simpleName == "Handler" } ?: error("Handler not found")
+    val handler =
+        declaringClass.declaredClasses.toList().find { it.simpleName == "Handler" } ?: error("Handler not found")
     val instance = handler.kotlin.companionObjectInstance as Wirespec.Client<Wirespec.Request<*>, Wirespec.Response<*>>
     val client = instance.client(serialization)
     val rawRequest = client.to(request as Wirespec.Request<*>)
-    val reqToken = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(context.sessionToken)))
+    val reqToken = rawRequest.copy(headers = rawRequest.headers + context.toHeaders())
     val rawResponse = send(signing, reqToken)
     return client.from(rawResponse) as Res
 }
 
-fun handler(signing: Signing, context: Context):(Wirespec.Request<*>) -> Wirespec.Response<*> = {req -> handle(signing,context,req)}
+fun handler(signing: Signing, context: Context): (Wirespec.Request<*>) -> Wirespec.Response<*> =
+    { req -> handle(signing, context, req) }
+
+fun handler(config: Config): (Wirespec.Request<*>) -> Wirespec.Response<*> {
+    val signing = Signing(config)
+    val context = initContext(config)
+    return { req -> handle(signing, context, req) }
+}

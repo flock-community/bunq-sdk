@@ -23,24 +23,11 @@ class ApiTest {
         val signing = Signing(config)
         val context = initContext(config)
         val sdk = Sdk(handler(signing, context))
-
-        val req = READ_User.Request(
-            itemId = context.userId,
-            CacheControl = null,
-            UserAgent = config.serviceName,
-            XBunqLanguage = null,
-            XBunqRegion = null,
-            XBunqClientRequestId = null,
-            XBunqGeolocation = null,
-            XBunqClientAuthentication = config.apiKey
-        )
-        val res = sdk.rEAD_User(req)
-
+        val res = sdk.rEAD_User(context.userId,)
         val body = when (res) {
             is READ_User.Response200 -> res.body
             is READ_User.Response400 -> error("Cannot read user")
         }
-
         assertEquals("Donald Byrne", body.UserPerson?.legal_name)
     }
 
@@ -50,26 +37,12 @@ class ApiTest {
         val signing = Signing(config)
         val context = initContext(config)
         val sdk = Sdk(handler(signing, context))
-
-        val req = List_all_MonetaryAccountBank_for_User.Request(
-            context.userId,
-            null,
-            config.serviceName,
-            null,
-            null,
-            null,
-            null,
-            context.sessionToken,
-        )
-
         val res: List_all_MonetaryAccountBank_for_User.Response<*> =
-            sdk.list_all_MonetaryAccountBank_for_User(req)
-
+            sdk.list_all_MonetaryAccountBank_for_User(context.userId)
         if (res is List_all_MonetaryAccountBank_for_User.Response200) {
             Assertions.assertEquals("D. Byrne", res.body[0].display_name)
         } else {
             throw RuntimeException("Cannot list monetary accounts")
         }
     }
-
 }

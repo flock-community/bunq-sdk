@@ -17,7 +17,13 @@ data class Context(
     val deviceId: Long,
     val sessionId: Long,
     val sessionToken: String,
-    val userId: Long
+    val userId: Long,
+    val userAgent: String? = null,
+    val cacheControl: String? = null,
+    val language: String? = null,
+    val region: String? = null,
+    val clientRequestId: String? = null,
+    val geolocation: String? = null,
 )
 
 fun initContext(config: Config): Context {
@@ -29,13 +35,6 @@ fun initContext(config: Config): Context {
             client_public_key = publicKeyPem
         )
         val request = CREATE_Installation.Request(
-            CacheControl = null,
-            UserAgent = serviceName,
-            XBunqLanguage = null,
-            XBunqRegion = null,
-            XBunqClientRequestId = null,
-            XBunqGeolocation = null,
-            XBunqClientAuthentication = "",
             body = body,
         )
 
@@ -49,26 +48,20 @@ fun initContext(config: Config): Context {
         }
     }
 
-     fun createDeviceServer(serviceName: String, apiKey: String, token: String): DeviceServerCreate {
+    fun createDeviceServer(serviceName: String, apiKey: String, token: String): DeviceServerCreate {
         val body = DeviceServer(
             description = serviceName,
             secret = apiKey,
             permitted_ips = listOf("*")
         )
         val request = CREATE_DeviceServer.Request(
-            CacheControl = null,
-            UserAgent = serviceName,
-            XBunqLanguage = null,
-            XBunqRegion = null,
-            XBunqClientRequestId = null,
-            XBunqGeolocation = null,
-            XBunqClientAuthentication = token,
             body = body,
         )
 
         val rawRequest = CREATE_DeviceServer.toRequest(serialization, request)
-        val rawResponse = send(signing, rawRequest)
-        val res =  CREATE_DeviceServer.fromResponse(serialization, rawResponse)
+        val authRequest = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(token)))
+        val rawResponse = send(signing, authRequest)
+        val res = CREATE_DeviceServer.fromResponse(serialization, rawResponse)
 
         when (res) {
             is CREATE_DeviceServer.Response200 -> return res.body
@@ -76,23 +69,18 @@ fun initContext(config: Config): Context {
         }
     }
 
-     fun createSessionServer(serviceName: String, apiKey: String, token: String): SessionServerCreate {
+    fun createSessionServer(serviceName: String, apiKey: String, token: String): SessionServerCreate {
         val body = SessionServer(
             secret = apiKey,
         )
         val request = CREATE_SessionServer.Request(
-            CacheControl = null,
-            UserAgent = serviceName,
-            XBunqLanguage = null,
-            XBunqRegion = null,
-            XBunqClientRequestId = null,
-            XBunqGeolocation = null,
-            XBunqClientAuthentication = token,
             body = body,
         )
 
         val rawRequest = CREATE_SessionServer.toRequest(serialization, request)
-        val rawResponse = send(signing, rawRequest)
+        val authRequest = rawRequest.copy(headers = rawRequest.headers + ("UserAgent" to listOf(serviceName)) +  ("X-Bunq-Client-Authentication" to listOf(token)))
+        val rawResponse = send(signing, authRequest)
+
         val res = CREATE_SessionServer.fromResponse(serialization, rawResponse)
 
         when (res) {
@@ -113,6 +101,12 @@ fun initContext(config: Config): Context {
         deviceId = deviceServer.Id?.id ?: error("No device id"),
         sessionId = serverSession.Id?.id ?: error("No session id"),
         sessionToken = serverSession.Token?.token ?: error("No session token"),
-        userId = serverSession.UserPerson?.id ?: error("No user id")
+        userId = serverSession.UserPerson?.id ?: error("No user id"),
+        userAgent = config.userAgent,
+        cacheControl = config.cacheControl,
+        language = config.language,
+        region = config.region,
+        clientRequestId = config.clientRequestId,
+        geolocation = config.geolocation,
     )
 }

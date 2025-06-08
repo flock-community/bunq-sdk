@@ -62,6 +62,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     format = Format.OpenAPIV3
     strict = true
     shared = true
+    preProcessor = { it -> it }
 }
 
 tasks.named("compileJava") {
