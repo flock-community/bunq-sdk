@@ -19,6 +19,8 @@ import community.flock.wirespec.java.Wirespec.RawRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -79,7 +81,7 @@ public class Context {
         Signing signing = new Signing(config);
 
         try {
-            InstallationCreate installation = createInstallation(signing, config.serviceName(), signing.generateRsaKeyPair().getSecond()).get();
+            InstallationCreate installation = createInstallation(signing, config.serviceName(), signing.generateRsaKeyPair().publicKey()).get();
             var installationToken = Optional.ofNullable(installation.Token()).flatMap(it -> it).flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
 
 
@@ -104,7 +106,7 @@ public class Context {
     private static CompletableFuture<InstallationCreate> createInstallation(Signing signing, String serviceName, String publicKeyPem) {
         Installation body = new Installation(publicKeyPem);
 
-        CREATE_Installation.Request request = new CREATE_Installation.Request(Optional.empty(), serviceName, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), "", body);
+        CREATE_Installation.Request request = new CREATE_Installation.Request(body);
 
         RawRequest rawRequest = CREATE_Installation.Handler.toRequest(serialization, request);
         return send(signing, rawRequest).thenApply(rawResponse -> {
@@ -122,13 +124,18 @@ public class Context {
     private static CompletableFuture<DeviceServerCreate> createDeviceServer(Signing signing, String serviceName, String apiKey, String token) {
         DeviceServer body = new DeviceServer(serviceName, apiKey, Optional.of(Collections.singletonList("*")));
 
-        CREATE_DeviceServer.Request request = new CREATE_DeviceServer.Request(Optional.empty(), serviceName, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), token, body);
+        CREATE_DeviceServer.Request request = new CREATE_DeviceServer.Request(body);
 
-        RawRequest rawRequest = CREATE_DeviceServer.Handler.toRequest(serialization, request);
-        return send(signing, rawRequest).thenApply(rawResponse -> {
-
+        var rawRequest = CREATE_DeviceServer.Handler.toRequest(serialization, request);
+        var authRequest = new RawRequest(
+                rawRequest.method(),
+                rawRequest.path(),
+                rawRequest.queries(),
+                Map.of("X-Bunq-Client-Authentication", List.of(token)),
+                rawRequest.body()
+        );
+        return send(signing, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_DeviceServer.Handler.fromResponse(serialization, rawResponse);
-
             if (response instanceof CREATE_DeviceServer.Response200) {
                 return ((CREATE_DeviceServer.Response200) response).getBody();
             } else if (response instanceof CREATE_DeviceServer.Response400) {
@@ -142,15 +149,20 @@ public class Context {
     private static CompletableFuture<SessionServerCreate> createSessionServer(Signing signing, String serviceName, String apiKey, String token) {
         SessionServer body = new SessionServer(apiKey);
 
-        CREATE_SessionServer.Request request = new CREATE_SessionServer.Request(Optional.empty(), serviceName, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), token, body
-
-        );
-
+        CREATE_SessionServer.Request request = new CREATE_SessionServer.Request(body);
         RawRequest rawRequest = CREATE_SessionServer.Handler.toRequest(serialization, request);
-        return send(signing, rawRequest).thenApply(rawResponse -> {
-
+        var authRequest = new RawRequest(
+                rawRequest.method(),
+                rawRequest.path(),
+                rawRequest.queries(),
+                Map.of(
+                        "UserAgent", List.of(serviceName),
+                        "X-Bunq-Client-Authentication", List.of(token)
+                ),
+                rawRequest.body()
+        );
+        return send(signing, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_SessionServer.Handler.fromResponse(serialization, rawResponse);
-
             if (response instanceof CREATE_SessionServer.Response200) {
                 return ((CREATE_SessionServer.Response200) response).getBody();
             } else if (response instanceof CREATE_SessionServer.Response400) {

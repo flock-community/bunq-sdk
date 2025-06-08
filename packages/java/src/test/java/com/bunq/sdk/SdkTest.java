@@ -23,20 +23,7 @@ public class SdkTest {
 
     @Test
     public void testREADUser() throws Exception {
-
-        READ_User.Request req = new READ_User.Request(
-                context.getUserId(),
-                Optional.empty(),
-                config.serviceName(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                config.apiKey()
-        );
-
-        READ_User.Response<?> res = sdk.rEAD_User(req).get();
-
+        READ_User.Response<?> res = sdk.rEAD_User(context.getUserId()).get();
         if (res instanceof READ_User.Response200 response) {
             assertEquals("Donald Byrne", response.getBody().UserPerson().flatMap(UserPerson::legal_name).orElseThrow());
         } else if (res instanceof READ_User.Response400) {
@@ -46,20 +33,7 @@ public class SdkTest {
 
     @Test
     public void testListAllMonetaryAccountBankForUser() throws Exception {
-
-        List_all_MonetaryAccountBank_for_User.Request req = new List_all_MonetaryAccountBank_for_User.Request(
-                context.getUserId(),
-                Optional.empty(),
-                config.serviceName(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                Optional.empty(),
-                context.getSessionToken()
-        );
-
-        List_all_MonetaryAccountBank_for_User.Response<?> res = sdk.list_all_MonetaryAccountBank_for_User(req).get();
-
+        List_all_MonetaryAccountBank_for_User.Response<?> res = sdk.list_all_MonetaryAccountBank_for_User(context.getUserId()).get();
         if (res instanceof List_all_MonetaryAccountBank_for_User.Response200 response) {
             assertEquals("D. Byrne", response.getBody().get(0).display_name().orElseThrow());
         } else {

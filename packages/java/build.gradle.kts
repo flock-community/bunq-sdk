@@ -62,7 +62,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     format = Format.OpenAPIV3
     strict = true
     shared = true
-    preProcessor = { it -> it }
+    preProcessor = OpenApiPreProcessor
 }
 
 tasks.named("compileJava") {
@@ -78,9 +78,11 @@ class SdkJavaEmitter(val packageName: PackageName, emitShared: EmitShared) : Jav
                 |
                 |import community.flock.wirespec.java.Wirespec;
                 |
-                |${module.emitEndpoint("\n") { endpoint -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)};" }}
+                |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)};" }}
                 |
-                |public class Sdk implements ${module.emitEndpoint(",") { endpoint -> "${emit(endpoint.identifier)}.Handler" }} {
+                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value};" }}   
+                |
+                |public class Sdk {
                 |${Spacer}private final java.util.function.Function<Wirespec.Request<?>, java.util.concurrent.CompletableFuture<Wirespec.Response<?>>> handler;
                 |
                 |${Spacer}public Sdk(java.util.function.Function<Wirespec.Request<?>, java.util.concurrent.CompletableFuture<Wirespec.Response<?>>> handler) {
@@ -91,21 +93,32 @@ class SdkJavaEmitter(val packageName: PackageName, emitShared: EmitShared) : Jav
                 |${Spacer(2)}return (java.util.concurrent.CompletableFuture<Res>) this.handler.apply(req);
                 |}
                 |
-                |${module.emitEndpoint("\n") { endpoint -> endpoint.emitMethod() }.spacer(1)}
+                |${module.emitEndpointRequest("\n") { (endpoint, request) -> endpoint.emitMethod(request) }.spacer(1)}
                 |}
             """.trimMargin()
                 )
             )
         }
-        fun Endpoint.emitMethod() = """
-            |@Override 
-            |public java.util.concurrent.CompletableFuture<${emit(identifier)}.Response<?>> ${emit(identifier).firstToLower()}(${emit(identifier)}.Request req) {
+        fun Endpoint.emitMethod(request: Endpoint.Request) = """
+            |public java.util.concurrent.CompletableFuture<${emit(identifier)}.Response<?>> ${emit(identifier).firstToLower()}(${request.emitSdkInterface(this)}) {
+            |${Spacer}var req = new ${emit(identifier)}.Request(${request.paramList(this).joinToString(", ") { emit(it.identifier) }});
             |${Spacer}return handle(req); 
             |}
             |
         """.trimMargin()
 
-    fun Module.emitEndpoint(separator: CharSequence, emit: (Endpoint) -> String) = statements
-        .filterIsInstance<Endpoint>()
-        .joinToString(separator) { emit(it) }
+    fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
+        this.paramList(endpoint).joinToString(", ") { "${it.reference.emit()} ${emit(it.identifier)}" }
+
+    fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
+        |suspend fun ${emit(endpoint.identifier).firstToLower()}(${request.emitSdkInterface(endpoint)}) = 
+        |   ${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
+        |     .let{req -> handler(req) as ${emit(endpoint.identifier)}.Response<*> }
+    """.trimMargin()
+
+    fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =
+        statements
+            .filterIsInstance<Endpoint>()
+            .flatMap { endpoint -> endpoint.requests.map { request -> Pair(endpoint, request) } }
+            .joinToString(separator) { endpointRequest -> emit(endpointRequest) }
 }

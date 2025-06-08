@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import community.flock.wirespec.integration.jackson.java.WirespecModuleJava;
+import community.flock.wirespec.java.Wirespec.RawRequest;
+import community.flock.wirespec.java.Wirespec.RawResponse;
+import community.flock.wirespec.java.Wirespec.Serialization;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
 
 import java.io.IOException;
@@ -43,9 +46,9 @@ public class Wirespec {
                 .registerModule(new Jdk8Module());
     }
 
-    public static final community.flock.wirespec.java.Wirespec.Serialization<String> serialization = new BunqSerialization();
+    public static final Serialization<String> serialization = new BunqSerialization();
 
-    public static CompletableFuture<community.flock.wirespec.java.Wirespec.RawResponse> send(Signing signing, community.flock.wirespec.java.Wirespec.RawRequest req) {
+    public static CompletableFuture<RawResponse> send(Signing signing, RawRequest req) {
         HttpClient client = HttpClient.newBuilder().build();
 
         // Build the URI
@@ -96,14 +99,14 @@ public class Wirespec {
                 .headers(headers);
 
         return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
-                .thenApply(response -> new community.flock.wirespec.java.Wirespec.RawResponse(
+                .thenApply(response -> new RawResponse(
                         response.statusCode(),
                         response.headers().map(),
                         response.body()
                 ));
     }
 
-    private static class BunqSerialization implements community.flock.wirespec.java.Wirespec.Serialization<String>, DefaultParamSerialization {
+    private static class BunqSerialization implements Serialization<String>, DefaultParamSerialization {
         @Override
         public <T> String serialize(T t, Type type) {
             if (t == null) {
@@ -203,14 +206,14 @@ public class Wirespec {
                 toMethod.setAccessible(true);
 
                 // Invoke the to method to get the raw request
-                community.flock.wirespec.java.Wirespec.RawRequest rawRequest = (community.flock.wirespec.java.Wirespec.RawRequest) toMethod.invoke(client, request);
+                RawRequest rawRequest = (RawRequest) toMethod.invoke(client, request);
 
                 // Add the authentication header
                 Map<String, List<String>> headers = new HashMap<>(rawRequest.headers());
                 headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.getSessionToken()));
 
                 // Create a new raw request with the updated headers
-                community.flock.wirespec.java.Wirespec.RawRequest reqToken = new community.flock.wirespec.java.Wirespec.RawRequest(
+                RawRequest reqToken = new RawRequest(
                         rawRequest.method(),
                         rawRequest.path(),
                         rawRequest.queries(),
@@ -222,7 +225,7 @@ public class Wirespec {
                 return send(signing, reqToken).thenApply(raw -> {
                             try {
                                 // Get the from method from the client
-                                Method fromMethod = client.getClass().getMethod("from", community.flock.wirespec.java.Wirespec.RawResponse.class);
+                                Method fromMethod = client.getClass().getMethod("from", RawResponse.class);
                                 fromMethod.setAccessible(true);
                                 // Invoke the from method to get the response
                                 return (Res) fromMethod.invoke(client, raw);

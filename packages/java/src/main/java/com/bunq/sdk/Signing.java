@@ -10,7 +10,15 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.Signature;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -26,17 +34,17 @@ public class Signing {
         }
     }
 
-    public Pair<String, String> generateRsaKeyPair() {
+    public KeyPair<String, String> generateRsaKeyPair() {
         try {
             if (config.privateKeyFile().exists() && config.publicKeyFile().exists()) {
                 String privateKeyPem = Files.readString(config.privateKeyFile().toPath());
                 String publicKeyPem = Files.readString(config.publicKeyFile().toPath());
-                return new Pair<>(privateKeyPem, publicKeyPem);
+                return new KeyPair<>(privateKeyPem, publicKeyPem);
             }
 
             KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
             keyPairGenerator.initialize(2048, new SecureRandom());
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            java.security.KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
             String privateKeyPem = convertPrivateKeyToPem(keyPair.getPrivate());
             String publicKeyPem = convertPublicKeyToPem(keyPair.getPublic());
@@ -45,7 +53,7 @@ public class Signing {
             Files.writeString(config.publicKeyFile().toPath(), publicKeyPem);
 
             System.out.println("bunq - creating new keypair [KEEP THESE FILES SAFE]");
-            return new Pair<>(privateKeyPem, publicKeyPem);
+            return new KeyPair<>(privateKeyPem, publicKeyPem);
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate RSA key pair", e);
         }
@@ -119,21 +127,5 @@ public class Signing {
     }
 
     // Simple Pair class since Java doesn't have a built-in Pair class
-    public static class Pair<A, B> {
-        private final A first;
-        private final B second;
-
-        public Pair(A first, B second) {
-            this.first = first;
-            this.second = second;
-        }
-
-        public A getFirst() {
-            return first;
-        }
-
-        public B getSecond() {
-            return second;
-        }
-    }
+    public record KeyPair<A, B>(A privateKey, B publicKey) { }
 }

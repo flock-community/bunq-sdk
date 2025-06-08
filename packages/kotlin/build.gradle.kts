@@ -75,26 +75,21 @@ tasks.named("compileKotlin") {
 
 class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
-        return super.emit(module, logger)
-            .let {
-                it + Emitted(
-                    "${packageName.toDir()}/Sdk",
-                    """
-                        |package ${packageName.value}
-                        |
-                        |import community.flock.wirespec.kotlin.Wirespec
-                        |
-                        |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
-                        |
-                        |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value}" }}
-                        |
-                        |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ){
-                        |${module.emitEndpointRequest("\n") { (endpoint, request) -> emitFunction(endpoint, request) }.spacer(1)}
-                        |}
-                        |
-                    """.trimMargin()
-                )
-            }
+        return super.emit(module, logger) +
+            Emitted("${packageName.toDir()}/Sdk", """
+                |package ${packageName.value}
+                |
+                |import community.flock.wirespec.kotlin.Wirespec
+                |
+                |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
+                |
+                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value}" }}
+                |
+                |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ){
+                |${module.emitEndpointRequest("\n") { (endpoint, request) -> emitFunction(endpoint, request) }.spacer(1)}
+                |}
+                |
+            """.trimMargin())
     }
 
     fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
