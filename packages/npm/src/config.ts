@@ -10,6 +10,8 @@ export type Config = {
     geolocation?: string
 }
 
-export const config: (config: Config) => Config = (config) => ({
-    ...config
+export const initConfig: (config: Config) => Config = (config) => ({
+    ...config,
+    privateKeyFile: config.privateKeyFile ?? 'private_key.pem',
+    publicKeyFile: config.publicKeyFile ?? 'public_key.pem',
 })

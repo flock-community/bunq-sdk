@@ -1,20 +1,24 @@
 import {describe, expect, test} from 'vitest'
-import {createContext} from "../src/context";
+import {initContext} from "../src/context";
 import {initHandler, rawHandler} from "../src/wirespec";
 import {Sdk} from "../src/gen/Sdk";
-
-const serverName = "PeterScript"
-const apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
-
+import {initSigning} from "../src/signing";
+import {initConfig} from "../src/config";
 
 describe("api test", async () => {
-
-    const context = await createContext(apiKey, serverName)
-    const handler = initHandler(context)
+    const config = initConfig({
+        serverName: "PeterScript",
+        apiKey: "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
+        privateKeyFile: "../../private_key.pem",
+        publicKeyFile: "../../public_key.pem",
+    })
+    const signing = await initSigning(config)
+    const context = await initContext(config, signing)
+    const handler = initHandler(signing, context)
     const sdk = Sdk(handler)
 
     test('READ_User', async () => {
-        const res = await sdk.rEAD_User({
+        const res = await sdk.READ_User({
             "itemId": context.userId
         })
         if(res.status === 200) {
@@ -25,7 +29,7 @@ describe("api test", async () => {
     })
 
     test('list_all_MonetaryAccountBank_for_User', async () => {
-        const res = await sdk.list_all_MonetaryAccountBank_for_User({
+        const res = await sdk.List_all_MonetaryAccountBank_for_User({
             "userID": context.userId
         })
         if(res.status === 200) {

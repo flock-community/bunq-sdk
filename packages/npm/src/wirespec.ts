@@ -1,5 +1,5 @@
 import {Wirespec} from "./gen/Wirespec";
-import {loadRsaKeyPair, signData, verifyResponse} from "./signing";
+import {type Signing} from "./signing";
 import {List_all_MonetaryAccountBank_for_User} from "./gen/endpoint";
 import {Context} from "./context";
 
@@ -39,10 +39,10 @@ export const serialization: Wirespec.Serialization = {
     }
 };
 
-export const rawHandler: (rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (rawRequest) => {
+export const rawHandler: (signing: Signing, rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (signing, rawRequest) => {
     const url = "https://public-api.sandbox.bunq.com/v1/" + rawRequest.path.join("/")
-    const [privateKey, _] = await loadRsaKeyPair()
-    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  signData(rawRequest.body, privateKey)} : {}
+    const [privateKey, _] = await signing.loadRsaKeyPair()
+    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  signing.signData(rawRequest.body, privateKey)} : {}
     const headers: Record<string, string> = {
         ...rawRequest.headers,
         ...signatureHeader,
@@ -73,7 +73,7 @@ export const rawHandler: (rawRequest:Wirespec.RawRequest) => Promise<Wirespec.Ra
 }
 
 type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
-export const initHandler: (context: Context) => Handler = (context) => async (client, req) => {
+export const initHandler: (signing: Signing, context: Context) => Handler = (signing, context) => async (client, req) => {
     const rawReq = client(serialization).to(req)
     const authReq: Wirespec.RawRequest = {
         ...rawReq,
@@ -83,6 +83,6 @@ export const initHandler: (context: Context) => Handler = (context) => async (cl
             "X-Bunq-Client-Authentication": context.sessionToken,
         }
     }
-    const rawRes = await rawHandler(authReq)
+    const rawRes = await rawHandler(signing, authReq)
     return client(serialization).from(rawRes)
 };

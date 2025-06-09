@@ -1673,1919 +1673,1919 @@ import {WhitelistResultViewAnchoredObject} from "./model/WhitelistResultViewAnch
 type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
 
 export const Sdk = (handler: Handler) => ({
-  list_all_AdditionalTransactionInformationCategory_for_User: async (props: {"userID": number}) => {
+  List_all_AdditionalTransactionInformationCategory_for_User: async (props: {"userID": number}) => {
     const req = List_all_AdditionalTransactionInformationCategory_for_User.request(props)
     return  handler(List_all_AdditionalTransactionInformationCategory_for_User.client, req)
   },
-  cREATE_AdditionalTransactionInformationCategoryUserDefined_for_User: async (props: {"userID": number, "body": AdditionalTransactionInformationCategoryUserDefined}) => {
+  CREATE_AdditionalTransactionInformationCategoryUserDefined_for_User: async (props: {"userID": number, "body": AdditionalTransactionInformationCategoryUserDefined}) => {
     const req = CREATE_AdditionalTransactionInformationCategoryUserDefined_for_User.request(props)
     return  handler(CREATE_AdditionalTransactionInformationCategoryUserDefined_for_User.client, req)
   },
-  cREATE_Attachment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": AttachmentMonetaryAccount}) => {
+  CREATE_Attachment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": AttachmentMonetaryAccount}) => {
     const req = CREATE_Attachment_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_Attachment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_Attachment_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_Attachment_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_Attachment_for_User.request(props)
     return  handler(READ_Attachment_for_User.client, req)
   },
-  cREATE_AttachmentPublic: async (props: {"body": AttachmentPublic}) => {
+  CREATE_AttachmentPublic: async (props: {"body": AttachmentPublic}) => {
     const req = CREATE_AttachmentPublic.request(props)
     return  handler(CREATE_AttachmentPublic.client, req)
   },
-  rEAD_AttachmentPublic: async (props: {"itemId": number}) => {
+  READ_AttachmentPublic: async (props: {"itemId": number}) => {
     const req = READ_AttachmentPublic.request(props)
     return  handler(READ_AttachmentPublic.client, req)
   },
-  cREATE_Avatar: async (props: {"body": Avatar}) => {
+  CREATE_Avatar: async (props: {"body": Avatar}) => {
     const req = CREATE_Avatar.request(props)
     return  handler(CREATE_Avatar.client, req)
   },
-  rEAD_Avatar: async (props: {"itemId": number}) => {
+  READ_Avatar: async (props: {"itemId": number}) => {
     const req = READ_Avatar.request(props)
     return  handler(READ_Avatar.client, req)
   },
-  list_all_BillingContractSubscription_for_User: async (props: {"userID": number}) => {
+  List_all_BillingContractSubscription_for_User: async (props: {"userID": number}) => {
     const req = List_all_BillingContractSubscription_for_User.request(props)
     return  handler(List_all_BillingContractSubscription_for_User.client, req)
   },
-  rEAD_BunqmeFundraiserProfile_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_BunqmeFundraiserProfile_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_BunqmeFundraiserProfile_for_User.request(props)
     return  handler(READ_BunqmeFundraiserProfile_for_User.client, req)
   },
-  list_all_BunqmeFundraiserProfile_for_User: async (props: {"userID": number}) => {
+  List_all_BunqmeFundraiserProfile_for_User: async (props: {"userID": number}) => {
     const req = List_all_BunqmeFundraiserProfile_for_User.request(props)
     return  handler(List_all_BunqmeFundraiserProfile_for_User.client, req)
   },
-  rEAD_BunqmeFundraiserResult_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_BunqmeFundraiserResult_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_BunqmeFundraiserResult_for_User_MonetaryAccount.request(props)
     return  handler(READ_BunqmeFundraiserResult_for_User_MonetaryAccount.client, req)
   },
-  list_all_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_BunqmeTab_for_User_MonetaryAccount.request(props)
     return  handler(List_all_BunqmeTab_for_User_MonetaryAccount.client, req)
   },
-  cREATE_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": BunqMeTab}) => {
+  CREATE_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": BunqMeTab}) => {
     const req = CREATE_BunqmeTab_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_BunqmeTab_for_User_MonetaryAccount.client, req)
   },
-  rEAD_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_BunqmeTab_for_User_MonetaryAccount.request(props)
     return  handler(READ_BunqmeTab_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": BunqMeTab}) => {
+  UPDATE_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": BunqMeTab}) => {
     const req = UPDATE_BunqmeTab_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_BunqmeTab_for_User_MonetaryAccount.client, req)
   },
-  rEAD_BunqmeTabResultResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_BunqmeTabResultResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_BunqmeTabResultResponse_for_User_MonetaryAccount.request(props)
     return  handler(READ_BunqmeTabResultResponse_for_User_MonetaryAccount.client, req)
   },
-  rEAD_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number}) => {
+  READ_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number}) => {
     const req = READ_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(READ_CallbackUrl_for_User_OauthClient.client, req)
   },
-  uPDATE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number, "body": OauthCallbackUrl}) => {
+  UPDATE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number, "body": OauthCallbackUrl}) => {
     const req = UPDATE_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(UPDATE_CallbackUrl_for_User_OauthClient.client, req)
   },
-  dELETE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number}) => {
+  DELETE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "itemId": number}) => {
     const req = DELETE_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(DELETE_CallbackUrl_for_User_OauthClient.client, req)
   },
-  list_all_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number}) => {
+  List_all_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number}) => {
     const req = List_all_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(List_all_CallbackUrl_for_User_OauthClient.client, req)
   },
-  cREATE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "body": OauthCallbackUrl}) => {
+  CREATE_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "body": OauthCallbackUrl}) => {
     const req = CREATE_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(CREATE_CallbackUrl_for_User_OauthClient.client, req)
   },
-  rEAD_Card_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_Card_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_Card_for_User.request(props)
     return  handler(READ_Card_for_User.client, req)
   },
-  uPDATE_Card_for_User: async (props: {"userID": number, "itemId": number, "body": Card}) => {
+  UPDATE_Card_for_User: async (props: {"userID": number, "itemId": number, "body": Card}) => {
     const req = UPDATE_Card_for_User.request(props)
     return  handler(UPDATE_Card_for_User.client, req)
   },
-  list_all_Card_for_User: async (props: {"userID": number}) => {
+  List_all_Card_for_User: async (props: {"userID": number}) => {
     const req = List_all_Card_for_User.request(props)
     return  handler(List_all_Card_for_User.client, req)
   },
-  cREATE_CardBatch_for_User: async (props: {"userID": number, "body": CardBatch}) => {
+  CREATE_CardBatch_for_User: async (props: {"userID": number, "body": CardBatch}) => {
     const req = CREATE_CardBatch_for_User.request(props)
     return  handler(CREATE_CardBatch_for_User.client, req)
   },
-  cREATE_CardBatchReplace_for_User: async (props: {"userID": number, "body": CardBatchReplace}) => {
+  CREATE_CardBatchReplace_for_User: async (props: {"userID": number, "body": CardBatchReplace}) => {
     const req = CREATE_CardBatchReplace_for_User.request(props)
     return  handler(CREATE_CardBatchReplace_for_User.client, req)
   },
-  cREATE_CardCredit_for_User: async (props: {"userID": number, "body": CardCredit}) => {
+  CREATE_CardCredit_for_User: async (props: {"userID": number, "body": CardCredit}) => {
     const req = CREATE_CardCredit_for_User.request(props)
     return  handler(CREATE_CardCredit_for_User.client, req)
   },
-  cREATE_CardDebit_for_User: async (props: {"userID": number, "body": CardDebit}) => {
+  CREATE_CardDebit_for_User: async (props: {"userID": number, "body": CardDebit}) => {
     const req = CREATE_CardDebit_for_User.request(props)
     return  handler(CREATE_CardDebit_for_User.client, req)
   },
-  list_all_CardName_for_User: async (props: {"userID": number}) => {
+  List_all_CardName_for_User: async (props: {"userID": number}) => {
     const req = List_all_CardName_for_User.request(props)
     return  handler(List_all_CardName_for_User.client, req)
   },
-  list_all_CertificatePinned_for_User: async (props: {"userID": number}) => {
+  List_all_CertificatePinned_for_User: async (props: {"userID": number}) => {
     const req = List_all_CertificatePinned_for_User.request(props)
     return  handler(List_all_CertificatePinned_for_User.client, req)
   },
-  cREATE_CertificatePinned_for_User: async (props: {"userID": number, "body": CertificatePinned}) => {
+  CREATE_CertificatePinned_for_User: async (props: {"userID": number, "body": CertificatePinned}) => {
     const req = CREATE_CertificatePinned_for_User.request(props)
     return  handler(CREATE_CertificatePinned_for_User.client, req)
   },
-  rEAD_CertificatePinned_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_CertificatePinned_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_CertificatePinned_for_User.request(props)
     return  handler(READ_CertificatePinned_for_User.client, req)
   },
-  dELETE_CertificatePinned_for_User: async (props: {"userID": number, "itemId": number}) => {
+  DELETE_CertificatePinned_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = DELETE_CertificatePinned_for_User.request(props)
     return  handler(DELETE_CertificatePinned_for_User.client, req)
   },
-  rEAD_ChallengeRequest_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_ChallengeRequest_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_ChallengeRequest_for_User.request(props)
     return  handler(READ_ChallengeRequest_for_User.client, req)
   },
-  uPDATE_ChallengeRequest_for_User: async (props: {"userID": number, "itemId": number, "body": MasterCardIdentityCheckChallengeRequestUser}) => {
+  UPDATE_ChallengeRequest_for_User: async (props: {"userID": number, "itemId": number, "body": MasterCardIdentityCheckChallengeRequestUser}) => {
     const req = UPDATE_ChallengeRequest_for_User.request(props)
     return  handler(UPDATE_ChallengeRequest_for_User.client, req)
   },
-  list_all_Company_for_User: async (props: {"userID": number}) => {
+  List_all_Company_for_User: async (props: {"userID": number}) => {
     const req = List_all_Company_for_User.request(props)
     return  handler(List_all_Company_for_User.client, req)
   },
-  cREATE_Company_for_User: async (props: {"userID": number, "body": Company}) => {
+  CREATE_Company_for_User: async (props: {"userID": number, "body": Company}) => {
     const req = CREATE_Company_for_User.request(props)
     return  handler(CREATE_Company_for_User.client, req)
   },
-  rEAD_Company_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_Company_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_Company_for_User.request(props)
     return  handler(READ_Company_for_User.client, req)
   },
-  uPDATE_Company_for_User: async (props: {"userID": number, "itemId": number, "body": Company}) => {
+  UPDATE_Company_for_User: async (props: {"userID": number, "itemId": number, "body": Company}) => {
     const req = UPDATE_Company_for_User.request(props)
     return  handler(UPDATE_Company_for_User.client, req)
   },
-  cREATE_ConfirmationOfFunds_for_User: async (props: {"userID": number, "body": ConfirmationOfFunds}) => {
+  CREATE_ConfirmationOfFunds_for_User: async (props: {"userID": number, "body": ConfirmationOfFunds}) => {
     const req = CREATE_ConfirmationOfFunds_for_User.request(props)
     return  handler(CREATE_ConfirmationOfFunds_for_User.client, req)
   },
-  list_all_Content_for_User_ChatConversation_Attachment: async (props: {"userID": number, "chat-conversationID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_ChatConversation_Attachment: async (props: {"userID": number, "chat-conversationID": number, "attachmentID": number}) => {
     const req = List_all_Content_for_User_ChatConversation_Attachment.request(props)
     return  handler(List_all_Content_for_User_ChatConversation_Attachment.client, req)
   },
-  list_all_Content_for_User_MonetaryAccount_Attachment: async (props: {"userID": number, "monetary-accountID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_Attachment: async (props: {"userID": number, "monetary-accountID": number, "attachmentID": number}) => {
     const req = List_all_Content_for_User_MonetaryAccount_Attachment.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_Attachment.client, req)
   },
-  list_all_Content_for_AttachmentPublic: async (props: {"attachment-publicUUID": string}) => {
+  List_all_Content_for_AttachmentPublic: async (props: {"attachment-publicUUID": string}) => {
     const req = List_all_Content_for_AttachmentPublic.request(props)
     return  handler(List_all_Content_for_AttachmentPublic.client, req)
   },
-  list_all_Content_for_User_Attachment: async (props: {"userID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_Attachment: async (props: {"userID": number, "attachmentID": number}) => {
     const req = List_all_Content_for_User_Attachment.request(props)
     return  handler(List_all_Content_for_User_Attachment.client, req)
   },
-  list_all_Content_for_User_ExportAnnualOverview: async (props: {"userID": number, "export-annual-overviewID": number}) => {
+  List_all_Content_for_User_ExportAnnualOverview: async (props: {"userID": number, "export-annual-overviewID": number}) => {
     const req = List_all_Content_for_User_ExportAnnualOverview.request(props)
     return  handler(List_all_Content_for_User_ExportAnnualOverview.client, req)
   },
-  list_all_Content_for_User_MonetaryAccount_ExportRib: async (props: {"userID": number, "monetary-accountID": number, "export-ribID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_ExportRib: async (props: {"userID": number, "monetary-accountID": number, "export-ribID": number}) => {
     const req = List_all_Content_for_User_MonetaryAccount_ExportRib.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_ExportRib.client, req)
   },
-  list_all_Content_for_User_Card_ExportStatementCard: async (props: {"userID": number, "cardID": number, "export-statement-cardID": number}) => {
+  List_all_Content_for_User_Card_ExportStatementCard: async (props: {"userID": number, "cardID": number, "export-statement-cardID": number}) => {
     const req = List_all_Content_for_User_Card_ExportStatementCard.request(props)
     return  handler(List_all_Content_for_User_Card_ExportStatementCard.client, req)
   },
-  list_all_Content_for_User_MonetaryAccount_CustomerStatement: async (props: {"userID": number, "monetary-accountID": number, "customer-statementID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_CustomerStatement: async (props: {"userID": number, "monetary-accountID": number, "customer-statementID": number}) => {
     const req = List_all_Content_for_User_MonetaryAccount_CustomerStatement.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_CustomerStatement.client, req)
   },
-  list_all_Content_for_User_MonetaryAccount_Event_Statement: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "statementID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_Event_Statement: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "statementID": number}) => {
     const req = List_all_Content_for_User_MonetaryAccount_Event_Statement.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_Event_Statement.client, req)
   },
-  rEAD_CredentialPasswordIp_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_CredentialPasswordIp_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_CredentialPasswordIp_for_User.request(props)
     return  handler(READ_CredentialPasswordIp_for_User.client, req)
   },
-  list_all_CredentialPasswordIp_for_User: async (props: {"userID": number}) => {
+  List_all_CredentialPasswordIp_for_User: async (props: {"userID": number}) => {
     const req = List_all_CredentialPasswordIp_for_User.request(props)
     return  handler(List_all_CredentialPasswordIp_for_User.client, req)
   },
-  list_all_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number}) => {
+  List_all_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number}) => {
     const req = List_all_CurrencyCloudBeneficiary_for_User.request(props)
     return  handler(List_all_CurrencyCloudBeneficiary_for_User.client, req)
   },
-  cREATE_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number, "body": CurrencyCloudBeneficiary}) => {
+  CREATE_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number, "body": CurrencyCloudBeneficiary}) => {
     const req = CREATE_CurrencyCloudBeneficiary_for_User.request(props)
     return  handler(CREATE_CurrencyCloudBeneficiary_for_User.client, req)
   },
-  rEAD_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_CurrencyCloudBeneficiary_for_User.request(props)
     return  handler(READ_CurrencyCloudBeneficiary_for_User.client, req)
   },
-  list_all_CurrencyCloudBeneficiaryRequirement_for_User: async (props: {"userID": number}) => {
+  List_all_CurrencyCloudBeneficiaryRequirement_for_User: async (props: {"userID": number}) => {
     const req = List_all_CurrencyCloudBeneficiaryRequirement_for_User.request(props)
     return  handler(List_all_CurrencyCloudBeneficiaryRequirement_for_User.client, req)
   },
-  cREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": CurrencyCloudPaymentQuote}) => {
+  CREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": CurrencyCloudPaymentQuote}) => {
     const req = CREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount.client, req)
   },
-  list_all_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_CurrencyConversion_for_User_MonetaryAccount.request(props)
     return  handler(List_all_CurrencyConversion_for_User_MonetaryAccount.client, req)
   },
-  rEAD_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_CurrencyConversion_for_User_MonetaryAccount.request(props)
     return  handler(READ_CurrencyConversion_for_User_MonetaryAccount.client, req)
   },
-  cREATE_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": CurrencyConversionQuote}) => {
+  CREATE_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": CurrencyConversionQuote}) => {
     const req = CREATE_CurrencyConversionQuote_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_CurrencyConversionQuote_for_User_MonetaryAccount.client, req)
   },
-  rEAD_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_CurrencyConversionQuote_for_User_MonetaryAccount.request(props)
     return  handler(READ_CurrencyConversionQuote_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": CurrencyConversionQuote}) => {
+  UPDATE_CurrencyConversionQuote_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": CurrencyConversionQuote}) => {
     const req = UPDATE_CurrencyConversionQuote_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_CurrencyConversionQuote_for_User_MonetaryAccount.client, req)
   },
-  list_all_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(List_all_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
-  cREATE_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ExportStatement}) => {
+  CREATE_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ExportStatement}) => {
     const req = CREATE_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
-  rEAD_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(READ_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
-  dELETE_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  DELETE_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = DELETE_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
-  list_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
+  List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
     const req = List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
-  rEAD_Device: async (props: {"itemId": number}) => {
+  READ_Device: async (props: {"itemId": number}) => {
     const req = READ_Device.request(props)
     return  handler(READ_Device.client, req)
   },
-  list_all_Device: async (props: {}) => {
+  List_all_Device: async (props: {}) => {
     const req = List_all_Device.request()
     return  handler(List_all_Device.client, req)
   },
-  list_all_DeviceServer: async (props: {}) => {
+  List_all_DeviceServer: async (props: {}) => {
     const req = List_all_DeviceServer.request()
     return  handler(List_all_DeviceServer.client, req)
   },
-  cREATE_DeviceServer: async (props: {"body": DeviceServer}) => {
+  CREATE_DeviceServer: async (props: {"body": DeviceServer}) => {
     const req = CREATE_DeviceServer.request(props)
     return  handler(CREATE_DeviceServer.client, req)
   },
-  rEAD_DeviceServer: async (props: {"itemId": number}) => {
+  READ_DeviceServer: async (props: {"itemId": number}) => {
     const req = READ_DeviceServer.request(props)
     return  handler(READ_DeviceServer.client, req)
   },
-  list_all_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_DraftPayment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_DraftPayment_for_User_MonetaryAccount.client, req)
   },
-  cREATE_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": DraftPayment}) => {
+  CREATE_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": DraftPayment}) => {
     const req = CREATE_DraftPayment_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_DraftPayment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_DraftPayment_for_User_MonetaryAccount.request(props)
     return  handler(READ_DraftPayment_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": DraftPayment}) => {
+  UPDATE_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": DraftPayment}) => {
     const req = UPDATE_DraftPayment_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_DraftPayment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_Event_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_Event_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_Event_for_User.request(props)
     return  handler(READ_Event_for_User.client, req)
   },
-  list_all_Event_for_User: async (props: {"userID": number}) => {
+  List_all_Event_for_User: async (props: {"userID": number}) => {
     const req = List_all_Event_for_User.request(props)
     return  handler(List_all_Event_for_User.client, req)
   },
-  list_all_ExportAnnualOverview_for_User: async (props: {"userID": number}) => {
+  List_all_ExportAnnualOverview_for_User: async (props: {"userID": number}) => {
     const req = List_all_ExportAnnualOverview_for_User.request(props)
     return  handler(List_all_ExportAnnualOverview_for_User.client, req)
   },
-  cREATE_ExportAnnualOverview_for_User: async (props: {"userID": number, "body": ExportAnnualOverview}) => {
+  CREATE_ExportAnnualOverview_for_User: async (props: {"userID": number, "body": ExportAnnualOverview}) => {
     const req = CREATE_ExportAnnualOverview_for_User.request(props)
     return  handler(CREATE_ExportAnnualOverview_for_User.client, req)
   },
-  rEAD_ExportAnnualOverview_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_ExportAnnualOverview_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_ExportAnnualOverview_for_User.request(props)
     return  handler(READ_ExportAnnualOverview_for_User.client, req)
   },
-  dELETE_ExportAnnualOverview_for_User: async (props: {"userID": number, "itemId": number}) => {
+  DELETE_ExportAnnualOverview_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = DELETE_ExportAnnualOverview_for_User.request(props)
     return  handler(DELETE_ExportAnnualOverview_for_User.client, req)
   },
-  list_all_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_ExportRib_for_User_MonetaryAccount.request(props)
     return  handler(List_all_ExportRib_for_User_MonetaryAccount.client, req)
   },
-  cREATE_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ExportRib}) => {
+  CREATE_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ExportRib}) => {
     const req = CREATE_ExportRib_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_ExportRib_for_User_MonetaryAccount.client, req)
   },
-  rEAD_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_ExportRib_for_User_MonetaryAccount.request(props)
     return  handler(READ_ExportRib_for_User_MonetaryAccount.client, req)
   },
-  dELETE_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  DELETE_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = DELETE_ExportRib_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_ExportRib_for_User_MonetaryAccount.client, req)
   },
-  rEAD_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  READ_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = READ_ExportStatementCard_for_User_Card.request(props)
     return  handler(READ_ExportStatementCard_for_User_Card.client, req)
   },
-  list_all_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
     const req = List_all_ExportStatementCard_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCard_for_User_Card.client, req)
   },
-  list_all_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
     const req = List_all_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCardCsv_for_User_Card.client, req)
   },
-  cREATE_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "body": ExportStatementCardCsv}) => {
+  CREATE_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "body": ExportStatementCardCsv}) => {
     const req = CREATE_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(CREATE_ExportStatementCardCsv_for_User_Card.client, req)
   },
-  rEAD_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  READ_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = READ_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(READ_ExportStatementCardCsv_for_User_Card.client, req)
   },
-  dELETE_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  DELETE_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = DELETE_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(DELETE_ExportStatementCardCsv_for_User_Card.client, req)
   },
-  list_all_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
     const req = List_all_ExportStatementCardPdf_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCardPdf_for_User_Card.client, req)
   },
-  cREATE_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "body": ExportStatementCardPdf}) => {
+  CREATE_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "body": ExportStatementCardPdf}) => {
     const req = CREATE_ExportStatementCardPdf_for_User_Card.request(props)
     return  handler(CREATE_ExportStatementCardPdf_for_User_Card.client, req)
   },
-  rEAD_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  READ_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = READ_ExportStatementCardPdf_for_User_Card.request(props)
     return  handler(READ_ExportStatementCardPdf_for_User_Card.client, req)
   },
-  dELETE_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  DELETE_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = DELETE_ExportStatementCardPdf_for_User_Card.request(props)
     return  handler(DELETE_ExportStatementCardPdf_for_User_Card.client, req)
   },
-  rEAD_FeatureAnnouncement_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_FeatureAnnouncement_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_FeatureAnnouncement_for_User.request(props)
     return  handler(READ_FeatureAnnouncement_for_User.client, req)
   },
-  list_all_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
     const req = List_all_GeneratedCvc2_for_User_Card.request(props)
     return  handler(List_all_GeneratedCvc2_for_User_Card.client, req)
   },
-  cREATE_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "body": CardGeneratedCvc2}) => {
+  CREATE_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "body": CardGeneratedCvc2}) => {
     const req = CREATE_GeneratedCvc2_for_User_Card.request(props)
     return  handler(CREATE_GeneratedCvc2_for_User_Card.client, req)
   },
-  rEAD_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
+  READ_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number}) => {
     const req = READ_GeneratedCvc2_for_User_Card.request(props)
     return  handler(READ_GeneratedCvc2_for_User_Card.client, req)
   },
-  uPDATE_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number, "body": CardGeneratedCvc2}) => {
+  UPDATE_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "itemId": number, "body": CardGeneratedCvc2}) => {
     const req = UPDATE_GeneratedCvc2_for_User_Card.request(props)
     return  handler(UPDATE_GeneratedCvc2_for_User_Card.client, req)
   },
-  list_all_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_IdealMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_IdealMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  cREATE_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": IdealMerchantTransaction}) => {
+  CREATE_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": IdealMerchantTransaction}) => {
     const req = CREATE_IdealMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_IdealMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  rEAD_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_IdealMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(READ_IdealMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  list_all_InsightPreferenceDate_for_User: async (props: {"userID": number}) => {
+  List_all_InsightPreferenceDate_for_User: async (props: {"userID": number}) => {
     const req = List_all_InsightPreferenceDate_for_User.request(props)
     return  handler(List_all_InsightPreferenceDate_for_User.client, req)
   },
-  list_all_Insights_for_User: async (props: {"userID": number}) => {
+  List_all_Insights_for_User: async (props: {"userID": number}) => {
     const req = List_all_Insights_for_User.request(props)
     return  handler(List_all_Insights_for_User.client, req)
   },
-  list_all_InsightsSearch_for_User: async (props: {"userID": number}) => {
+  List_all_InsightsSearch_for_User: async (props: {"userID": number}) => {
     const req = List_all_InsightsSearch_for_User.request(props)
     return  handler(List_all_InsightsSearch_for_User.client, req)
   },
-  list_all_Installation: async (props: {}) => {
+  List_all_Installation: async (props: {}) => {
     const req = List_all_Installation.request()
     return  handler(List_all_Installation.client, req)
   },
-  cREATE_Installation: async (props: {"body": Installation}) => {
+  CREATE_Installation: async (props: {"body": Installation}) => {
     const req = CREATE_Installation.request(props)
     return  handler(CREATE_Installation.client, req)
   },
-  rEAD_Installation: async (props: {"itemId": number}) => {
+  READ_Installation: async (props: {"itemId": number}) => {
     const req = READ_Installation.request(props)
     return  handler(READ_Installation.client, req)
   },
-  list_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
+  List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
     const req = List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
-  rEAD_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number, "itemId": number}) => {
+  READ_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number, "itemId": number}) => {
     const req = READ_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(READ_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
-  list_all_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_Invoice_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Invoice_for_User_MonetaryAccount.client, req)
   },
-  rEAD_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_Invoice_for_User_MonetaryAccount.request(props)
     return  handler(READ_Invoice_for_User_MonetaryAccount.client, req)
   },
-  list_all_Invoice_for_User: async (props: {"userID": number}) => {
+  List_all_Invoice_for_User: async (props: {"userID": number}) => {
     const req = List_all_Invoice_for_User.request(props)
     return  handler(List_all_Invoice_for_User.client, req)
   },
-  rEAD_Invoice_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_Invoice_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_Invoice_for_User.request(props)
     return  handler(READ_Invoice_for_User.client, req)
   },
-  rEAD_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number}) => {
+  READ_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number}) => {
     const req = READ_InvoiceExport_for_User_Invoice.request(props)
     return  handler(READ_InvoiceExport_for_User_Invoice.client, req)
   },
-  uPDATE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number, "body": InvoiceExportPdf}) => {
+  UPDATE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number, "body": InvoiceExportPdf}) => {
     const req = UPDATE_InvoiceExport_for_User_Invoice.request(props)
     return  handler(UPDATE_InvoiceExport_for_User_Invoice.client, req)
   },
-  dELETE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number}) => {
+  DELETE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "itemId": number}) => {
     const req = DELETE_InvoiceExport_for_User_Invoice.request(props)
     return  handler(DELETE_InvoiceExport_for_User_Invoice.client, req)
   },
-  cREATE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "body": InvoiceExportPdf}) => {
+  CREATE_InvoiceExport_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "body": InvoiceExportPdf}) => {
     const req = CREATE_InvoiceExport_for_User_Invoice.request(props)
     return  handler(CREATE_InvoiceExport_for_User_Invoice.client, req)
   },
-  rEAD_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "itemId": number}) => {
+  READ_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "itemId": number}) => {
     const req = READ_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(READ_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  uPDATE_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "itemId": number, "body": PermittedIp}) => {
+  UPDATE_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "itemId": number, "body": PermittedIp}) => {
     const req = UPDATE_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(UPDATE_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  list_all_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number}) => {
+  List_all_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number}) => {
     const req = List_all_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(List_all_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  cREATE_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "body": PermittedIp}) => {
+  CREATE_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "body": PermittedIp}) => {
     const req = CREATE_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(CREATE_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  list_all_LegalName_for_User: async (props: {"userID": number}) => {
+  List_all_LegalName_for_User: async (props: {"userID": number}) => {
     const req = List_all_LegalName_for_User.request(props)
     return  handler(List_all_LegalName_for_User.client, req)
   },
-  list_all_Limit_for_User: async (props: {"userID": number}) => {
+  List_all_Limit_for_User: async (props: {"userID": number}) => {
     const req = List_all_Limit_for_User.request(props)
     return  handler(List_all_Limit_for_User.client, req)
   },
-  rEAD_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_MastercardAction_for_User_MonetaryAccount.request(props)
     return  handler(READ_MastercardAction_for_User_MonetaryAccount.client, req)
   },
-  list_all_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_MastercardAction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_MastercardAction_for_User_MonetaryAccount.client, req)
   },
-  rEAD_MonetaryAccount_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccount_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccount_for_User.request(props)
     return  handler(READ_MonetaryAccount_for_User.client, req)
   },
-  list_all_MonetaryAccount_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccount_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccount_for_User.request(props)
     return  handler(List_all_MonetaryAccount_for_User.client, req)
   },
-  list_all_MonetaryAccountBank_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountBank_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountBank_for_User.request(props)
     return  handler(List_all_MonetaryAccountBank_for_User.client, req)
   },
-  cREATE_MonetaryAccountBank_for_User: async (props: {"userID": number, "body": MonetaryAccountBank}) => {
+  CREATE_MonetaryAccountBank_for_User: async (props: {"userID": number, "body": MonetaryAccountBank}) => {
     const req = CREATE_MonetaryAccountBank_for_User.request(props)
     return  handler(CREATE_MonetaryAccountBank_for_User.client, req)
   },
-  rEAD_MonetaryAccountBank_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountBank_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountBank_for_User.request(props)
     return  handler(READ_MonetaryAccountBank_for_User.client, req)
   },
-  uPDATE_MonetaryAccountBank_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountBank}) => {
+  UPDATE_MonetaryAccountBank_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountBank}) => {
     const req = UPDATE_MonetaryAccountBank_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountBank_for_User.client, req)
   },
-  rEAD_MonetaryAccountCard_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountCard_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountCard_for_User.request(props)
     return  handler(READ_MonetaryAccountCard_for_User.client, req)
   },
-  uPDATE_MonetaryAccountCard_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountCard}) => {
+  UPDATE_MonetaryAccountCard_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountCard}) => {
     const req = UPDATE_MonetaryAccountCard_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountCard_for_User.client, req)
   },
-  list_all_MonetaryAccountCard_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountCard_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountCard_for_User.request(props)
     return  handler(List_all_MonetaryAccountCard_for_User.client, req)
   },
-  list_all_MonetaryAccountExternal_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountExternal_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountExternal_for_User.request(props)
     return  handler(List_all_MonetaryAccountExternal_for_User.client, req)
   },
-  cREATE_MonetaryAccountExternal_for_User: async (props: {"userID": number, "body": MonetaryAccountExternal}) => {
+  CREATE_MonetaryAccountExternal_for_User: async (props: {"userID": number, "body": MonetaryAccountExternal}) => {
     const req = CREATE_MonetaryAccountExternal_for_User.request(props)
     return  handler(CREATE_MonetaryAccountExternal_for_User.client, req)
   },
-  rEAD_MonetaryAccountExternal_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountExternal_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountExternal_for_User.request(props)
     return  handler(READ_MonetaryAccountExternal_for_User.client, req)
   },
-  uPDATE_MonetaryAccountExternal_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountExternal}) => {
+  UPDATE_MonetaryAccountExternal_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountExternal}) => {
     const req = UPDATE_MonetaryAccountExternal_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountExternal_for_User.client, req)
   },
-  list_all_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(List_all_MonetaryAccountExternalSavings_for_User.client, req)
   },
-  cREATE_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "body": MonetaryAccountExternalSavings}) => {
+  CREATE_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "body": MonetaryAccountExternalSavings}) => {
     const req = CREATE_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(CREATE_MonetaryAccountExternalSavings_for_User.client, req)
   },
-  rEAD_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(READ_MonetaryAccountExternalSavings_for_User.client, req)
   },
-  uPDATE_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountExternalSavings}) => {
+  UPDATE_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountExternalSavings}) => {
     const req = UPDATE_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountExternalSavings_for_User.client, req)
   },
-  list_all_MonetaryAccountJoint_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountJoint_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountJoint_for_User.request(props)
     return  handler(List_all_MonetaryAccountJoint_for_User.client, req)
   },
-  cREATE_MonetaryAccountJoint_for_User: async (props: {"userID": number, "body": MonetaryAccountJoint}) => {
+  CREATE_MonetaryAccountJoint_for_User: async (props: {"userID": number, "body": MonetaryAccountJoint}) => {
     const req = CREATE_MonetaryAccountJoint_for_User.request(props)
     return  handler(CREATE_MonetaryAccountJoint_for_User.client, req)
   },
-  rEAD_MonetaryAccountJoint_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountJoint_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountJoint_for_User.request(props)
     return  handler(READ_MonetaryAccountJoint_for_User.client, req)
   },
-  uPDATE_MonetaryAccountJoint_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountJoint}) => {
+  UPDATE_MonetaryAccountJoint_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountJoint}) => {
     const req = UPDATE_MonetaryAccountJoint_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountJoint_for_User.client, req)
   },
-  list_all_MonetaryAccountSavings_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountSavings_for_User: async (props: {"userID": number}) => {
     const req = List_all_MonetaryAccountSavings_for_User.request(props)
     return  handler(List_all_MonetaryAccountSavings_for_User.client, req)
   },
-  cREATE_MonetaryAccountSavings_for_User: async (props: {"userID": number, "body": MonetaryAccountSavings}) => {
+  CREATE_MonetaryAccountSavings_for_User: async (props: {"userID": number, "body": MonetaryAccountSavings}) => {
     const req = CREATE_MonetaryAccountSavings_for_User.request(props)
     return  handler(CREATE_MonetaryAccountSavings_for_User.client, req)
   },
-  rEAD_MonetaryAccountSavings_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_MonetaryAccountSavings_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_MonetaryAccountSavings_for_User.request(props)
     return  handler(READ_MonetaryAccountSavings_for_User.client, req)
   },
-  uPDATE_MonetaryAccountSavings_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountSavings}) => {
+  UPDATE_MonetaryAccountSavings_for_User: async (props: {"userID": number, "itemId": number, "body": MonetaryAccountSavings}) => {
     const req = UPDATE_MonetaryAccountSavings_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountSavings_for_User.client, req)
   },
-  list_all_Name_for_UserCompany: async (props: {"user-companyID": number}) => {
+  List_all_Name_for_UserCompany: async (props: {"user-companyID": number}) => {
     const req = List_all_Name_for_UserCompany.request(props)
     return  handler(List_all_Name_for_UserCompany.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "body": NoteAttachmentAdyenCardTransaction}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "body": NoteAttachmentAdyenCardTransaction}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number, "body": NoteAttachmentAdyenCardTransaction}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number, "body": NoteAttachmentAdyenCardTransaction}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "body": NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "body": NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number, "body": NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number, "body": NoteAttachmentBankSwitchServiceNetherlandsIncomingPayment}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "body": NoteAttachmentBunqMeFundraiserResult}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "body": NoteAttachmentBunqMeFundraiserResult}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number, "body": NoteAttachmentBunqMeFundraiserResult}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number, "body": NoteAttachmentBunqMeFundraiserResult}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "body": NoteAttachmentDraftPayment}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "body": NoteAttachmentDraftPayment}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number, "body": NoteAttachmentDraftPayment}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number, "body": NoteAttachmentDraftPayment}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "body": NoteAttachmentIdealMerchantTransaction}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "body": NoteAttachmentIdealMerchantTransaction}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentIdealMerchantTransaction}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentIdealMerchantTransaction}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "body": NoteAttachmentMasterCardAction}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "body": NoteAttachmentMasterCardAction}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number, "body": NoteAttachmentMasterCardAction}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number, "body": NoteAttachmentMasterCardAction}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "body": NoteAttachmentOpenBankingMerchantTransaction}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "body": NoteAttachmentOpenBankingMerchantTransaction}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentOpenBankingMerchantTransaction}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentOpenBankingMerchantTransaction}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "body": NoteAttachmentPaymentBatch}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "body": NoteAttachmentPaymentBatch}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number, "body": NoteAttachmentPaymentBatch}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number, "body": NoteAttachmentPaymentBatch}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "body": NoteAttachmentPaymentDelayed}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "body": NoteAttachmentPaymentDelayed}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number, "body": NoteAttachmentPaymentDelayed}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number, "body": NoteAttachmentPaymentDelayed}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "body": NoteAttachmentPayment}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "body": NoteAttachmentPayment}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number, "body": NoteAttachmentPayment}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number, "body": NoteAttachmentPayment}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "body": NoteAttachmentRequestInquiryBatch}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "body": NoteAttachmentRequestInquiryBatch}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number, "body": NoteAttachmentRequestInquiryBatch}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number, "body": NoteAttachmentRequestInquiryBatch}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "body": NoteAttachmentRequestInquiry}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "body": NoteAttachmentRequestInquiry}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number, "body": NoteAttachmentRequestInquiry}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number, "body": NoteAttachmentRequestInquiry}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "body": NoteAttachmentRequestResponse}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "body": NoteAttachmentRequestResponse}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number, "body": NoteAttachmentRequestResponse}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number, "body": NoteAttachmentRequestResponse}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "body": NoteAttachmentScheduleInstance}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "body": NoteAttachmentScheduleInstance}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number, "body": NoteAttachmentScheduleInstance}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number, "body": NoteAttachmentScheduleInstance}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "body": NoteAttachmentSchedulePaymentBatch}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "body": NoteAttachmentSchedulePaymentBatch}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number, "body": NoteAttachmentSchedulePaymentBatch}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number, "body": NoteAttachmentSchedulePaymentBatch}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "body": NoteAttachmentSchedulePayment}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "body": NoteAttachmentSchedulePayment}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number, "body": NoteAttachmentSchedulePayment}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number, "body": NoteAttachmentSchedulePayment}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "body": NoteAttachmentScheduleRequestBatch}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "body": NoteAttachmentScheduleRequestBatch}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number, "body": NoteAttachmentScheduleRequestBatch}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number, "body": NoteAttachmentScheduleRequestBatch}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "body": NoteAttachmentScheduleRequest}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "body": NoteAttachmentScheduleRequest}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number, "body": NoteAttachmentScheduleRequest}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number, "body": NoteAttachmentScheduleRequest}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "body": NoteAttachmentSofortMerchantTransaction}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "body": NoteAttachmentSofortMerchantTransaction}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentSofortMerchantTransaction}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number, "body": NoteAttachmentSofortMerchantTransaction}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  list_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  cREATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "body": NoteAttachmentWhitelistResult}) => {
+  CREATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "body": NoteAttachmentWhitelistResult}) => {
     const req = CREATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(CREATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  rEAD_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
+  READ_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
     const req = READ_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(READ_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  uPDATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number, "body": NoteAttachmentWhitelistResult}) => {
+  UPDATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number, "body": NoteAttachmentWhitelistResult}) => {
     const req = UPDATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(UPDATE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  dELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
+  DELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "body": NoteTextAdyenCardTransaction}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "body": NoteTextAdyenCardTransaction}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number, "body": NoteTextAdyenCardTransaction}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number, "body": NoteTextAdyenCardTransaction}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "body": NoteTextBankSwitchServiceNetherlandsIncomingPayment}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "body": NoteTextBankSwitchServiceNetherlandsIncomingPayment}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number, "body": NoteTextBankSwitchServiceNetherlandsIncomingPayment}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number, "body": NoteTextBankSwitchServiceNetherlandsIncomingPayment}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "body": NoteTextBunqMeFundraiserResult}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "body": NoteTextBunqMeFundraiserResult}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number, "body": NoteTextBunqMeFundraiserResult}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number, "body": NoteTextBunqMeFundraiserResult}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "body": NoteTextDraftPayment}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "body": NoteTextDraftPayment}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number, "body": NoteTextDraftPayment}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number, "body": NoteTextDraftPayment}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "body": NoteTextIdealMerchantTransaction}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "body": NoteTextIdealMerchantTransaction}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number, "body": NoteTextIdealMerchantTransaction}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number, "body": NoteTextIdealMerchantTransaction}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "body": NoteTextMasterCardAction}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "body": NoteTextMasterCardAction}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number, "body": NoteTextMasterCardAction}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number, "body": NoteTextMasterCardAction}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "body": NoteTextOpenBankingMerchantTransaction}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "body": NoteTextOpenBankingMerchantTransaction}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number, "body": NoteTextOpenBankingMerchantTransaction}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number, "body": NoteTextOpenBankingMerchantTransaction}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "body": NoteTextPaymentBatch}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "body": NoteTextPaymentBatch}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number, "body": NoteTextPaymentBatch}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number, "body": NoteTextPaymentBatch}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "body": NoteTextPaymentDelayed}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "body": NoteTextPaymentDelayed}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number, "body": NoteTextPaymentDelayed}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number, "body": NoteTextPaymentDelayed}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "body": NoteTextPayment}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "body": NoteTextPayment}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number, "body": NoteTextPayment}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number, "body": NoteTextPayment}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "body": NoteTextRequestInquiryBatch}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "body": NoteTextRequestInquiryBatch}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number, "body": NoteTextRequestInquiryBatch}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number, "body": NoteTextRequestInquiryBatch}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "body": NoteTextRequestInquiry}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "body": NoteTextRequestInquiry}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number, "body": NoteTextRequestInquiry}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number, "body": NoteTextRequestInquiry}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "body": NoteTextRequestResponse}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "body": NoteTextRequestResponse}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number, "body": NoteTextRequestResponse}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number, "body": NoteTextRequestResponse}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "body": NoteTextScheduleInstance}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "body": NoteTextScheduleInstance}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number, "body": NoteTextScheduleInstance}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number, "body": NoteTextScheduleInstance}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "body": NoteTextSchedulePaymentBatch}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "body": NoteTextSchedulePaymentBatch}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number, "body": NoteTextSchedulePaymentBatch}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number, "body": NoteTextSchedulePaymentBatch}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "body": NoteTextSchedulePayment}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "body": NoteTextSchedulePayment}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number, "body": NoteTextSchedulePayment}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number, "body": NoteTextSchedulePayment}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "body": NoteTextScheduleRequestBatch}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "body": NoteTextScheduleRequestBatch}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number, "body": NoteTextScheduleRequestBatch}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number, "body": NoteTextScheduleRequestBatch}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "body": NoteTextScheduleRequest}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "body": NoteTextScheduleRequest}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number, "body": NoteTextScheduleRequest}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number, "body": NoteTextScheduleRequest}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "body": NoteTextSofortMerchantTransaction}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "body": NoteTextSofortMerchantTransaction}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number, "body": NoteTextSofortMerchantTransaction}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number, "body": NoteTextSofortMerchantTransaction}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  list_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  cREATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "body": NoteTextWhitelistResult}) => {
+  CREATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "body": NoteTextWhitelistResult}) => {
     const req = CREATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(CREATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  rEAD_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
+  READ_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
     const req = READ_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(READ_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  uPDATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number, "body": NoteTextWhitelistResult}) => {
+  UPDATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number, "body": NoteTextWhitelistResult}) => {
     const req = UPDATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(UPDATE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  dELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
+  DELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "itemId": number}) => {
     const req = DELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  list_all_NotificationFilterEmail_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterEmail_for_User: async (props: {"userID": number}) => {
     const req = List_all_NotificationFilterEmail_for_User.request(props)
     return  handler(List_all_NotificationFilterEmail_for_User.client, req)
   },
-  cREATE_NotificationFilterEmail_for_User: async (props: {"userID": number, "body": NotificationFilterEmail}) => {
+  CREATE_NotificationFilterEmail_for_User: async (props: {"userID": number, "body": NotificationFilterEmail}) => {
     const req = CREATE_NotificationFilterEmail_for_User.request(props)
     return  handler(CREATE_NotificationFilterEmail_for_User.client, req)
   },
-  list_all_NotificationFilterFailure_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterFailure_for_User: async (props: {"userID": number}) => {
     const req = List_all_NotificationFilterFailure_for_User.request(props)
     return  handler(List_all_NotificationFilterFailure_for_User.client, req)
   },
-  cREATE_NotificationFilterFailure_for_User: async (props: {"userID": number, "body": NotificationFilterFailure}) => {
+  CREATE_NotificationFilterFailure_for_User: async (props: {"userID": number, "body": NotificationFilterFailure}) => {
     const req = CREATE_NotificationFilterFailure_for_User.request(props)
     return  handler(CREATE_NotificationFilterFailure_for_User.client, req)
   },
-  list_all_NotificationFilterPush_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterPush_for_User: async (props: {"userID": number}) => {
     const req = List_all_NotificationFilterPush_for_User.request(props)
     return  handler(List_all_NotificationFilterPush_for_User.client, req)
   },
-  cREATE_NotificationFilterPush_for_User: async (props: {"userID": number, "body": NotificationFilterPush}) => {
+  CREATE_NotificationFilterPush_for_User: async (props: {"userID": number, "body": NotificationFilterPush}) => {
     const req = CREATE_NotificationFilterPush_for_User.request(props)
     return  handler(CREATE_NotificationFilterPush_for_User.client, req)
   },
-  list_all_NotificationFilterUrl_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterUrl_for_User: async (props: {"userID": number}) => {
     const req = List_all_NotificationFilterUrl_for_User.request(props)
     return  handler(List_all_NotificationFilterUrl_for_User.client, req)
   },
-  cREATE_NotificationFilterUrl_for_User: async (props: {"userID": number, "body": NotificationFilterUrl}) => {
+  CREATE_NotificationFilterUrl_for_User: async (props: {"userID": number, "body": NotificationFilterUrl}) => {
     const req = CREATE_NotificationFilterUrl_for_User.request(props)
     return  handler(CREATE_NotificationFilterUrl_for_User.client, req)
   },
-  list_all_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_NotificationFilterUrl_for_User_MonetaryAccount.request(props)
     return  handler(List_all_NotificationFilterUrl_for_User_MonetaryAccount.client, req)
   },
-  cREATE_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": NotificationFilterUrlMonetaryAccount}) => {
+  CREATE_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": NotificationFilterUrlMonetaryAccount}) => {
     const req = CREATE_NotificationFilterUrl_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_NotificationFilterUrl_for_User_MonetaryAccount.client, req)
   },
-  rEAD_OauthClient_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_OauthClient_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_OauthClient_for_User.request(props)
     return  handler(READ_OauthClient_for_User.client, req)
   },
-  uPDATE_OauthClient_for_User: async (props: {"userID": number, "itemId": number, "body": OauthClient}) => {
+  UPDATE_OauthClient_for_User: async (props: {"userID": number, "itemId": number, "body": OauthClient}) => {
     const req = UPDATE_OauthClient_for_User.request(props)
     return  handler(UPDATE_OauthClient_for_User.client, req)
   },
-  list_all_OauthClient_for_User: async (props: {"userID": number}) => {
+  List_all_OauthClient_for_User: async (props: {"userID": number}) => {
     const req = List_all_OauthClient_for_User.request(props)
     return  handler(List_all_OauthClient_for_User.client, req)
   },
-  cREATE_OauthClient_for_User: async (props: {"userID": number, "body": OauthClient}) => {
+  CREATE_OauthClient_for_User: async (props: {"userID": number, "body": OauthClient}) => {
     const req = CREATE_OauthClient_for_User.request(props)
     return  handler(CREATE_OauthClient_for_User.client, req)
   },
-  list_all_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_Payment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Payment_for_User_MonetaryAccount.client, req)
   },
-  cREATE_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": Payment}) => {
+  CREATE_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": Payment}) => {
     const req = CREATE_Payment_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_Payment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_Payment_for_User_MonetaryAccount.request(props)
     return  handler(READ_Payment_for_User_MonetaryAccount.client, req)
   },
-  list_all_Payment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_Payment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
     const req = List_all_Payment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_Payment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  list_all_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(List_all_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  cREATE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": PaymentAutoAllocate}) => {
+  CREATE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": PaymentAutoAllocate}) => {
     const req = CREATE_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  rEAD_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(READ_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": PaymentAutoAllocate}) => {
+  UPDATE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": PaymentAutoAllocate}) => {
     const req = UPDATE_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  dELETE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  DELETE_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = DELETE_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  list_all_PaymentAutoAllocate_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentAutoAllocate_for_User: async (props: {"userID": number}) => {
     const req = List_all_PaymentAutoAllocate_for_User.request(props)
     return  handler(List_all_PaymentAutoAllocate_for_User.client, req)
   },
-  list_all_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_PaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(List_all_PaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  cREATE_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": PaymentBatch}) => {
+  CREATE_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": PaymentBatch}) => {
     const req = CREATE_PaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_PaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  rEAD_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_PaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(READ_PaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": PaymentBatch}) => {
+  UPDATE_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": PaymentBatch}) => {
     const req = UPDATE_PaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_PaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  rEAD_PaymentServiceProviderCredential: async (props: {"itemId": number}) => {
+  READ_PaymentServiceProviderCredential: async (props: {"itemId": number}) => {
     const req = READ_PaymentServiceProviderCredential.request(props)
     return  handler(READ_PaymentServiceProviderCredential.client, req)
   },
-  cREATE_PaymentServiceProviderCredential: async (props: {"body": PaymentServiceProviderCredential}) => {
+  CREATE_PaymentServiceProviderCredential: async (props: {"body": PaymentServiceProviderCredential}) => {
     const req = CREATE_PaymentServiceProviderCredential.request(props)
     return  handler(CREATE_PaymentServiceProviderCredential.client, req)
   },
-  list_all_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number}) => {
     const req = List_all_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(List_all_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
-  cREATE_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "body": PaymentServiceProviderDraftPayment}) => {
+  CREATE_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "body": PaymentServiceProviderDraftPayment}) => {
     const req = CREATE_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(CREATE_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
-  rEAD_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(READ_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
-  uPDATE_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "itemId": number, "body": PaymentServiceProviderDraftPayment}) => {
+  UPDATE_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "itemId": number, "body": PaymentServiceProviderDraftPayment}) => {
     const req = UPDATE_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(UPDATE_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
-  list_all_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number}) => {
     const req = List_all_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(List_all_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
-  cREATE_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "body": PaymentServiceProviderIssuerTransaction}) => {
+  CREATE_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "body": PaymentServiceProviderIssuerTransaction}) => {
     const req = CREATE_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(CREATE_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
-  rEAD_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(READ_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
-  uPDATE_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "itemId": number, "body": PaymentServiceProviderIssuerTransaction}) => {
+  UPDATE_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "itemId": number, "body": PaymentServiceProviderIssuerTransaction}) => {
     const req = UPDATE_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(UPDATE_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
-  list_all_PdfContent_for_User_Invoice: async (props: {"userID": number, "invoiceID": number}) => {
+  List_all_PdfContent_for_User_Invoice: async (props: {"userID": number, "invoiceID": number}) => {
     const req = List_all_PdfContent_for_User_Invoice.request(props)
     return  handler(List_all_PdfContent_for_User_Invoice.client, req)
   },
-  cREATE_Replace_for_User_Card: async (props: {"userID": number, "cardID": number, "body": CardReplace}) => {
+  CREATE_Replace_for_User_Card: async (props: {"userID": number, "cardID": number, "body": CardReplace}) => {
     const req = CREATE_Replace_for_User_Card.request(props)
     return  handler(CREATE_Replace_for_User_Card.client, req)
   },
-  list_all_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
-  cREATE_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": RequestInquiry}) => {
+  CREATE_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": RequestInquiry}) => {
     const req = CREATE_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
-  rEAD_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(READ_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestInquiry}) => {
+  UPDATE_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestInquiry}) => {
     const req = UPDATE_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
-  list_all_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_RequestInquiryBatch_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestInquiryBatch_for_User_MonetaryAccount.client, req)
   },
-  cREATE_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": RequestInquiryBatch}) => {
+  CREATE_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": RequestInquiryBatch}) => {
     const req = CREATE_RequestInquiryBatch_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_RequestInquiryBatch_for_User_MonetaryAccount.client, req)
   },
-  rEAD_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_RequestInquiryBatch_for_User_MonetaryAccount.request(props)
     return  handler(READ_RequestInquiryBatch_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestInquiryBatch}) => {
+  UPDATE_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestInquiryBatch}) => {
     const req = UPDATE_RequestInquiryBatch_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_RequestInquiryBatch_for_User_MonetaryAccount.client, req)
   },
-  rEAD_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_RequestResponse_for_User_MonetaryAccount.request(props)
     return  handler(READ_RequestResponse_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestResponse}) => {
+  UPDATE_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": RequestResponse}) => {
     const req = UPDATE_RequestResponse_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_RequestResponse_for_User_MonetaryAccount.client, req)
   },
-  list_all_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_RequestResponse_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestResponse_for_User_MonetaryAccount.client, req)
   },
-  cREATE_SandboxUserCompany: async (props: {"body": SandboxUserCompany}) => {
+  CREATE_SandboxUserCompany: async (props: {"body": SandboxUserCompany}) => {
     const req = CREATE_SandboxUserCompany.request(props)
     return  handler(CREATE_SandboxUserCompany.client, req)
   },
-  cREATE_SandboxUserPerson: async (props: {"body": SandboxUserPerson}) => {
+  CREATE_SandboxUserPerson: async (props: {"body": SandboxUserPerson}) => {
     const req = CREATE_SandboxUserPerson.request(props)
     return  handler(CREATE_SandboxUserPerson.client, req)
   },
-  rEAD_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_Schedule_for_User_MonetaryAccount.request(props)
     return  handler(READ_Schedule_for_User_MonetaryAccount.client, req)
   },
-  list_all_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_Schedule_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Schedule_for_User_MonetaryAccount.client, req)
   },
-  list_all_Schedule_for_User: async (props: {"userID": number}) => {
+  List_all_Schedule_for_User: async (props: {"userID": number}) => {
     const req = List_all_Schedule_for_User.request(props)
     return  handler(List_all_Schedule_for_User.client, req)
   },
-  rEAD_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "itemId": number}) => {
+  READ_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "itemId": number}) => {
     const req = READ_ScheduleInstance_for_User_MonetaryAccount_Schedule.request(props)
     return  handler(READ_ScheduleInstance_for_User_MonetaryAccount_Schedule.client, req)
   },
-  uPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "itemId": number, "body": ScheduleInstance}) => {
+  UPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "itemId": number, "body": ScheduleInstance}) => {
     const req = UPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule.request(props)
     return  handler(UPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule.client, req)
   },
-  list_all_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number}) => {
+  List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number}) => {
     const req = List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule.request(props)
     return  handler(List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule.client, req)
   },
-  list_all_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
-  cREATE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": SchedulePayment}) => {
+  CREATE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": SchedulePayment}) => {
     const req = CREATE_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(READ_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": SchedulePayment}) => {
+  UPDATE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": SchedulePayment}) => {
     const req = UPDATE_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
-  dELETE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  DELETE_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = DELETE_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
-  rEAD_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_SchedulePaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(READ_SchedulePaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": SchedulePaymentBatch}) => {
+  UPDATE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": SchedulePaymentBatch}) => {
     const req = UPDATE_SchedulePaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_SchedulePaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  dELETE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  DELETE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = DELETE_SchedulePaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_SchedulePaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  cREATE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": SchedulePaymentBatch}) => {
+  CREATE_SchedulePaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": SchedulePaymentBatch}) => {
     const req = CREATE_SchedulePaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_SchedulePaymentBatch_for_User_MonetaryAccount.client, req)
   },
-  cREATE_ServerError: async (props: {"body": ServerError}) => {
+  CREATE_ServerError: async (props: {"body": ServerError}) => {
     const req = CREATE_ServerError.request(props)
     return  handler(CREATE_ServerError.client, req)
   },
-  list_all_ServerPublicKey_for_Installation: async (props: {"installationID": number}) => {
+  List_all_ServerPublicKey_for_Installation: async (props: {"installationID": number}) => {
     const req = List_all_ServerPublicKey_for_Installation.request(props)
     return  handler(List_all_ServerPublicKey_for_Installation.client, req)
   },
-  dELETE_Session: async (props: {"itemId": number}) => {
+  DELETE_Session: async (props: {"itemId": number}) => {
     const req = DELETE_Session.request(props)
     return  handler(DELETE_Session.client, req)
   },
-  cREATE_SessionServer: async (props: {"body": SessionServer}) => {
+  CREATE_SessionServer: async (props: {"body": SessionServer}) => {
     const req = CREATE_SessionServer.request(props)
     return  handler(CREATE_SessionServer.client, req)
   },
-  list_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.request(props)
     return  handler(List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.client, req)
   },
-  cREATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ShareInviteMonetaryAccountInquiry}) => {
+  CREATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "body": ShareInviteMonetaryAccountInquiry}) => {
     const req = CREATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.client, req)
   },
-  rEAD_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.request(props)
     return  handler(READ_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.client, req)
   },
-  uPDATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": ShareInviteMonetaryAccountInquiry}) => {
+  UPDATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number, "body": ShareInviteMonetaryAccountInquiry}) => {
     const req = UPDATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.client, req)
   },
-  rEAD_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_ShareInviteMonetaryAccountResponse_for_User.request(props)
     return  handler(READ_ShareInviteMonetaryAccountResponse_for_User.client, req)
   },
-  uPDATE_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number, "itemId": number, "body": ShareInviteMonetaryAccountResponse}) => {
+  UPDATE_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number, "itemId": number, "body": ShareInviteMonetaryAccountResponse}) => {
     const req = UPDATE_ShareInviteMonetaryAccountResponse_for_User.request(props)
     return  handler(UPDATE_ShareInviteMonetaryAccountResponse_for_User.client, req)
   },
-  list_all_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number}) => {
+  List_all_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number}) => {
     const req = List_all_ShareInviteMonetaryAccountResponse_for_User.request(props)
     return  handler(List_all_ShareInviteMonetaryAccountResponse_for_User.client, req)
   },
-  rEAD_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_SofortMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(READ_SofortMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  list_all_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_SofortMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_SofortMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  cREATE_Statement_for_User_MonetaryAccount_Event: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "body": ExportStatementPayment}) => {
+  CREATE_Statement_for_User_MonetaryAccount_Event: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "body": ExportStatementPayment}) => {
     const req = CREATE_Statement_for_User_MonetaryAccount_Event.request(props)
     return  handler(CREATE_Statement_for_User_MonetaryAccount_Event.client, req)
   },
-  rEAD_Statement_for_User_MonetaryAccount_Event: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "itemId": number}) => {
+  READ_Statement_for_User_MonetaryAccount_Event: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "itemId": number}) => {
     const req = READ_Statement_for_User_MonetaryAccount_Event.request(props)
     return  handler(READ_Statement_for_User_MonetaryAccount_Event.client, req)
   },
-  rEAD_SwitchServicePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_SwitchServicePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_SwitchServicePayment_for_User_MonetaryAccount.request(props)
     return  handler(READ_SwitchServicePayment_for_User_MonetaryAccount.client, req)
   },
-  cREATE_TokenQrRequestIdeal_for_User: async (props: {"userID": number, "body": TokenQrRequestIdeal}) => {
+  CREATE_TokenQrRequestIdeal_for_User: async (props: {"userID": number, "body": TokenQrRequestIdeal}) => {
     const req = CREATE_TokenQrRequestIdeal_for_User.request(props)
     return  handler(CREATE_TokenQrRequestIdeal_for_User.client, req)
   },
-  cREATE_TokenQrRequestSofort_for_User: async (props: {"userID": number, "body": TokenQrRequestSofort}) => {
+  CREATE_TokenQrRequestSofort_for_User: async (props: {"userID": number, "body": TokenQrRequestSofort}) => {
     const req = CREATE_TokenQrRequestSofort_for_User.request(props)
     return  handler(CREATE_TokenQrRequestSofort_for_User.client, req)
   },
-  list_all_TransferwiseCurrency_for_User: async (props: {"userID": number}) => {
+  List_all_TransferwiseCurrency_for_User: async (props: {"userID": number}) => {
     const req = List_all_TransferwiseCurrency_for_User.request(props)
     return  handler(List_all_TransferwiseCurrency_for_User.client, req)
   },
-  cREATE_TransferwiseQuote_for_User: async (props: {"userID": number, "body": TransferwiseQuote}) => {
+  CREATE_TransferwiseQuote_for_User: async (props: {"userID": number, "body": TransferwiseQuote}) => {
     const req = CREATE_TransferwiseQuote_for_User.request(props)
     return  handler(CREATE_TransferwiseQuote_for_User.client, req)
   },
-  rEAD_TransferwiseQuote_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_TransferwiseQuote_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_TransferwiseQuote_for_User.request(props)
     return  handler(READ_TransferwiseQuote_for_User.client, req)
   },
-  cREATE_TransferwiseQuoteTemporary_for_User: async (props: {"userID": number, "body": TransferwiseQuoteTemporary}) => {
+  CREATE_TransferwiseQuoteTemporary_for_User: async (props: {"userID": number, "body": TransferwiseQuoteTemporary}) => {
     const req = CREATE_TransferwiseQuoteTemporary_for_User.request(props)
     return  handler(CREATE_TransferwiseQuoteTemporary_for_User.client, req)
   },
-  rEAD_TransferwiseQuoteTemporary_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_TransferwiseQuoteTemporary_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_TransferwiseQuoteTemporary_for_User.request(props)
     return  handler(READ_TransferwiseQuoteTemporary_for_User.client, req)
   },
-  list_all_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
     const req = List_all_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
-  cREATE_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseAccountQuote}) => {
+  CREATE_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseAccountQuote}) => {
     const req = CREATE_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
-  rEAD_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
+  READ_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
     const req = READ_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(READ_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
-  dELETE_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
+  DELETE_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
     const req = DELETE_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(DELETE_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
-  list_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
     const req = List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.client, req)
   },
-  cREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseAccountRequirement}) => {
+  CREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseAccountRequirement}) => {
     const req = CREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.client, req)
   },
-  list_all_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
     const req = List_all_TransferwiseTransfer_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseTransfer_for_User_TransferwiseQuote.client, req)
   },
-  cREATE_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseTransfer}) => {
+  CREATE_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseTransfer}) => {
     const req = CREATE_TransferwiseTransfer_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseTransfer_for_User_TransferwiseQuote.client, req)
   },
-  rEAD_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
+  READ_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "itemId": number}) => {
     const req = READ_TransferwiseTransfer_for_User_TransferwiseQuote.request(props)
     return  handler(READ_TransferwiseTransfer_for_User_TransferwiseQuote.client, req)
   },
-  cREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseTransferRequirement}) => {
+  CREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "body": TransferwiseTransferRequirement}) => {
     const req = CREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote.client, req)
   },
-  list_all_TransferwiseUser_for_User: async (props: {"userID": number}) => {
+  List_all_TransferwiseUser_for_User: async (props: {"userID": number}) => {
     const req = List_all_TransferwiseUser_for_User.request(props)
     return  handler(List_all_TransferwiseUser_for_User.client, req)
   },
-  cREATE_TransferwiseUser_for_User: async (props: {"userID": number, "body": TransferwiseUser}) => {
+  CREATE_TransferwiseUser_for_User: async (props: {"userID": number, "body": TransferwiseUser}) => {
     const req = CREATE_TransferwiseUser_for_User.request(props)
     return  handler(CREATE_TransferwiseUser_for_User.client, req)
   },
-  list_all_TreeProgress_for_User: async (props: {"userID": number}) => {
+  List_all_TreeProgress_for_User: async (props: {"userID": number}) => {
     const req = List_all_TreeProgress_for_User.request(props)
     return  handler(List_all_TreeProgress_for_User.client, req)
   },
-  rEAD_User: async (props: {"itemId": number}) => {
+  READ_User: async (props: {"itemId": number}) => {
     const req = READ_User.request(props)
     return  handler(READ_User.client, req)
   },
-  list_all_User: async (props: {}) => {
+  List_all_User: async (props: {}) => {
     const req = List_all_User.request()
     return  handler(List_all_User.client, req)
   },
-  rEAD_UserCompany: async (props: {"itemId": number}) => {
+  READ_UserCompany: async (props: {"itemId": number}) => {
     const req = READ_UserCompany.request(props)
     return  handler(READ_UserCompany.client, req)
   },
-  uPDATE_UserCompany: async (props: {"itemId": number, "body": UserCompany}) => {
+  UPDATE_UserCompany: async (props: {"itemId": number, "body": UserCompany}) => {
     const req = UPDATE_UserCompany.request(props)
     return  handler(UPDATE_UserCompany.client, req)
   },
-  rEAD_UserPaymentServiceProvider: async (props: {"itemId": number}) => {
+  READ_UserPaymentServiceProvider: async (props: {"itemId": number}) => {
     const req = READ_UserPaymentServiceProvider.request(props)
     return  handler(READ_UserPaymentServiceProvider.client, req)
   },
-  rEAD_UserPerson: async (props: {"itemId": number}) => {
+  READ_UserPerson: async (props: {"itemId": number}) => {
     const req = READ_UserPerson.request(props)
     return  handler(READ_UserPerson.client, req)
   },
-  uPDATE_UserPerson: async (props: {"itemId": number, "body": UserPerson}) => {
+  UPDATE_UserPerson: async (props: {"itemId": number, "body": UserPerson}) => {
     const req = UPDATE_UserPerson.request(props)
     return  handler(UPDATE_UserPerson.client, req)
   },
-  rEAD_WhitelistSdd_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_WhitelistSdd_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_WhitelistSdd_for_User.request(props)
     return  handler(READ_WhitelistSdd_for_User.client, req)
   },
-  list_all_WhitelistSdd_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSdd_for_User: async (props: {"userID": number}) => {
     const req = List_all_WhitelistSdd_for_User.request(props)
     return  handler(List_all_WhitelistSdd_for_User.client, req)
   },
-  rEAD_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
+  READ_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "itemId": number}) => {
     const req = READ_WhitelistSdd_for_User_MonetaryAccount.request(props)
     return  handler(READ_WhitelistSdd_for_User_MonetaryAccount.client, req)
   },
-  list_all_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
     const req = List_all_WhitelistSdd_for_User_MonetaryAccount.request(props)
     return  handler(List_all_WhitelistSdd_for_User_MonetaryAccount.client, req)
   },
-  rEAD_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_WhitelistSddOneOff_for_User.request(props)
     return  handler(READ_WhitelistSddOneOff_for_User.client, req)
   },
-  uPDATE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number, "body": WhitelistSddOneOff}) => {
+  UPDATE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number, "body": WhitelistSddOneOff}) => {
     const req = UPDATE_WhitelistSddOneOff_for_User.request(props)
     return  handler(UPDATE_WhitelistSddOneOff_for_User.client, req)
   },
-  dELETE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number}) => {
+  DELETE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = DELETE_WhitelistSddOneOff_for_User.request(props)
     return  handler(DELETE_WhitelistSddOneOff_for_User.client, req)
   },
-  list_all_WhitelistSddOneOff_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSddOneOff_for_User: async (props: {"userID": number}) => {
     const req = List_all_WhitelistSddOneOff_for_User.request(props)
     return  handler(List_all_WhitelistSddOneOff_for_User.client, req)
   },
-  cREATE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "body": WhitelistSddOneOff}) => {
+  CREATE_WhitelistSddOneOff_for_User: async (props: {"userID": number, "body": WhitelistSddOneOff}) => {
     const req = CREATE_WhitelistSddOneOff_for_User.request(props)
     return  handler(CREATE_WhitelistSddOneOff_for_User.client, req)
   },
-  rEAD_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number}) => {
+  READ_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = READ_WhitelistSddRecurring_for_User.request(props)
     return  handler(READ_WhitelistSddRecurring_for_User.client, req)
   },
-  uPDATE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number, "body": WhitelistSddRecurring}) => {
+  UPDATE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number, "body": WhitelistSddRecurring}) => {
     const req = UPDATE_WhitelistSddRecurring_for_User.request(props)
     return  handler(UPDATE_WhitelistSddRecurring_for_User.client, req)
   },
-  dELETE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number}) => {
+  DELETE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "itemId": number}) => {
     const req = DELETE_WhitelistSddRecurring_for_User.request(props)
     return  handler(DELETE_WhitelistSddRecurring_for_User.client, req)
   },
-  list_all_WhitelistSddRecurring_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSddRecurring_for_User: async (props: {"userID": number}) => {
     const req = List_all_WhitelistSddRecurring_for_User.request(props)
     return  handler(List_all_WhitelistSddRecurring_for_User.client, req)
   },
-  cREATE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "body": WhitelistSddRecurring}) => {
+  CREATE_WhitelistSddRecurring_for_User: async (props: {"userID": number, "body": WhitelistSddRecurring}) => {
     const req = CREATE_WhitelistSddRecurring_for_User.request(props)
     return  handler(CREATE_WhitelistSddRecurring_for_User.client, req)
   },

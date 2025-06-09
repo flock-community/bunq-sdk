@@ -62,7 +62,7 @@ class SdkTypeScriptEmitter(emitShared: EmitShared) : TypeScriptEmitter(emitShare
         this.paramList(endpoint).joinToString(", ") { "${emit(it.identifier)}: ${it.reference.emit()}" }
 
     fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
-        |${endpoint.identifier.value.firstToLower()}: async (props: {${request.emitSdkInterface(endpoint)}}) => {
+        |${endpoint.identifier.value}: async (props: {${request.emitSdkInterface(endpoint)}}) => {
         |${Spacer}const req = ${endpoint.identifier.value}.request(${request.paramList(endpoint).takeIf { it.isNotEmpty() }?.let { "props" }.orEmpty()})
         |${Spacer}return  handler(${endpoint.identifier.value}.client, req)
         |},
