@@ -1,5 +1,7 @@
 import {Wirespec} from "./gen/Wirespec";
 import {loadRsaKeyPair, signData, verifyResponse} from "./signing";
+import {List_all_MonetaryAccountBank_for_User} from "./gen/endpoint";
+import {Context} from "./context";
 
 function headersIteratorToRecord(headersIterator: Headers): Record<string, string> {
     const record: Record<string, string> = {};
@@ -69,8 +71,18 @@ export const rawHandler: (rawRequest:Wirespec.RawRequest) => Promise<Wirespec.Ra
         return rawResponse
     })
 }
-export const handler = <Req extends Wirespec.Request<any>, Res extends Wirespec.Response<any>>(client: Wirespec.Client<Req, Res>) => async (request: Req): Promise<Res> => {
-    const rawRequest = client(serialization).to(request);
-    const rawResponse = await rawHandler(rawRequest)
-    return client(serialization).from(rawResponse)
+
+type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
+export const initHandler: (context: Context) => Handler = (context) => async (client, req) => {
+    const rawReq = client(serialization).to(req)
+    const authReq: Wirespec.RawRequest = {
+        ...rawReq,
+        headers: {
+            ...rawReq.headers,
+            "UserAgent": context.serverName,
+            "X-Bunq-Client-Authentication": context.sessionToken,
+        }
+    }
+    const rawRes = await rawHandler(authReq)
+    return client(serialization).from(rawRes)
 };

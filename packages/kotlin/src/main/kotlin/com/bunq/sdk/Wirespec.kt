@@ -131,3 +131,4 @@ fun handler(config: Config): (Wirespec.Request<*>) -> Wirespec.Response<*> {
     val context = initContext(config)
     return { req -> handle(signing, context, req) }
 }
+

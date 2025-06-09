@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest'
 import {createContext} from "../src/context";
-import {rawHandler} from "../src/wirespec";
+import {initHandler, rawHandler} from "../src/wirespec";
 import {Sdk} from "../src/gen/Sdk";
 
 const serverName = "PeterScript"
@@ -10,7 +10,8 @@ const apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95
 describe("api test", async () => {
 
     const context = await createContext(apiKey, serverName)
-    const sdk = Sdk(context, rawHandler)
+    const handler = initHandler(context)
+    const sdk = Sdk(handler)
 
     test('READ_User', async () => {
         const res = await sdk.rEAD_User({
