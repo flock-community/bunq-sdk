@@ -5,14 +5,16 @@ import {Sdk} from "../src/gen/Sdk";
 import {initSigning} from "../src/signing";
 import {initConfig} from "../src/config";
 
+const config = initConfig({
+    serverName: "PeterScript",
+    apiKey: "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
+    privateKeyFile: "../../private_key.pem",
+    publicKeyFile: "../../public_key.pem",
+})
+
 describe("api test", async () => {
-    const config = initConfig({
-        serverName: "PeterScript",
-        apiKey: "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
-        privateKeyFile: "../../private_key.pem",
-        publicKeyFile: "../../public_key.pem",
-    })
-    const signing = await initSigning(config)
+
+    const signing = initSigning(config)
     const context = await initContext(config, signing)
     const handler = initHandler(signing, context)
     const sdk = Sdk(handler)
