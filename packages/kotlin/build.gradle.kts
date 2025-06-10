@@ -13,9 +13,6 @@ plugins {
     kotlin("jvm") version "2.1.0"
 }
 
-group = "community.flock.wirespec.example.gradle"
-version = libs.versions.wirespec.get()
-
 repositories {
     mavenCentral()
     mavenLocal()

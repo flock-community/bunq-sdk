@@ -13,9 +13,6 @@ plugins {
     alias(libs.plugins.wirespec)
 }
 
-group = "community.flock.wirespec.example.gradle"
-version = libs.versions.wirespec.get()
-
 repositories {
     mavenCentral()
     mavenLocal()
