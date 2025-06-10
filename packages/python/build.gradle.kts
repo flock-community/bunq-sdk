@@ -32,7 +32,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     format = Format.OpenAPIV3
     strict = true
     shared = true
-    preProcessor = { it -> it }
+    preProcessor = OpenApiPreProcessor
 }
 
 class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): PythonEmitter(packageName, emitShared) {
