@@ -25,9 +25,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
     implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.9.22")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 }
 
