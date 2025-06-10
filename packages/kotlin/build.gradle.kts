@@ -11,6 +11,7 @@ import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 plugins {
     alias(libs.plugins.wirespec)
     kotlin("jvm") version "2.1.0"
+    `maven-publish`
 }
 
 repositories {
@@ -21,7 +22,7 @@ repositories {
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.+")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
     implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
@@ -69,6 +70,28 @@ tasks.register<ConvertWirespecTask>("wirespec") {
 tasks.named("compileKotlin") {
     dependsOn("wirespec")
 }
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+    dependsOn("wirespec", "compileJava")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenKotlin") {
+            from(components["java"])
+            artifact(sourcesJar.get())
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
 
 class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
