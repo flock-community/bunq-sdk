@@ -2,6 +2,7 @@ package com.bunq.sdk
 
 import com.bunq.sdk.generated.Sdk
 import com.bunq.sdk.generated.endpoint.List_all_MonetaryAccountBank_for_User
+import com.bunq.sdk.generated.endpoint.READ_MonetaryAccountBank_for_User
 import com.bunq.sdk.generated.endpoint.READ_User
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -29,6 +30,35 @@ class ApiTest {
             is READ_User.Response400 -> error("Cannot read user")
         }
         assertEquals("Donald Byrne", body.UserPerson?.legal_name)
+    }
+
+    @Test
+    fun `testbankAccount`(): Unit = runTest {
+        val signing = Signing(config)
+        val context = initContext(config)
+        val sdk = Sdk(handler(signing, context))
+        val res = sdk.list_all_MonetaryAccountBank_for_User(context.userId)
+        val body = when (res) {
+            is List_all_MonetaryAccountBank_for_User.Response200 -> res.body
+            is List_all_MonetaryAccountBank_for_User.Response400 -> error("Could not get bank accounts")
+        }
+        assertEquals(1989601, body.firstOrNull()?.id)
+        assertEquals("998.30", body.firstOrNull()?.balance?.value)
+    }
+
+    @Test
+    fun `testbankAccount1`(): Unit = runTest {
+        val signing = Signing(config)
+        val context = initContext(config)
+        val sdk = Sdk(handler(signing, context))
+        val res = sdk.rEAD_MonetaryAccountBank_for_User(context.userId, 1989601)
+        val body = when (res) {
+            is READ_MonetaryAccountBank_for_User.Response200 -> res.body
+
+            is READ_MonetaryAccountBank_for_User.Response400 -> error("Could not get bank account")
+        }
+        assertEquals(1989601, body.id)
+        assertEquals("998.30", body.balance?.value)
     }
 
     @Test
