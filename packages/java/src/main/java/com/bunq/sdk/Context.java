@@ -92,7 +92,7 @@ public class Context {
                     config.apiKey(),
                     config.serviceName(),
                     installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")),
-                    deviceServer.id().orElseThrow(error("No device id")),
+                    deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")),
                     serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")),
                     serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")),
                     serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));

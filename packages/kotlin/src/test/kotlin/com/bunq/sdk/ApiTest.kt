@@ -54,11 +54,10 @@ class ApiTest {
         val res = sdk.rEAD_MonetaryAccountBank_for_User(context.userId, 1989601)
         val body = when (res) {
             is READ_MonetaryAccountBank_for_User.Response200 -> res.body
-
             is READ_MonetaryAccountBank_for_User.Response400 -> error("Could not get bank account")
         }
-        assertEquals(1989601, body.id)
-        assertEquals("998.30", body.balance?.value)
+        assertEquals(1989601, body.MonetaryAccountBank?.id)
+        assertEquals("998.30", body.MonetaryAccountBank?.balance?.value)
     }
 
     @Test

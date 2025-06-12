@@ -51,12 +51,6 @@ val serialization: Wirespec.Serialization<String> =
                         .fold(objectMapper.createObjectNode()) { acc, jsonNode ->
                             acc.apply { setAll<ObjectNode>(jsonNode) }
                         }
-                        .let { json ->
-                            val fields = json.fieldNames().asSequence().toList()
-                            val classifier = kType.classifier as KClass<*>
-                            val members = classifier.memberProperties.map { it.name }
-                            if (members.intersect(fields).isEmpty()) json.first() else json
-                        }
                 }
             }
 
