@@ -98,7 +98,7 @@ fun initContext(config: Config): Context {
         apiKey = config.apiKey,
         serviceName = config.serviceName,
         serverPublicKey = installation.ServerPublicKey?.server_public_key ?: error("No server public key"),
-        deviceId = deviceServer.Id?.id ?: error("No device id"),
+        deviceId = deviceServer.id ?: error("No device id"),
         sessionId = serverSession.Id?.id ?: error("No session id"),
         sessionToken = serverSession.Token?.token ?: error("No session token"),
         userId = serverSession.UserPerson?.id ?: error("No user id"),

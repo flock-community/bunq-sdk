@@ -277,7 +277,7 @@
           },
           "mailbox_name": {
             "type": "string",
-            "description": "The name on the mailbox (only used for Postal addresses).",
+            "description": "The name on the mailbox (only used for Postal and Shipping addresses).",
             "readOnly": false,
             "writeOnly": false
           },
@@ -2919,7 +2919,7 @@
             "description": "The partner promotion that this cashback is for.",
             "readOnly": true,
             "writeOnly": false,
-            "$ref": "#/components/schemas/UserPartnerPromotion"
+            "$ref": "#/components/schemas/UserPartnerPromotionCashback"
           }
         }
       },
@@ -4269,19 +4269,11 @@
       "DeviceServerCreate": {
         "type": "object",
         "properties": {
-          "Id": {
-            "type": "object",
+          "id": {
+            "type": "integer",
             "description": "The id of the DeviceServer as created on the server.",
             "readOnly": true,
-            "writeOnly": false,
-            "properties": {
-              "id": {
-                "type": "integer",
-                "description": "The id of the DeviceServer as created on the server.",
-                "readOnly": true,
-                "writeOnly": false
-              }
-            }
+            "writeOnly": false
           }
         }
       },
@@ -6049,6 +6041,55 @@
           "event_id": {
             "type": "integer",
             "description": "The id of the event of transaction.",
+            "readOnly": true,
+            "writeOnly": false
+          }
+        }
+      },
+      "HealthCheckListing": {
+        "type": "object",
+        "properties": {
+          "HealthResult": {
+            "type": "object",
+            "description": "",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/HealthCheckResult"
+          }
+        }
+      },
+      "HealthCheckResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "The result status of the health check.",
+            "readOnly": true,
+            "writeOnly": false
+          },
+          "allEntry": {
+            "type": "array",
+            "description": "The entries on which the current status is based.",
+            "readOnly": true,
+            "writeOnly": false,
+            "items": {
+              "$ref": "#/components/schemas/HealthCheckResultEntry"
+            }
+          }
+        }
+      },
+      "HealthCheckResultEntry": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "The type of HealthCheckResultEntry.",
+            "readOnly": true,
+            "writeOnly": false
+          },
+          "status": {
+            "type": "string",
+            "description": "The status of the HealthCheckResultEntry",
             "readOnly": true,
             "writeOnly": false
           }
@@ -17797,119 +17838,59 @@
       "PartnerPromotionCashback": {
         "type": "object",
         "properties": {
-          "promotion_code": {
+          "public_uuid": {
             "type": "string",
-            "description": "The promotion code used in signup to indicate the partner that referred the user.",
-            "readOnly": false,
+            "description": "The public UUID of the cashback promotion.",
+            "readOnly": true,
             "writeOnly": false
           },
           "status": {
             "type": "string",
             "description": "The status of the cashback promotion.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false
           },
-          "description": {
+          "promotion_code": {
             "type": "string",
-            "description": "The internal description displayed in the admin.",
-            "readOnly": false,
-            "writeOnly": true
-          },
-          "date_start": {
-            "type": "string",
-            "description": "The date this cashback promotion starts.",
-            "readOnly": false,
-            "writeOnly": true
-          },
-          "date_end": {
-            "type": "string",
-            "description": "The date this cashback promotion ends.",
-            "readOnly": false,
-            "writeOnly": true
-          },
-          "currency": {
-            "type": "string",
-            "description": "The currency of the cashback promotion.",
-            "readOnly": false,
-            "writeOnly": true
+            "description": "The promotion code used in signup to indicate the partner that referred the user.",
+            "readOnly": true,
+            "writeOnly": false
           },
           "amount_cashback_per_transaction_maximum": {
             "type": "object",
             "description": "The amount of cashback per transaction, will not be higher than the amount of the transaction.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/Amount"
           },
           "number_of_transaction_maximum": {
             "type": "integer",
             "description": "The maximum number of transactions that can be made.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false
           },
           "amount_transaction_minimum": {
             "type": "object",
             "description": "The minimum amount of a transaction.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/Amount"
           },
           "url_together": {
             "type": "string",
             "description": "The URL to the Together page with FAQs about this promotion.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false
           },
           "deeplink": {
             "type": "string",
             "description": "The deeplink to the cashback promotion.",
-            "readOnly": false,
+            "readOnly": true,
             "writeOnly": false
           },
           "partner_name": {
             "type": "string",
             "description": "The name of the partner.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "partner_avatar_uuid": {
-            "type": "string",
-            "description": "The ID of the avatar of the partner.",
-            "readOnly": false,
-            "writeOnly": true
-          },
-          "promotion_title_short": {
-            "type": "object",
-            "description": "The short title of the promotion.",
-            "readOnly": false,
-            "writeOnly": false,
-            "$ref": "#/components/schemas/StringTranslated"
-          },
-          "promotion_title_long": {
-            "type": "object",
-            "description": "The long title of the promotion.",
-            "readOnly": false,
-            "writeOnly": false,
-            "$ref": "#/components/schemas/StringTranslated"
-          },
-          "promotion_description": {
-            "type": "object",
-            "description": "The description of the promotion.",
-            "readOnly": false,
-            "writeOnly": false,
-            "$ref": "#/components/schemas/StringTranslated"
-          },
-          "all_partner_identifier": {
-            "type": "array",
-            "description": "The identifiers to match the partner when payments are made to it.",
-            "readOnly": false,
-            "writeOnly": true,
-            "items": {
-              "type": "string"
-            }
-          },
-          "public_uuid": {
-            "type": "string",
-            "description": "The public UUID of the cashback promotion.",
             "readOnly": true,
             "writeOnly": false
           },
@@ -17919,15 +17900,35 @@
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/Avatar"
+          },
+          "promotion_title_short": {
+            "type": "array",
+            "description": "The short title of the promotion.",
+            "readOnly": true,
+            "writeOnly": false,
+            "items": {
+              "type": "string"
+            }
+          },
+          "promotion_title_long": {
+            "type": "array",
+            "description": "The long title of the promotion.",
+            "readOnly": true,
+            "writeOnly": false,
+            "items": {
+              "type": "string"
+            }
+          },
+          "promotion_description": {
+            "type": "array",
+            "description": "The description of the promotion.",
+            "readOnly": true,
+            "writeOnly": false,
+            "items": {
+              "type": "string"
+            }
           }
-        },
-        "required": [
-          "description",
-          "date_start",
-          "date_end",
-          "currency",
-          "partner_avatar_uuid"
-        ]
+        }
       },
       "Payment": {
         "type": "object",
@@ -18115,6 +18116,13 @@
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/PaymentSuspendedOutgoing"
+          },
+          "payment_fee": {
+            "type": "object",
+            "description": "Incurred fee for the payment.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/PaymentFee"
           }
         }
       },
@@ -18721,6 +18729,29 @@
           }
         }
       },
+      "PaymentFee": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The amount formatted to two decimal places.",
+            "readOnly": true,
+            "writeOnly": false
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency of the amount. It is an ISO 4217 formatted currency code.",
+            "readOnly": true,
+            "writeOnly": false
+          },
+          "invoice_id": {
+            "type": "integer",
+            "description": "The id of the invoice related to possible payment fee.",
+            "readOnly": true,
+            "writeOnly": false
+          }
+        }
+      },
       "PaymentListing": {
         "type": "object",
         "properties": {
@@ -18901,6 +18932,13 @@
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/PaymentSuspendedOutgoing"
+          },
+          "payment_fee": {
+            "type": "object",
+            "description": "Incurred fee for the payment.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/PaymentFee"
           }
         }
       },
@@ -19084,6 +19122,13 @@
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/PaymentSuspendedOutgoing"
+          },
+          "payment_fee": {
+            "type": "object",
+            "description": "Incurred fee for the payment.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/PaymentFee"
           }
         }
       },
@@ -21655,6 +21700,12 @@
             "writeOnly": false,
             "$ref": "#/components/schemas/Schedule"
           },
+          "purpose": {
+            "type": "string",
+            "description": "The schedule purpose.",
+            "readOnly": false,
+            "writeOnly": false
+          },
           "status": {
             "type": "string",
             "description": "The schedule status, options: ACTIVE, FINISHED, CANCELLED.",
@@ -21822,6 +21873,12 @@
             "description": "The schedule status, options: ACTIVE, FINISHED, CANCELLED.",
             "readOnly": true,
             "writeOnly": false
+          },
+          "purpose": {
+            "type": "string",
+            "description": "The schedule purpose.",
+            "readOnly": true,
+            "writeOnly": false
           }
         }
       },
@@ -21845,6 +21902,12 @@
           "status": {
             "type": "string",
             "description": "The schedule status, options: ACTIVE, FINISHED, CANCELLED.",
+            "readOnly": true,
+            "writeOnly": false
+          },
+          "purpose": {
+            "type": "string",
+            "description": "The schedule purpose.",
             "readOnly": true,
             "writeOnly": false
           }
@@ -22886,77 +22949,6 @@
             "type": "string",
             "description": "The 'transaction ID' of the Sofort transaction.",
             "readOnly": true,
-            "writeOnly": false
-          }
-        }
-      },
-      "StringTranslated": {
-        "type": "object",
-        "properties": {
-          "de_DE": {
-            "type": "string",
-            "description": "The German translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "en_US": {
-            "type": "string",
-            "description": "The English translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "es_ES": {
-            "type": "string",
-            "description": "The Spanish translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "fr_FR": {
-            "type": "string",
-            "description": "The French translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "hi_IN": {
-            "type": "string",
-            "description": "The Hindi translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "it_IT": {
-            "type": "string",
-            "description": "The Italian translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "nl_NL": {
-            "type": "string",
-            "description": "The Dutch translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "pl_PL": {
-            "type": "string",
-            "description": "The Polish translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "pt_PT": {
-            "type": "string",
-            "description": "The Portuguese translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "ru_RU": {
-            "type": "string",
-            "description": "The Russian translation.",
-            "readOnly": false,
-            "writeOnly": false
-          },
-          "uk_UA": {
-            "type": "string",
-            "description": "The Ukrainian translation.",
-            "readOnly": false,
             "writeOnly": false
           }
         }
@@ -24574,6 +24566,13 @@
             "writeOnly": false,
             "$ref": "#/components/schemas/Avatar"
           },
+          "address_shipping": {
+            "type": "object",
+            "description": "The company's shipping address.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/Address"
+          },
           "version_terms_of_service": {
             "type": "string",
             "description": "The version of the terms of service accepted by the user.",
@@ -24762,6 +24761,13 @@
           "address_postal": {
             "type": "object",
             "description": "The company's postal address.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/Address"
+          },
+          "address_shipping": {
+            "type": "object",
+            "description": "The company's shipping address.",
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/Address"
@@ -25045,7 +25051,7 @@
           }
         }
       },
-      "UserPartnerPromotion": {
+      "UserPartnerPromotionCashback": {
         "type": "object",
         "properties": {
           "promotion_code": {
@@ -25478,6 +25484,13 @@
               "$ref": "#/components/schemas/Pointer"
             }
           },
+          "address_shipping": {
+            "type": "object",
+            "description": "The person's shipping address.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/Address"
+          },
           "place_of_birth": {
             "type": "string",
             "description": "The person's place of birth.",
@@ -25614,6 +25627,13 @@
           "address_postal": {
             "type": "object",
             "description": "The person's postal address.",
+            "readOnly": true,
+            "writeOnly": false,
+            "$ref": "#/components/schemas/Address"
+          },
+          "address_shipping": {
+            "type": "object",
+            "description": "The person's shipping address.",
             "readOnly": true,
             "writeOnly": false,
             "$ref": "#/components/schemas/Address"
@@ -34814,6 +34834,68 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CardGeneratedCvc2Update"
+                }
+              }
+            },
+            "headers": {
+              "X-Bunq-Client-Response-Id": {
+                "$ref": "#/components/headers/X-Bunq-Client-Response-Id"
+              },
+              "X-Bunq-Client-Request-Id": {
+                "$ref": "#/components/headers/X-Bunq-Client-Request-Id"
+              },
+              "X-Bunq-Server-Signature": {
+                "$ref": "#/components/headers/X-Bunq-Server-Signature"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/GenericError"
+          }
+        }
+      }
+    },
+    "/health-check": {
+      "get": {
+        "tags": [
+          "health-check"
+        ],
+        "summary": "",
+        "operationId": "List_all_HealthCheck",
+        "description": "Basic health check for uptime and instance health monitoring.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Cache-Control"
+          },
+          {
+            "$ref": "#/components/parameters/User-Agent"
+          },
+          {
+            "$ref": "#/components/parameters/X-Bunq-Language"
+          },
+          {
+            "$ref": "#/components/parameters/X-Bunq-Region"
+          },
+          {
+            "$ref": "#/components/parameters/X-Bunq-Client-Request-Id"
+          },
+          {
+            "$ref": "#/components/parameters/X-Bunq-Geolocation"
+          },
+          {
+            "$ref": "#/components/parameters/X-Bunq-Client-Authentication"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Basic health check for uptime and instance health monitoring.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthCheckListing"
+                  }
                 }
               }
             },
@@ -68467,6 +68549,10 @@
     },
     {
       "name": "generated-cvc2",
+      "description": ""
+    },
+    {
+      "name": "health-check",
       "description": ""
     },
     {
