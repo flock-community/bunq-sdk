@@ -93,7 +93,6 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                         is SchemaObject -> {
                             wrapResponse[key]
                                 ?.let { prop ->
-                                    println("Wrap $key in $prop")
                                     SchemaObject(
                                         type = Type.OBJECT,
                                         properties = mapOf(prop to schema)
