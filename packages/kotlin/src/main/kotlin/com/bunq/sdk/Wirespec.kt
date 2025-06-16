@@ -6,23 +6,24 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.javaType
 
 val baseUrl = "https://public-api.sandbox.bunq.com/v1/"
 
-val kotlinModule = KotlinModule.Builder()
-    .enable(KotlinFeature.KotlinPropertyNameAsImplicitName)
-    .build()
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .registerModule(kotlinModule)
+    .registerModule(kotlinModule {
+        enable(KotlinFeature.KotlinPropertyNameAsImplicitName)
+    })
     .registerModule(WirespecModuleKotlin())
 
 
@@ -37,13 +38,19 @@ val serialization: Wirespec.Serialization<String> =
             val tree = objectMapper.readTree(raw)
             val response = tree.get("Response").asIterable()
 
-            val json = if (kType.classifier == List::class) {
-                response.filterIsInstance<ObjectNode>().fold(objectMapper.createArrayNode()) { acc, jsonNode ->
-                    acc.addAll(jsonNode.fieldNames().asSequence().map { jsonNode.get(it) }.toList())
-                }
-            } else {
-                response.filterIsInstance<ObjectNode>().reduce { acc, jsonNode ->
-                    acc.apply { setAll<ObjectNode>(jsonNode) }
+            val json = when {
+                kType.classifier == List::class -> response
+                    .filterIsInstance<ObjectNode>()
+                    .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
+                        acc.addAll(jsonNode.fieldNames().asSequence().map { jsonNode.get(it) }.toList())
+                    }
+
+                else -> {
+                    response
+                        .filterIsInstance<ObjectNode>()
+                        .fold(objectMapper.createObjectNode()) { acc, jsonNode ->
+                            acc.apply { setAll<ObjectNode>(jsonNode) }
+                        }
                 }
             }
 
@@ -51,7 +58,6 @@ val serialization: Wirespec.Serialization<String> =
                 .constructType(kType.javaType)
                 .let { objectMapper.treeToValue(json, it) }
         }
-
     }
 
 fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {

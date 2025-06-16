@@ -3,6 +3,8 @@ import community.flock.kotlinx.openapi.bindings.v3.OperationObject
 import community.flock.kotlinx.openapi.bindings.v3.ParameterObject
 import community.flock.kotlinx.openapi.bindings.v3.PathItemObject
 import community.flock.kotlinx.openapi.bindings.v3.ReferenceObject
+import community.flock.kotlinx.openapi.bindings.v3.SchemaObject
+import community.flock.kotlinx.openapi.bindings.v3.Type
 import kotlinx.serialization.json.Json
 import java.io.Serializable
 
@@ -22,6 +24,11 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         "X-Bunq-Client-Request-Id",
         "X-Bunq-Geolocation",
         "X-Bunq-Client-Authentication"
+    )
+
+    private val wrapResponse = mapOf(
+        "DeviceServerCreate" to "Id",
+        "MonetaryAccountBankRead" to "MonetaryAccountBank"
     )
 
     /**
@@ -55,6 +62,7 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                 val parameterRefs = filterParams.map { param -> "#/components/parameters/$param" }
                 parameter.ref.value !in parameterRefs
             }
+
             else -> true
         }
     }
@@ -77,7 +85,25 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                         parameters = operation.parameters?.filter(::shouldKeepParameter)
                     )
                 }
-            }
+            },
+            components = openApi.components?.copy(
+                schemas = openApi.components?.schemas?.mapValues { (key, schema) ->
+                    when (schema) {
+                        is ReferenceObject -> schema
+                        is SchemaObject -> {
+                            wrapResponse[key]
+                                ?.let { prop ->
+                                    println("Wrap $key in $prop")
+                                    SchemaObject(
+                                        type = Type.OBJECT,
+                                        properties = mapOf(prop to schema)
+                                    )
+                                }
+                                ?: schema
+                        }
+                    }
+                }
+            )
         )
 
         // Serialize the processed schema back to JSON
