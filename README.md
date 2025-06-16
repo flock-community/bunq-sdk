@@ -1,4 +1,9 @@
-# Bunq SDK Generator
+# Bunq SDK
+
+> ⚠️ **Warning**: This repository is not affiliated with Bunq. It is a research project by Flock. For more information,
+> please see our [blog post](https://wirespec.io/blog/bunq-sdk).
+
+
 
 This repository showcases how four different SDKs (Java, Kotlin, TypeScript/JavaScript, and Python) are generated from a single OpenAPI specification using Wirespec. All projects follow the same structure and build process, demonstrating the power of code generation for maintaining consistent APIs across multiple programming languages.
 
