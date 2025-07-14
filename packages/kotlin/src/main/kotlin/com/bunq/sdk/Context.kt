@@ -90,7 +90,7 @@ fun initContext(config: Config): Context {
     }
 
     val (_, publicKeyPem) = signing.generateRsaKeyPair()
-    val installation = createInstallation(config.serviceName, publicKeyPem)
+    val installation = createInstallation(publicKeyPem)
     if (installation.Token?.token == null) error("Token not available")
     val deviceServer = createDeviceServer(config.serviceName, config.apiKey, installation.Token.token)
     val serverSession = createSessionServer(config.serviceName, config.apiKey, installation.Token.token)
