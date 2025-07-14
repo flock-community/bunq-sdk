@@ -1,7 +1,7 @@
 import unittest
 
 from signing import Signing
-from src.config import Config
+from config import Config
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
 service_name = 'PeterScript'

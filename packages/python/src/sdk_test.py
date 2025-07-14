@@ -3,8 +3,8 @@ import unittest
 from api.endpoint import READ_User, List_all_MonetaryAccountBank_for_User
 from api.sdk import Sdk
 from context import Context
-from src.config import Config
-from src.signing import Signing
+from config import Config
+from signing import Signing
 from wirespec import Serialization, handler
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"

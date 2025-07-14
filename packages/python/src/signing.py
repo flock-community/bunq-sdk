@@ -4,11 +4,8 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 import base64
-import json
-import hashlib
 
-from src.config import Config
-
+from config import Config
 
 class Signing:
 

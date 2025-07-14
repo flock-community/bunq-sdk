@@ -2,7 +2,7 @@ from signing import Signing
 from context import Context
 from transport import Serialization, send
 
-from src.api.wirespec import Wirespec
+from api.wirespec import Wirespec
 
 def handler(signing: Signing, context: Context):
     serialization = Serialization()
