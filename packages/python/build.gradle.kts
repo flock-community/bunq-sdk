@@ -43,6 +43,8 @@ class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): Py
                 |
                 |from typing import List, Optional
                 |
+                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "from .model.${it.value} import ${it.value}" }}
+                |
                 |class Sdk():
                 |
                 |  def __init__(self, handler, serialization):
