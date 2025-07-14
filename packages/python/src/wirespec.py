@@ -60,18 +60,8 @@ class Serialization(Wirespec.Serialization):
         else:
             return value
 
-def handler(serialization: Wirespec.Serialization, endpoint:Wirespec.Endpoint, req: Wirespec.Request) -> Wirespec.Response:
-    raw_req: Wirespec.RawRequest = endpoint.Convert.to_raw_request(serialization, req)
+def send(raw_req:Wirespec.RawRequest) -> Wirespec.RawResponse:
     req_headers = dict(map(lambda kv: (kv[0], next(iter(kv[1]), None)), raw_req.headers.items()))
-
-    if req_headers.get("X-Bunq-Client-Authentication") == "":
-        del req_headers["X-Bunq-Client-Authentication"]
-
-    if req_headers.get("X-Bunq-Geolocation") is None:
-        del req_headers["X-Bunq-Geolocation"]
-
-    if req_headers.get("X-Bunq-Region") is None:
-        del req_headers["X-Bunq-Region"]
 
     signature_header = {'X-Bunq-Client-Signature':  sign_data(raw_req.body, private_key_pem)} if raw_req.body is not None else{}
 
@@ -80,7 +70,13 @@ def handler(serialization: Wirespec.Serialization, endpoint:Wirespec.Endpoint, r
         url = baseUrl + '/'.join(raw_req.path),
         headers = {**req_headers, **signature_header},
         data = raw_req.body)
+
     res_headers:Dict[str, List[str]] = dict(map(lambda kv: (kv[0].lower(), list(kv[1])), res.headers.items()))
-    raw_res = Wirespec.RawResponse(res.status_code, res_headers, res.text)
+
+    return Wirespec.RawResponse(res.status_code, res_headers, res.text)
+
+def handler(serialization: Wirespec.Serialization, endpoint:Wirespec.Endpoint, req: Wirespec.Request) -> Wirespec.Response:
+    raw_req: Wirespec.RawRequest = endpoint.Convert.to_raw_request(serialization, req)
+    raw_res = send(raw_req)
 
     return endpoint.Convert.from_raw_response(serialization, raw_res)

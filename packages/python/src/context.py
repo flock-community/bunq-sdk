@@ -5,14 +5,12 @@ from api.model.DeviceServer import DeviceServer
 from api.model.Installation import Installation
 from api.model.SessionServer import SessionServer
 
-from api.sdk import Sdk
 from signing import generate_rsa_key_pair
 
-from wirespec import Serialization, handler
+from wirespec import Serialization, send
 
 class Context:
     serialization = Serialization()
-    client = Sdk(handler, serialization)
 
     private_key_pem, public_key_pem = generate_rsa_key_pair()
 
@@ -45,17 +43,13 @@ class Context:
             client_public_key = self.public_key_pem
         )
         req = CREATE_Installation.Request(
-            CacheControl = None,
-            UserAgent = service_name,
-            XBunqLanguage = None,
-            XBunqRegion = None,
-            XBunqClientRequestId = None,
-            XBunqGeolocation = None,
-            XBunqClientAuthentication = "",
             body = body
         )
-        res = self.client.CREATE_Installation(req)
-        print(type(res))
+
+        raw_req = CREATE_Installation.Convert.to_raw_request(self.serialization, req)
+        raw_res = send(raw_req)
+        res = CREATE_Installation.Convert.from_raw_response(self.serialization, raw_res)
+
         match res:
             case CREATE_Installation.Response200(body=installation):
                 return installation
@@ -70,16 +64,15 @@ class Context:
             permitted_ips = ["*"]
         )
         req = CREATE_DeviceServer.Request(
-            CacheControl = None,
-            UserAgent = service_name,
-            XBunqLanguage = None,
-            XBunqRegion = None,
-            XBunqClientRequestId = None,
-            XBunqGeolocation = None,
-            XBunqClientAuthentication = token,
             body = body
         )
-        match self.client.CREATE_DeviceServer(req):
+
+        raw_req = CREATE_DeviceServer.Convert.to_raw_request(self.serialization, req)
+        raw_req.headers["X-Bunq-Client-Authentication"] = [token]
+        raw_res = send(raw_req)
+        res = CREATE_DeviceServer.Convert.from_raw_response(self.serialization, raw_res)
+
+        match res:
             case CREATE_DeviceServer.Response200(body=device_server):
                 return device_server
             case _:
@@ -90,16 +83,15 @@ class Context:
             secret = api_key,
         )
         req = CREATE_SessionServer.Request(
-            CacheControl = None,
-            UserAgent = service_name,
-            XBunqLanguage = None,
-            XBunqRegion = None,
-            XBunqClientRequestId = None,
-            XBunqGeolocation = None,
-            XBunqClientAuthentication = token,
             body = body
         )
-        match self.client.CREATE_SessionServer(req):
+
+        raw_req = CREATE_DeviceServer.Convert.to_raw_request(self.serialization, req)
+        raw_req.headers["X-Bunq-Client-Authentication"] = [token]
+        raw_res = send(raw_req)
+        res = CREATE_SessionServer.Convert.from_raw_response(self.serialization, raw_res)
+
+        match res:
             case CREATE_SessionServer.Response200(body=server_session):
                 return server_session
             case _:
