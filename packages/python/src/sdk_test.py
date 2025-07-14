@@ -3,14 +3,23 @@ import unittest
 from api.endpoint import READ_User, List_all_MonetaryAccountBank_for_User
 from api.sdk import Sdk
 from context import Context
+from src.config import Config
+from src.signing import Signing
 from wirespec import Serialization, handler
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
 service_name = 'PeterScript'
 
 serialization = Serialization()
-sdk = Sdk(handler, serialization)
-context = Context(USER_API_KEY, service_name)
+config = Config(
+    api_key = USER_API_KEY,
+    service_name = service_name,
+    public_key_file="../../public_key.pem",
+    private_key_file="../../private_key.pem"
+)
+signing = Signing(config)
+context = Context(config)
+sdk = Sdk(handler(signing, context), serialization)
 
 
 class Testing(unittest.TestCase):
@@ -19,13 +28,6 @@ class Testing(unittest.TestCase):
 
         res = sdk.READ_User(
             itemId=context.user_id,
-            CacheControl=None,
-            UserAgent=context.service_name,
-            XBunqLanguage=None,
-            XBunqRegion=None,
-            XBunqClientRequestId=None,
-            XBunqGeolocation=None,
-            XBunqClientAuthentication=context.session_token,
         )
 
         match res:
@@ -37,13 +39,6 @@ class Testing(unittest.TestCase):
 
         res = sdk.List_all_MonetaryAccountBank_for_User(
             userID=context.user_id,
-            CacheControl=None,
-            UserAgent=context.service_name,
-            XBunqLanguage=None,
-            XBunqRegion=None,
-            XBunqClientRequestId=None,
-            XBunqGeolocation=None,
-            XBunqClientAuthentication=context.session_token,
         )
 
         match res:

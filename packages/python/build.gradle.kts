@@ -62,7 +62,7 @@ class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): Py
     fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
         |def ${emit(endpoint.identifier)}(self, ${request.emitSdkInterface(endpoint)}):
         |   req = endpoint.${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
-        |   return self.handler(self.serialization, endpoint.${emit(endpoint.identifier)}, req)
+        |   return self.handler(endpoint.${emit(endpoint.identifier)}, req)
     """.trimMargin()
 
     fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =

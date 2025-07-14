@@ -5,29 +5,31 @@ from api.model.DeviceServer import DeviceServer
 from api.model.Installation import Installation
 from api.model.SessionServer import SessionServer
 
-from signing import generate_rsa_key_pair
-
-from wirespec import Serialization, send
+from signing import Signing
+from config import Config
+from transport import send, Serialization
 
 class Context:
-    serialization = Serialization()
 
-    private_key_pem, public_key_pem = generate_rsa_key_pair()
+    def __init__(self, config: Config):
+        self.config = config
+        self.signing = Signing(config)
+        self.private_key_pem, self.public_key_pem = self.signing.generate_rsa_key_pair()
+        self.serialization = Serialization()
 
-    def __init__(self, api_key: str, service_name: str):
-        self.api_key = api_key
-        self.service_name = service_name
-        installation = self.create_installation(service_name)
+        self.api_key = config.api_key
+        self.service_name = config.service_name
+        installation = self.create_installation()
         if installation.ServerPublicKey is None:
             raise Exception("Installation does not have server public key")
         if installation.Token is None or installation.Token.token is None:
             raise Exception("Installation does not have token")
         self.server_public_key = installation.ServerPublicKey.server_public_key
-        device_server = self.create_device_server(service_name, api_key, installation.Token.token)
+        device_server = self.create_device_server(self.config.service_name, self.config.api_key, installation.Token.token)
         if device_server.Id is None:
             raise Exception("Device server does not have id")
         self.device_id = device_server.Id.id
-        session_server = self.create_session_server(service_name, api_key, installation.Token.token)
+        session_server = self.create_session_server(self.config.service_name, self.config.api_key, installation.Token.token)
         if session_server.Id is None:
             raise Exception("Session server does not have id")
         self.session_id = session_server.Id.id
@@ -38,7 +40,7 @@ class Context:
             raise Exception("Session server does not have user person")
         self.user_id = session_server.UserPerson.id
 
-    def create_installation(self, service_name:str) -> InstallationCreate:
+    def create_installation(self) -> InstallationCreate:
         body = Installation(
             client_public_key = self.public_key_pem
         )
@@ -47,7 +49,7 @@ class Context:
         )
 
         raw_req = CREATE_Installation.Convert.to_raw_request(self.serialization, req)
-        raw_res = send(raw_req)
+        raw_res = send(self.signing, raw_req)
         res = CREATE_Installation.Convert.from_raw_response(self.serialization, raw_res)
 
         match res:
@@ -69,7 +71,7 @@ class Context:
 
         raw_req = CREATE_DeviceServer.Convert.to_raw_request(self.serialization, req)
         raw_req.headers["X-Bunq-Client-Authentication"] = [token]
-        raw_res = send(raw_req)
+        raw_res = send(self.signing, raw_req)
         res = CREATE_DeviceServer.Convert.from_raw_response(self.serialization, raw_res)
 
         match res:
@@ -86,13 +88,13 @@ class Context:
             body = body
         )
 
-        raw_req = CREATE_DeviceServer.Convert.to_raw_request(self.serialization, req)
+        raw_req = CREATE_SessionServer.Convert.to_raw_request(self.serialization, req)
         raw_req.headers["X-Bunq-Client-Authentication"] = [token]
-        raw_res = send(raw_req)
+        raw_res = send(self.signing, raw_req)
         res = CREATE_SessionServer.Convert.from_raw_response(self.serialization, raw_res)
 
         match res:
             case CREATE_SessionServer.Response200(body=server_session):
                 return server_session
             case _:
-                raise Exception("Cannot create device server")
+                raise Exception("Cannot create session server")

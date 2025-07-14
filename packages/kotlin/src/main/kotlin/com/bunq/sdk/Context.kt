@@ -30,7 +30,7 @@ fun initContext(config: Config): Context {
 
     val signing = Signing(config)
 
-    fun createInstallation(serviceName: String, publicKeyPem: String): InstallationCreate {
+    fun createInstallation(publicKeyPem: String): InstallationCreate {
         val body = Installation(
             client_public_key = publicKeyPem
         )
