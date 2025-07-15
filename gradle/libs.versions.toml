@@ -1,5 +1,5 @@
 [versions]
-wirespec = "0.15.2"
+wirespec = "0.16.3"
 jackson = "2.19.0"
 
 [libraries]
