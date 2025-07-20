@@ -101,7 +101,7 @@ fun initContext(config: Config): Context {
         deviceId = deviceServer.Id?.id ?: error("No device id"),
         sessionId = serverSession.Id?.id ?: error("No session id"),
         sessionToken = serverSession.Token?.token ?: error("No session token"),
-        userId = serverSession.UserPerson?.id ?: error("No user id"),
+        userId = serverSession.getUserId() ?: error("No user id"),
         userAgent = config.userAgent,
         cacheControl = config.cacheControl,
         language = config.language,
@@ -109,4 +109,15 @@ fun initContext(config: Config): Context {
         clientRequestId = config.clientRequestId,
         geolocation = config.geolocation,
     )
+}
+
+/**
+ * Sessions can be for various types of users, of which only one is filled.
+ */
+private fun SessionServerCreate.getUserId(): Long {
+    return UserPerson?.id
+        ?: UserCompany?.id
+        ?: UserApiKey?.id
+        ?: UserPaymentServiceProvider?.id
+        ?: error("No user id found in the SessionServerCreate response")
 }

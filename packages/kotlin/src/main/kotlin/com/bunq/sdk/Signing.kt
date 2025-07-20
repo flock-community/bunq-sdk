@@ -25,6 +25,8 @@ class Signing(private val config: Config) {
         }
     }
 
+    fun getBaseUrl(): String = config.bunqServer.baseUrl
+
     fun generateRsaKeyPair(): Pair<String, String> {
         if (config.privateKeyFile.exists() && config.publicKeyFile.exists()) {
             val privateKeyPem = config.privateKeyFile.readText()

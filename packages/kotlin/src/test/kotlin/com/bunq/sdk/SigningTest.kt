@@ -10,6 +10,7 @@ class SigningTest {
     @Test
     fun signing() {
         val config = Config(
+            bunqServer = BUNQ_SANDBOX_SERVER,
             serviceName = "",
             apiKey = "",
             publicKeyFile = File("../../public_key.pem"),

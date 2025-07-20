@@ -1,6 +1,8 @@
 import community.flock.kotlinx.openapi.bindings.v3.OpenAPI
 import community.flock.kotlinx.openapi.bindings.v3.OperationObject
+import community.flock.kotlinx.openapi.bindings.v3.ParameterLocation
 import community.flock.kotlinx.openapi.bindings.v3.ParameterObject
+import community.flock.kotlinx.openapi.bindings.v3.ParameterOrReferenceObject
 import community.flock.kotlinx.openapi.bindings.v3.PathItemObject
 import community.flock.kotlinx.openapi.bindings.v3.ReferenceObject
 import community.flock.kotlinx.openapi.bindings.v3.SchemaObject
@@ -28,7 +30,8 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
 
     private val wrapResponse = mapOf(
         "DeviceServerCreate" to "Id",
-        "MonetaryAccountBankRead" to "MonetaryAccountBank"
+        "MonetaryAccountBankRead" to "MonetaryAccountBank",
+        "SandboxUserPersonCreate" to "ApiKey"
     )
 
     /**
@@ -68,6 +71,50 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
     }
 
     /**
+     * Pagination is not listed in the original openapi spec, but is allowed on every 'List' endpoint
+     *
+     * https://doc.bunq.com/#/pagination
+     *
+     */
+    private fun List<community.flock.kotlinx.openapi.bindings.v3.ParameterOrReferenceObject>.addPaginationParams(
+        operation: OperationObject
+    ): List<community.flock.kotlinx.openapi.bindings.v3.ParameterOrReferenceObject> =
+        if (operation.operationId?.startsWith("List_") != true) {
+            this
+        } else {
+            this + listOf(
+                ParameterObject(
+                    name = "count",
+                    `in` = ParameterLocation.QUERY,
+                    required = false,
+                    description = "Pagination parameter. The count value can be indicate the number of items requested. The items in the response always less than or equal to the maximum count value specified in the request.",
+                    schema = SchemaObject(
+                        type = Type.INTEGER,
+                        maximum = 200.0
+                    )
+                ),
+                ParameterObject(
+                    name = "newer_id",
+                    `in` = ParameterLocation.QUERY,
+                    required = false,
+                    description = "Pagination parameter. The newer_id value can be used to get the next page. The newer_id is always the ID of the last item in the current page. If newer_url is null, there are no more recent items before the current page.",
+                    schema = SchemaObject(
+                        type = Type.INTEGER,
+                    )
+                ), ParameterObject(
+                    name = "older_id",
+                    `in` = ParameterLocation.QUERY,
+                    description = "Pagination parameter. The older_id value can be used to get the previous page. The older_id is always the ID of the first item in the current page. If older_url is null, there are no older items after the current page.",
+                    required = false,
+                    schema = SchemaObject(
+                        type = Type.INTEGER,
+                    )
+                )
+            )
+        }
+
+
+    /**
      * Processes an OpenAPI schema by filtering out specified parameters.
      *
      * @param schema The OpenAPI schema as a JSON string.
@@ -80,9 +127,10 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         // Process the paths in the schema
         val processedOpenApi = openApi.copy(
             paths = openApi.paths.mapValues { (_, pathItem) ->
-                pathItem.applyToAllOperations { operation ->
+                pathItem.applyToAllOperations { operation: OperationObject ->
                     operation.copy(
                         parameters = operation.parameters?.filter(::shouldKeepParameter)
+                            ?.let { it.addPaginationParams(operation) }
                     )
                 }
             },
