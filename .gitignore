@@ -34,3 +34,5 @@ replay_pid*
 build
 
 node_modules
+
+*.pem
