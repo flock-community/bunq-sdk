@@ -6,6 +6,8 @@ import com.bunq.sdk.generated.endpoint.READ_User;
 import com.bunq.sdk.generated.model.UserPerson;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SdkTest {
@@ -31,7 +33,7 @@ public class SdkTest {
 
     @Test
     public void testListAllMonetaryAccountBankForUser() throws Exception {
-        List_all_MonetaryAccountBank_for_User.Response<?> res = sdk.list_all_MonetaryAccountBank_for_User(context.getUserId(), null, null, null).get();
+        List_all_MonetaryAccountBank_for_User.Response<?> res = sdk.list_all_MonetaryAccountBank_for_User(context.getUserId(), Optional.empty(), Optional.empty(), Optional.empty()).get();
         if (res instanceof List_all_MonetaryAccountBank_for_User.Response200 response) {
             assertEquals("D. Byrne", response.getBody().get(0).display_name().orElseThrow());
         } else {

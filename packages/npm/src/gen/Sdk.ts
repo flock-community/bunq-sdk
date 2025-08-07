@@ -1652,6 +1652,7 @@ import {CompanyEmployeeSettingAdyenCardTransaction} from "./model/CompanyEmploye
 import {RequestReferenceSplitTheBillAnchorObject} from "./model/RequestReferenceSplitTheBillAnchorObject"
 import {WhitelistResult} from "./model/WhitelistResult"
 import {CurrencyConversion} from "./model/CurrencyConversion"
+import {SandboxUserPersonCreateApiKey} from "./model/SandboxUserPersonCreateApiKey"
 import {ScheduleAnchorObject} from "./model/ScheduleAnchorObject"
 import {ScheduleInstanceAnchorObject} from "./model/ScheduleInstanceAnchorObject"
 import {SchedulePaymentEntry} from "./model/SchedulePaymentEntry"
@@ -1679,7 +1680,7 @@ import {WhitelistResultViewAnchoredObject} from "./model/WhitelistResultViewAnch
 type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
 
 export const Sdk = (handler: Handler) => ({
-  List_all_AdditionalTransactionInformationCategory_for_User: async (props: {"userID": number}) => {
+  List_all_AdditionalTransactionInformationCategory_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_AdditionalTransactionInformationCategory_for_User.request(props)
     return  handler(List_all_AdditionalTransactionInformationCategory_for_User.client, req)
   },
@@ -1711,7 +1712,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Avatar.request(props)
     return  handler(READ_Avatar.client, req)
   },
-  List_all_BillingContractSubscription_for_User: async (props: {"userID": number}) => {
+  List_all_BillingContractSubscription_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_BillingContractSubscription_for_User.request(props)
     return  handler(List_all_BillingContractSubscription_for_User.client, req)
   },
@@ -1719,7 +1720,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_BunqmeFundraiserProfile_for_User.request(props)
     return  handler(READ_BunqmeFundraiserProfile_for_User.client, req)
   },
-  List_all_BunqmeFundraiserProfile_for_User: async (props: {"userID": number}) => {
+  List_all_BunqmeFundraiserProfile_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_BunqmeFundraiserProfile_for_User.request(props)
     return  handler(List_all_BunqmeFundraiserProfile_for_User.client, req)
   },
@@ -1727,7 +1728,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_BunqmeFundraiserResult_for_User_MonetaryAccount.request(props)
     return  handler(READ_BunqmeFundraiserResult_for_User_MonetaryAccount.client, req)
   },
-  List_all_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_BunqmeTab_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_BunqmeTab_for_User_MonetaryAccount.request(props)
     return  handler(List_all_BunqmeTab_for_User_MonetaryAccount.client, req)
   },
@@ -1759,7 +1760,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(DELETE_CallbackUrl_for_User_OauthClient.client, req)
   },
-  List_all_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number}) => {
+  List_all_CallbackUrl_for_User_OauthClient: async (props: {"userID": number, "oauth-clientID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CallbackUrl_for_User_OauthClient.request(props)
     return  handler(List_all_CallbackUrl_for_User_OauthClient.client, req)
   },
@@ -1775,7 +1776,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_Card_for_User.request(props)
     return  handler(UPDATE_Card_for_User.client, req)
   },
-  List_all_Card_for_User: async (props: {"userID": number}) => {
+  List_all_Card_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Card_for_User.request(props)
     return  handler(List_all_Card_for_User.client, req)
   },
@@ -1795,11 +1796,11 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_CardDebit_for_User.request(props)
     return  handler(CREATE_CardDebit_for_User.client, req)
   },
-  List_all_CardName_for_User: async (props: {"userID": number}) => {
+  List_all_CardName_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CardName_for_User.request(props)
     return  handler(List_all_CardName_for_User.client, req)
   },
-  List_all_CertificatePinned_for_User: async (props: {"userID": number}) => {
+  List_all_CertificatePinned_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CertificatePinned_for_User.request(props)
     return  handler(List_all_CertificatePinned_for_User.client, req)
   },
@@ -1823,7 +1824,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_ChallengeRequest_for_User.request(props)
     return  handler(UPDATE_ChallengeRequest_for_User.client, req)
   },
-  List_all_Company_for_User: async (props: {"userID": number}) => {
+  List_all_Company_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Company_for_User.request(props)
     return  handler(List_all_Company_for_User.client, req)
   },
@@ -1843,39 +1844,39 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_ConfirmationOfFunds_for_User.request(props)
     return  handler(CREATE_ConfirmationOfFunds_for_User.client, req)
   },
-  List_all_Content_for_User_ChatConversation_Attachment: async (props: {"userID": number, "chat-conversationID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_ChatConversation_Attachment: async (props: {"userID": number, "chat-conversationID": number, "attachmentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_ChatConversation_Attachment.request(props)
     return  handler(List_all_Content_for_User_ChatConversation_Attachment.client, req)
   },
-  List_all_Content_for_User_MonetaryAccount_Attachment: async (props: {"userID": number, "monetary-accountID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_Attachment: async (props: {"userID": number, "monetary-accountID": number, "attachmentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_MonetaryAccount_Attachment.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_Attachment.client, req)
   },
-  List_all_Content_for_AttachmentPublic: async (props: {"attachment-publicUUID": string}) => {
+  List_all_Content_for_AttachmentPublic: async (props: {"attachment-publicUUID": string, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_AttachmentPublic.request(props)
     return  handler(List_all_Content_for_AttachmentPublic.client, req)
   },
-  List_all_Content_for_User_Attachment: async (props: {"userID": number, "attachmentID": number}) => {
+  List_all_Content_for_User_Attachment: async (props: {"userID": number, "attachmentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_Attachment.request(props)
     return  handler(List_all_Content_for_User_Attachment.client, req)
   },
-  List_all_Content_for_User_ExportAnnualOverview: async (props: {"userID": number, "export-annual-overviewID": number}) => {
+  List_all_Content_for_User_ExportAnnualOverview: async (props: {"userID": number, "export-annual-overviewID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_ExportAnnualOverview.request(props)
     return  handler(List_all_Content_for_User_ExportAnnualOverview.client, req)
   },
-  List_all_Content_for_User_MonetaryAccount_ExportRib: async (props: {"userID": number, "monetary-accountID": number, "export-ribID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_ExportRib: async (props: {"userID": number, "monetary-accountID": number, "export-ribID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_MonetaryAccount_ExportRib.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_ExportRib.client, req)
   },
-  List_all_Content_for_User_Card_ExportStatementCard: async (props: {"userID": number, "cardID": number, "export-statement-cardID": number}) => {
+  List_all_Content_for_User_Card_ExportStatementCard: async (props: {"userID": number, "cardID": number, "export-statement-cardID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_Card_ExportStatementCard.request(props)
     return  handler(List_all_Content_for_User_Card_ExportStatementCard.client, req)
   },
-  List_all_Content_for_User_MonetaryAccount_CustomerStatement: async (props: {"userID": number, "monetary-accountID": number, "customer-statementID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_CustomerStatement: async (props: {"userID": number, "monetary-accountID": number, "customer-statementID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_MonetaryAccount_CustomerStatement.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_CustomerStatement.client, req)
   },
-  List_all_Content_for_User_MonetaryAccount_Event_Statement: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "statementID": number}) => {
+  List_all_Content_for_User_MonetaryAccount_Event_Statement: async (props: {"userID": number, "monetary-accountID": number, "eventID": number, "statementID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Content_for_User_MonetaryAccount_Event_Statement.request(props)
     return  handler(List_all_Content_for_User_MonetaryAccount_Event_Statement.client, req)
   },
@@ -1883,11 +1884,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_CredentialPasswordIp_for_User.request(props)
     return  handler(READ_CredentialPasswordIp_for_User.client, req)
   },
-  List_all_CredentialPasswordIp_for_User: async (props: {"userID": number}) => {
+  List_all_CredentialPasswordIp_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CredentialPasswordIp_for_User.request(props)
     return  handler(List_all_CredentialPasswordIp_for_User.client, req)
   },
-  List_all_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number}) => {
+  List_all_CurrencyCloudBeneficiary_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CurrencyCloudBeneficiary_for_User.request(props)
     return  handler(List_all_CurrencyCloudBeneficiary_for_User.client, req)
   },
@@ -1899,7 +1900,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_CurrencyCloudBeneficiary_for_User.request(props)
     return  handler(READ_CurrencyCloudBeneficiary_for_User.client, req)
   },
-  List_all_CurrencyCloudBeneficiaryRequirement_for_User: async (props: {"userID": number}) => {
+  List_all_CurrencyCloudBeneficiaryRequirement_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CurrencyCloudBeneficiaryRequirement_for_User.request(props)
     return  handler(List_all_CurrencyCloudBeneficiaryRequirement_for_User.client, req)
   },
@@ -1907,7 +1908,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount.request(props)
     return  handler(CREATE_CurrencyCloudPaymentQuote_for_User_MonetaryAccount.client, req)
   },
-  List_all_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_CurrencyConversion_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CurrencyConversion_for_User_MonetaryAccount.request(props)
     return  handler(List_all_CurrencyConversion_for_User_MonetaryAccount.client, req)
   },
@@ -1927,7 +1928,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_CurrencyConversionQuote_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_CurrencyConversionQuote_for_User_MonetaryAccount.client, req)
   },
-  List_all_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_CustomerStatement_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(List_all_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
@@ -1943,7 +1944,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_CustomerStatement_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_CustomerStatement_for_User_MonetaryAccount.client, req)
   },
-  List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
+  List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(List_all_Definition_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
@@ -1951,12 +1952,12 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Device.request(props)
     return  handler(READ_Device.client, req)
   },
-  List_all_Device: async (props: {}) => {
-    const req = List_all_Device.request()
+  List_all_Device: async (props: {"count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
+    const req = List_all_Device.request(props)
     return  handler(List_all_Device.client, req)
   },
-  List_all_DeviceServer: async (props: {}) => {
-    const req = List_all_DeviceServer.request()
+  List_all_DeviceServer: async (props: {"count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
+    const req = List_all_DeviceServer.request(props)
     return  handler(List_all_DeviceServer.client, req)
   },
   CREATE_DeviceServer: async (props: {"body": DeviceServer}) => {
@@ -1967,7 +1968,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_DeviceServer.request(props)
     return  handler(READ_DeviceServer.client, req)
   },
-  List_all_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_DraftPayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_DraftPayment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_DraftPayment_for_User_MonetaryAccount.client, req)
   },
@@ -1987,11 +1988,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Event_for_User.request(props)
     return  handler(READ_Event_for_User.client, req)
   },
-  List_all_Event_for_User: async (props: {"userID": number}) => {
+  List_all_Event_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Event_for_User.request(props)
     return  handler(List_all_Event_for_User.client, req)
   },
-  List_all_ExportAnnualOverview_for_User: async (props: {"userID": number}) => {
+  List_all_ExportAnnualOverview_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ExportAnnualOverview_for_User.request(props)
     return  handler(List_all_ExportAnnualOverview_for_User.client, req)
   },
@@ -2007,7 +2008,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_ExportAnnualOverview_for_User.request(props)
     return  handler(DELETE_ExportAnnualOverview_for_User.client, req)
   },
-  List_all_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_ExportRib_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ExportRib_for_User_MonetaryAccount.request(props)
     return  handler(List_all_ExportRib_for_User_MonetaryAccount.client, req)
   },
@@ -2027,11 +2028,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_ExportStatementCard_for_User_Card.request(props)
     return  handler(READ_ExportStatementCard_for_User_Card.client, req)
   },
-  List_all_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCard_for_User_Card: async (props: {"userID": number, "cardID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ExportStatementCard_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCard_for_User_Card.client, req)
   },
-  List_all_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCardCsv_for_User_Card: async (props: {"userID": number, "cardID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCardCsv_for_User_Card.client, req)
   },
@@ -2047,7 +2048,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_ExportStatementCardCsv_for_User_Card.request(props)
     return  handler(DELETE_ExportStatementCardCsv_for_User_Card.client, req)
   },
-  List_all_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_ExportStatementCardPdf_for_User_Card: async (props: {"userID": number, "cardID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ExportStatementCardPdf_for_User_Card.request(props)
     return  handler(List_all_ExportStatementCardPdf_for_User_Card.client, req)
   },
@@ -2067,7 +2068,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_FeatureAnnouncement_for_User.request(props)
     return  handler(READ_FeatureAnnouncement_for_User.client, req)
   },
-  List_all_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number}) => {
+  List_all_GeneratedCvc2_for_User_Card: async (props: {"userID": number, "cardID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_GeneratedCvc2_for_User_Card.request(props)
     return  handler(List_all_GeneratedCvc2_for_User_Card.client, req)
   },
@@ -2083,11 +2084,11 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_GeneratedCvc2_for_User_Card.request(props)
     return  handler(UPDATE_GeneratedCvc2_for_User_Card.client, req)
   },
-  List_all_HealthCheck: async (props: {}) => {
-    const req = List_all_HealthCheck.request()
+  List_all_HealthCheck: async (props: {"count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
+    const req = List_all_HealthCheck.request(props)
     return  handler(List_all_HealthCheck.client, req)
   },
-  List_all_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_IdealMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_IdealMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_IdealMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
@@ -2099,20 +2100,20 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_IdealMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(READ_IdealMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  List_all_InsightPreferenceDate_for_User: async (props: {"userID": number}) => {
+  List_all_InsightPreferenceDate_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_InsightPreferenceDate_for_User.request(props)
     return  handler(List_all_InsightPreferenceDate_for_User.client, req)
   },
-  List_all_Insights_for_User: async (props: {"userID": number}) => {
+  List_all_Insights_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Insights_for_User.request(props)
     return  handler(List_all_Insights_for_User.client, req)
   },
-  List_all_InsightsSearch_for_User: async (props: {"userID": number}) => {
+  List_all_InsightsSearch_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_InsightsSearch_for_User.request(props)
     return  handler(List_all_InsightsSearch_for_User.client, req)
   },
-  List_all_Installation: async (props: {}) => {
-    const req = List_all_Installation.request()
+  List_all_Installation: async (props: {"count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
+    const req = List_all_Installation.request(props)
     return  handler(List_all_Installation.client, req)
   },
   CREATE_Installation: async (props: {"body": Installation}) => {
@@ -2123,7 +2124,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Installation.request(props)
     return  handler(READ_Installation.client, req)
   },
-  List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number}) => {
+  List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate: async (props: {"userID": number, "monetary-accountID": number, "payment-auto-allocateID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(List_all_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
@@ -2131,7 +2132,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.request(props)
     return  handler(READ_Instance_for_User_MonetaryAccount_PaymentAutoAllocate.client, req)
   },
-  List_all_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Invoice_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Invoice_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Invoice_for_User_MonetaryAccount.client, req)
   },
@@ -2139,7 +2140,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Invoice_for_User_MonetaryAccount.request(props)
     return  handler(READ_Invoice_for_User_MonetaryAccount.client, req)
   },
-  List_all_Invoice_for_User: async (props: {"userID": number}) => {
+  List_all_Invoice_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Invoice_for_User.request(props)
     return  handler(List_all_Invoice_for_User.client, req)
   },
@@ -2171,7 +2172,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(UPDATE_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  List_all_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number}) => {
+  List_all_Ip_for_User_CredentialPasswordIp: async (props: {"userID": number, "credential-password-ipID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(List_all_Ip_for_User_CredentialPasswordIp.client, req)
   },
@@ -2179,11 +2180,11 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_Ip_for_User_CredentialPasswordIp.request(props)
     return  handler(CREATE_Ip_for_User_CredentialPasswordIp.client, req)
   },
-  List_all_LegalName_for_User: async (props: {"userID": number}) => {
+  List_all_LegalName_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_LegalName_for_User.request(props)
     return  handler(List_all_LegalName_for_User.client, req)
   },
-  List_all_Limit_for_User: async (props: {"userID": number}) => {
+  List_all_Limit_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Limit_for_User.request(props)
     return  handler(List_all_Limit_for_User.client, req)
   },
@@ -2191,7 +2192,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_MastercardAction_for_User_MonetaryAccount.request(props)
     return  handler(READ_MastercardAction_for_User_MonetaryAccount.client, req)
   },
-  List_all_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_MastercardAction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MastercardAction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_MastercardAction_for_User_MonetaryAccount.client, req)
   },
@@ -2199,11 +2200,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_MonetaryAccount_for_User.request(props)
     return  handler(READ_MonetaryAccount_for_User.client, req)
   },
-  List_all_MonetaryAccount_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccount_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccount_for_User.request(props)
     return  handler(List_all_MonetaryAccount_for_User.client, req)
   },
-  List_all_MonetaryAccountBank_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountBank_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountBank_for_User.request(props)
     return  handler(List_all_MonetaryAccountBank_for_User.client, req)
   },
@@ -2227,11 +2228,11 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_MonetaryAccountCard_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountCard_for_User.client, req)
   },
-  List_all_MonetaryAccountCard_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountCard_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountCard_for_User.request(props)
     return  handler(List_all_MonetaryAccountCard_for_User.client, req)
   },
-  List_all_MonetaryAccountExternal_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountExternal_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountExternal_for_User.request(props)
     return  handler(List_all_MonetaryAccountExternal_for_User.client, req)
   },
@@ -2247,7 +2248,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_MonetaryAccountExternal_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountExternal_for_User.client, req)
   },
-  List_all_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountExternalSavings_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(List_all_MonetaryAccountExternalSavings_for_User.client, req)
   },
@@ -2263,7 +2264,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_MonetaryAccountExternalSavings_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountExternalSavings_for_User.client, req)
   },
-  List_all_MonetaryAccountJoint_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountJoint_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountJoint_for_User.request(props)
     return  handler(List_all_MonetaryAccountJoint_for_User.client, req)
   },
@@ -2279,7 +2280,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_MonetaryAccountJoint_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountJoint_for_User.client, req)
   },
-  List_all_MonetaryAccountSavings_for_User: async (props: {"userID": number}) => {
+  List_all_MonetaryAccountSavings_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_MonetaryAccountSavings_for_User.request(props)
     return  handler(List_all_MonetaryAccountSavings_for_User.client, req)
   },
@@ -2295,11 +2296,11 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_MonetaryAccountSavings_for_User.request(props)
     return  handler(UPDATE_MonetaryAccountSavings_for_User.client, req)
   },
-  List_all_Name_for_UserCompany: async (props: {"user-companyID": number}) => {
+  List_all_Name_for_UserCompany: async (props: {"user-companyID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Name_for_UserCompany.request(props)
     return  handler(List_all_Name_for_UserCompany.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
@@ -2319,7 +2320,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
@@ -2339,7 +2340,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
@@ -2359,7 +2360,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
@@ -2379,7 +2380,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
@@ -2399,7 +2400,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
@@ -2419,7 +2420,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
@@ -2439,7 +2440,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
@@ -2459,7 +2460,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
@@ -2479,7 +2480,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
@@ -2499,7 +2500,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Payment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Payment.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
@@ -2519,7 +2520,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
@@ -2539,7 +2540,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
@@ -2559,7 +2560,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
@@ -2579,7 +2580,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
@@ -2599,7 +2600,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
@@ -2619,7 +2620,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
@@ -2639,7 +2640,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
@@ -2659,7 +2660,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
@@ -2679,7 +2680,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
+  List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(List_all_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
@@ -2699,7 +2700,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(DELETE_NoteAttachment_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction: async (props: {"userID": number, "monetary-accountID": number, "adyen-card-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
@@ -2719,7 +2720,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_AdyenCardTransaction.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment: async (props: {"userID": number, "monetary-accountID": number, "switch-service-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
@@ -2739,7 +2740,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SwitchServicePayment.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult: async (props: {"userID": number, "monetary-accountID": number, "bunqme-fundraiser-resultID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
@@ -2759,7 +2760,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_BunqmeFundraiserResult.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_DraftPayment: async (props: {"userID": number, "monetary-accountID": number, "draft-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
@@ -2779,7 +2780,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_DraftPayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_DraftPayment.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "ideal-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
@@ -2799,7 +2800,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_IdealMerchantTransaction.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
@@ -2819,7 +2820,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "open-banking-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
@@ -2839,7 +2840,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_OpenBankingMerchantTransaction.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_PaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "payment-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
@@ -2859,7 +2860,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_PaymentBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_PaymentBatch.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed: async (props: {"userID": number, "monetary-accountID": number, "payment-delayedID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
@@ -2879,7 +2880,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_PaymentDelayed.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Payment: async (props: {"userID": number, "monetary-accountID": number, "paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
@@ -2899,7 +2900,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_Payment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Payment.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "request-inquiry-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
@@ -2919,7 +2920,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestInquiryBatch.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "request-inquiryID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
@@ -2939,7 +2940,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestInquiry.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestInquiry.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_RequestResponse: async (props: {"userID": number, "monetary-accountID": number, "request-responseID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
@@ -2959,7 +2960,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_RequestResponse.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_RequestResponse.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "schedule-instanceID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
@@ -2979,7 +2980,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Schedule_ScheduleInstance.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-payment-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
@@ -2999,7 +3000,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SchedulePaymentBatch.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SchedulePayment: async (props: {"userID": number, "monetary-accountID": number, "schedule-paymentID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
@@ -3019,7 +3020,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_SchedulePayment.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SchedulePayment.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiry-batchID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
@@ -3039,7 +3040,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiryBatch.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry: async (props: {"userID": number, "monetary-accountID": number, "schedule-request-inquiryID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
@@ -3059,7 +3060,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_ScheduleRequestInquiry.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction: async (props: {"userID": number, "monetary-accountID": number, "sofort-merchant-transactionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
@@ -3079,7 +3080,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_SofortMerchantTransaction.client, req)
   },
-  List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number}) => {
+  List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult: async (props: {"userID": number, "monetary-accountID": number, "whitelistID": number, "whitelist-resultID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(List_all_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
@@ -3099,7 +3100,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.request(props)
     return  handler(DELETE_NoteText_for_User_MonetaryAccount_Whitelist_WhitelistResult.client, req)
   },
-  List_all_NotificationFilterEmail_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterEmail_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NotificationFilterEmail_for_User.request(props)
     return  handler(List_all_NotificationFilterEmail_for_User.client, req)
   },
@@ -3107,7 +3108,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_NotificationFilterEmail_for_User.request(props)
     return  handler(CREATE_NotificationFilterEmail_for_User.client, req)
   },
-  List_all_NotificationFilterFailure_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterFailure_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NotificationFilterFailure_for_User.request(props)
     return  handler(List_all_NotificationFilterFailure_for_User.client, req)
   },
@@ -3115,7 +3116,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_NotificationFilterFailure_for_User.request(props)
     return  handler(CREATE_NotificationFilterFailure_for_User.client, req)
   },
-  List_all_NotificationFilterPush_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterPush_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NotificationFilterPush_for_User.request(props)
     return  handler(List_all_NotificationFilterPush_for_User.client, req)
   },
@@ -3123,7 +3124,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_NotificationFilterPush_for_User.request(props)
     return  handler(CREATE_NotificationFilterPush_for_User.client, req)
   },
-  List_all_NotificationFilterUrl_for_User: async (props: {"userID": number}) => {
+  List_all_NotificationFilterUrl_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NotificationFilterUrl_for_User.request(props)
     return  handler(List_all_NotificationFilterUrl_for_User.client, req)
   },
@@ -3131,7 +3132,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_NotificationFilterUrl_for_User.request(props)
     return  handler(CREATE_NotificationFilterUrl_for_User.client, req)
   },
-  List_all_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_NotificationFilterUrl_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_NotificationFilterUrl_for_User_MonetaryAccount.request(props)
     return  handler(List_all_NotificationFilterUrl_for_User_MonetaryAccount.client, req)
   },
@@ -3147,7 +3148,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_OauthClient_for_User.request(props)
     return  handler(UPDATE_OauthClient_for_User.client, req)
   },
-  List_all_OauthClient_for_User: async (props: {"userID": number}) => {
+  List_all_OauthClient_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_OauthClient_for_User.request(props)
     return  handler(List_all_OauthClient_for_User.client, req)
   },
@@ -3155,7 +3156,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_OauthClient_for_User.request(props)
     return  handler(CREATE_OauthClient_for_User.client, req)
   },
-  List_all_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Payment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Payment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Payment_for_User_MonetaryAccount.client, req)
   },
@@ -3167,11 +3168,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Payment_for_User_MonetaryAccount.request(props)
     return  handler(READ_Payment_for_User_MonetaryAccount.client, req)
   },
-  List_all_Payment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number}) => {
+  List_all_Payment_for_User_MonetaryAccount_MastercardAction: async (props: {"userID": number, "monetary-accountID": number, "mastercard-actionID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Payment_for_User_MonetaryAccount_MastercardAction.request(props)
     return  handler(List_all_Payment_for_User_MonetaryAccount_MastercardAction.client, req)
   },
-  List_all_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_PaymentAutoAllocate_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(List_all_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
@@ -3191,11 +3192,11 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_PaymentAutoAllocate_for_User_MonetaryAccount.request(props)
     return  handler(DELETE_PaymentAutoAllocate_for_User_MonetaryAccount.client, req)
   },
-  List_all_PaymentAutoAllocate_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentAutoAllocate_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PaymentAutoAllocate_for_User.request(props)
     return  handler(List_all_PaymentAutoAllocate_for_User.client, req)
   },
-  List_all_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_PaymentBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PaymentBatch_for_User_MonetaryAccount.request(props)
     return  handler(List_all_PaymentBatch_for_User_MonetaryAccount.client, req)
   },
@@ -3219,7 +3220,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_PaymentServiceProviderCredential.request(props)
     return  handler(CREATE_PaymentServiceProviderCredential.client, req)
   },
-  List_all_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentServiceProviderDraftPayment_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(List_all_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
@@ -3235,7 +3236,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_PaymentServiceProviderDraftPayment_for_User.request(props)
     return  handler(UPDATE_PaymentServiceProviderDraftPayment_for_User.client, req)
   },
-  List_all_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number}) => {
+  List_all_PaymentServiceProviderIssuerTransaction_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(List_all_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
@@ -3251,7 +3252,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_PaymentServiceProviderIssuerTransaction_for_User.request(props)
     return  handler(UPDATE_PaymentServiceProviderIssuerTransaction_for_User.client, req)
   },
-  List_all_PdfContent_for_User_Invoice: async (props: {"userID": number, "invoiceID": number}) => {
+  List_all_PdfContent_for_User_Invoice: async (props: {"userID": number, "invoiceID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_PdfContent_for_User_Invoice.request(props)
     return  handler(List_all_PdfContent_for_User_Invoice.client, req)
   },
@@ -3259,7 +3260,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_Replace_for_User_Card.request(props)
     return  handler(CREATE_Replace_for_User_Card.client, req)
   },
-  List_all_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
@@ -3275,7 +3276,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_RequestInquiry_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_RequestInquiry_for_User_MonetaryAccount.client, req)
   },
-  List_all_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestInquiryBatch_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_RequestInquiryBatch_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestInquiryBatch_for_User_MonetaryAccount.client, req)
   },
@@ -3299,7 +3300,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_RequestResponse_for_User_MonetaryAccount.request(props)
     return  handler(UPDATE_RequestResponse_for_User_MonetaryAccount.client, req)
   },
-  List_all_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_RequestResponse_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_RequestResponse_for_User_MonetaryAccount.request(props)
     return  handler(List_all_RequestResponse_for_User_MonetaryAccount.client, req)
   },
@@ -3315,11 +3316,11 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_Schedule_for_User_MonetaryAccount.request(props)
     return  handler(READ_Schedule_for_User_MonetaryAccount.client, req)
   },
-  List_all_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_Schedule_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Schedule_for_User_MonetaryAccount.request(props)
     return  handler(List_all_Schedule_for_User_MonetaryAccount.client, req)
   },
-  List_all_Schedule_for_User: async (props: {"userID": number}) => {
+  List_all_Schedule_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_Schedule_for_User.request(props)
     return  handler(List_all_Schedule_for_User.client, req)
   },
@@ -3331,11 +3332,11 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule.request(props)
     return  handler(UPDATE_ScheduleInstance_for_User_MonetaryAccount_Schedule.client, req)
   },
-  List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number}) => {
+  List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule: async (props: {"userID": number, "monetary-accountID": number, "scheduleID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule.request(props)
     return  handler(List_all_ScheduleInstance_for_User_MonetaryAccount_Schedule.client, req)
   },
-  List_all_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_SchedulePayment_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_SchedulePayment_for_User_MonetaryAccount.request(props)
     return  handler(List_all_SchedulePayment_for_User_MonetaryAccount.client, req)
   },
@@ -3375,7 +3376,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_ServerError.request(props)
     return  handler(CREATE_ServerError.client, req)
   },
-  List_all_ServerPublicKey_for_Installation: async (props: {"installationID": number}) => {
+  List_all_ServerPublicKey_for_Installation: async (props: {"installationID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ServerPublicKey_for_Installation.request(props)
     return  handler(List_all_ServerPublicKey_for_Installation.client, req)
   },
@@ -3387,7 +3388,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_SessionServer.request(props)
     return  handler(CREATE_SessionServer.client, req)
   },
-  List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.request(props)
     return  handler(List_all_ShareInviteMonetaryAccountInquiry_for_User_MonetaryAccount.client, req)
   },
@@ -3411,7 +3412,7 @@ export const Sdk = (handler: Handler) => ({
     const req = UPDATE_ShareInviteMonetaryAccountResponse_for_User.request(props)
     return  handler(UPDATE_ShareInviteMonetaryAccountResponse_for_User.client, req)
   },
-  List_all_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number}) => {
+  List_all_ShareInviteMonetaryAccountResponse_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_ShareInviteMonetaryAccountResponse_for_User.request(props)
     return  handler(List_all_ShareInviteMonetaryAccountResponse_for_User.client, req)
   },
@@ -3419,7 +3420,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_SofortMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(READ_SofortMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
-  List_all_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_SofortMerchantTransaction_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_SofortMerchantTransaction_for_User_MonetaryAccount.request(props)
     return  handler(List_all_SofortMerchantTransaction_for_User_MonetaryAccount.client, req)
   },
@@ -3443,7 +3444,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_TokenQrRequestSofort_for_User.request(props)
     return  handler(CREATE_TokenQrRequestSofort_for_User.client, req)
   },
-  List_all_TransferwiseCurrency_for_User: async (props: {"userID": number}) => {
+  List_all_TransferwiseCurrency_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TransferwiseCurrency_for_User.request(props)
     return  handler(List_all_TransferwiseCurrency_for_User.client, req)
   },
@@ -3463,7 +3464,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_TransferwiseQuoteTemporary_for_User.request(props)
     return  handler(READ_TransferwiseQuoteTemporary_for_User.client, req)
   },
-  List_all_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseRecipient_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
@@ -3479,7 +3480,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_TransferwiseRecipient_for_User_TransferwiseQuote.request(props)
     return  handler(DELETE_TransferwiseRecipient_for_User_TransferwiseQuote.client, req)
   },
-  List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.client, req)
   },
@@ -3487,7 +3488,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseRecipientRequirement_for_User_TransferwiseQuote.client, req)
   },
-  List_all_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number}) => {
+  List_all_TransferwiseTransfer_for_User_TransferwiseQuote: async (props: {"userID": number, "transferwise-quoteID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TransferwiseTransfer_for_User_TransferwiseQuote.request(props)
     return  handler(List_all_TransferwiseTransfer_for_User_TransferwiseQuote.client, req)
   },
@@ -3503,7 +3504,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote.request(props)
     return  handler(CREATE_TransferwiseTransferRequirement_for_User_TransferwiseQuote.client, req)
   },
-  List_all_TransferwiseUser_for_User: async (props: {"userID": number}) => {
+  List_all_TransferwiseUser_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TransferwiseUser_for_User.request(props)
     return  handler(List_all_TransferwiseUser_for_User.client, req)
   },
@@ -3511,7 +3512,7 @@ export const Sdk = (handler: Handler) => ({
     const req = CREATE_TransferwiseUser_for_User.request(props)
     return  handler(CREATE_TransferwiseUser_for_User.client, req)
   },
-  List_all_TreeProgress_for_User: async (props: {"userID": number}) => {
+  List_all_TreeProgress_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_TreeProgress_for_User.request(props)
     return  handler(List_all_TreeProgress_for_User.client, req)
   },
@@ -3519,8 +3520,8 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_User.request(props)
     return  handler(READ_User.client, req)
   },
-  List_all_User: async (props: {}) => {
-    const req = List_all_User.request()
+  List_all_User: async (props: {"count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
+    const req = List_all_User.request(props)
     return  handler(List_all_User.client, req)
   },
   READ_UserCompany: async (props: {"itemId": number}) => {
@@ -3547,7 +3548,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_WhitelistSdd_for_User.request(props)
     return  handler(READ_WhitelistSdd_for_User.client, req)
   },
-  List_all_WhitelistSdd_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSdd_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_WhitelistSdd_for_User.request(props)
     return  handler(List_all_WhitelistSdd_for_User.client, req)
   },
@@ -3555,7 +3556,7 @@ export const Sdk = (handler: Handler) => ({
     const req = READ_WhitelistSdd_for_User_MonetaryAccount.request(props)
     return  handler(READ_WhitelistSdd_for_User_MonetaryAccount.client, req)
   },
-  List_all_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number}) => {
+  List_all_WhitelistSdd_for_User_MonetaryAccount: async (props: {"userID": number, "monetary-accountID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_WhitelistSdd_for_User_MonetaryAccount.request(props)
     return  handler(List_all_WhitelistSdd_for_User_MonetaryAccount.client, req)
   },
@@ -3571,7 +3572,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_WhitelistSddOneOff_for_User.request(props)
     return  handler(DELETE_WhitelistSddOneOff_for_User.client, req)
   },
-  List_all_WhitelistSddOneOff_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSddOneOff_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_WhitelistSddOneOff_for_User.request(props)
     return  handler(List_all_WhitelistSddOneOff_for_User.client, req)
   },
@@ -3591,7 +3592,7 @@ export const Sdk = (handler: Handler) => ({
     const req = DELETE_WhitelistSddRecurring_for_User.request(props)
     return  handler(DELETE_WhitelistSddRecurring_for_User.client, req)
   },
-  List_all_WhitelistSddRecurring_for_User: async (props: {"userID": number}) => {
+  List_all_WhitelistSddRecurring_for_User: async (props: {"userID": number, "count": number | undefined, "newer_id": number | undefined, "older_id": number | undefined}) => {
     const req = List_all_WhitelistSddRecurring_for_User.request(props)
     return  handler(List_all_WhitelistSddRecurring_for_User.client, req)
   },

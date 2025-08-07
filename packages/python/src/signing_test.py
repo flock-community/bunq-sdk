@@ -9,8 +9,8 @@ service_name = 'PeterScript'
 config = Config(
     api_key = USER_API_KEY,
     service_name = service_name,
-    public_key_file="../../public_key.pem",
-    private_key_file="../../private_key.pem"
+    public_key_file="../../../test/public_key.pem",
+    private_key_file="../../../test/private_key.pem"
 )
 
 signing = Signing(config)
@@ -21,7 +21,8 @@ class Testing(unittest.TestCase):
         print("Testing signing")
         res = signing.sign_data("Hello")
         print(res)
-        self.assertEqual(res, "yQlbXl0Odd96X2HG1/GdznujqEugb435bAsWv0jl+9fcEzdCSbXaqpeAVSK/PPzGL/Jxpl5ev1ehZVNB57Rvqwwp2zAGwvRVq4SxLd0D4ya3y9//Rs3ZvA0lW64ICqPENBTAEo1u0pQEoqopTZRee1puZBII57nR+pDGMHAHoJqPEhYFXmEB7a5Ba1lqVCOC7Sfb2zFxCMN6SUf1YTi6cxDqCPJ6NArzLrwRSdi0x4E1lUaD+1/OL913vdAGRERrq4GXzEhj50xiQpajY0OsjPiUErVkpfmntoSRf2GD+AHCBowqQwK6nYMiw7uBTCqL0bcYwo4i7m8WDdw1L6gV7w==")
+        self.assertEqual(res, "fR0Gyn8VfC8eCwq10x5eYAcxXh4nv6331hWAAr77l72zfFScbw3hFSE6iBNklCYc0mfnKezsuRo3re+fTNNHO1oZhfhjc9i4UYxTxBiOEslHrKx9NkXkBZh2RALx/LnhlpyMwB5BBOlFlNeR9Hyj5E8c/a2pObBZRmrZ3cgAnoWF8hhY5Y9XwLS2WIodYIPSQXuQMXyi1UBxhxAbniZ5m1uRSt8gaPmQGMCQtUzvZ8KUXtSvugGPsXHwh94EccZCfjS0sdIQK8AcZ8t5YL6bqkqJ7eVzbxoX6U1nOZVy3MxQMKQ/PFS297er6qsVsGwKbNfaTUvymEb46mM/gQdQDQ==")
+
 def main():
     unittest.main()
 

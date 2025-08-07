@@ -32,7 +32,10 @@ describe("api test", async () => {
 
     test('list_all_MonetaryAccountBank_for_User', async () => {
         const res = await sdk.List_all_MonetaryAccountBank_for_User({
-            "userID": context.userId
+            "userID": context.userId,
+            count: undefined,
+            newer_id: undefined,
+            older_id: undefined,
         })
         if(res.status === 200) {
             expect(res.body[0].display_name).toBe("D. Byrne")
