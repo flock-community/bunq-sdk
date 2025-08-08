@@ -32,7 +32,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     format = Format.OpenAPIV3
     strict = true
     shared = true
-    preProcessor = { it -> it }
+    preProcessor = OpenApiPreProcessor
 }
 
 class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): PythonEmitter(packageName, emitShared) {
@@ -41,17 +41,35 @@ class SdkPythonEmitter(val packageName: PackageName, emitShared: EmitShared): Py
             .let { it + Emitted("${packageName.toDir()}/sdk", """
                 |from . import endpoint
                 |
-                |class Sdk(
-                |${module.statements.filterIsInstance<Endpoint>().joinToString(",\n") {endpoint ->  "endpoint.${emit(endpoint.identifier)}.Handler" }.spacer(1)}
-                |):
+                |from typing import List, Optional
+                |
+                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "from .model.${it.value} import ${it.value}" }}
+                |
+                |class Sdk():
                 |
                 |  def __init__(self, handler, serialization):
                 |    self.handler = handler
                 |    self.serialization = serialization
-                | 
-                |${module.statements.filterIsInstance<Endpoint>().joinToString("\n") {endpoint ->  "def ${emit(endpoint.identifier)}(self, req): return self.handler(self.serialization, endpoint.${emit(endpoint.identifier)}, req)" }.spacer(1)}
+                |
+                |${module.emitEndpointRequest("\n") { (endpoint, request) -> emitFunction(endpoint, request) }.spacer(1)}
+                |
             """.trimMargin()) }
     }
+
+    fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
+        this.paramList(endpoint).joinToString(", ") { "${emit(it.identifier)}: ${it.reference.emit()}" }
+
+    fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
+        |def ${emit(endpoint.identifier)}(self, ${request.emitSdkInterface(endpoint)}):
+        |   req = endpoint.${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
+        |   return self.handler(endpoint.${emit(endpoint.identifier)}, req)
+    """.trimMargin()
+
+    fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =
+        statements
+            .filterIsInstance<Endpoint>()
+            .flatMap { endpoint -> endpoint.requests.map { request -> Pair(endpoint, request) } }
+            .joinToString(separator) { endpointRequest -> emit(endpointRequest) }
 }
 
 tasks.register<Exec>("mypy") {
