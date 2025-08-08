@@ -26,9 +26,9 @@ class Context:
             raise Exception("Installation does not have token")
         self.server_public_key = installation.ServerPublicKey.server_public_key
         device_server = self.create_device_server(self.config.service_name, self.config.api_key, installation.Token.token)
-        if device_server.id is None:
+        if device_server.Id is None:
             raise Exception("Device server does not have id")
-        self.device_id = device_server.id
+        self.device_id = device_server.Id.id
         session_server = self.create_session_server(self.config.service_name, self.config.api_key, installation.Token.token)
         if session_server.Id is None:
             raise Exception("Session server does not have id")

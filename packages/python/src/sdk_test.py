@@ -14,8 +14,8 @@ serialization = Serialization()
 config = Config(
     api_key = USER_API_KEY,
     service_name = service_name,
-    public_key_file="../../public_key.pem",
-    private_key_file="../../private_key.pem"
+    public_key_file="../../../test/public_key.pem",
+    private_key_file="../../../test/private_key.pem"
 )
 signing = Signing(config)
 context = Context(config)
@@ -39,6 +39,9 @@ class Testing(unittest.TestCase):
 
         res = sdk.List_all_MonetaryAccountBank_for_User(
             userID=context.user_id,
+            count= None,
+            newer_id= None,
+            older_id= None,
         )
 
         match res:
