@@ -21375,12 +21375,11 @@
       "SandboxUserPersonCreate": {
         "type": "object",
         "properties": {
-          "Id": {
-            "type": "object",
-            "description": "The id of the created item",
-            "readOnly": true,
-            "writeOnly": false,
-            "$ref": "#/components/schemas/BunqId"
+          "api_key": {
+            "type": "string",
+            "description": "The api key of the created sandbox user",
+            "readOnly": false,
+            "writeOnly": false
           }
         }
       },

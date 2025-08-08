@@ -10,8 +10,8 @@ public class SigningTest {
 
     @Test
     public void testSigning() {
-        File privateKeyFile = new File("../../private_key.pem");
-        File publicKeyFile = new File("../../public_key.pem");
+        File privateKeyFile = new File("../../test/private_key.pem");
+        File publicKeyFile = new File("../../test/public_key.pem");
 
         Config config = new Config(
                 "",
@@ -21,10 +21,11 @@ public class SigningTest {
         );
 
         Signing signing = new Signing(config);
+        signing.generateRsaKeyPair();
         String result = signing.signData("Hello");
 
         assertEquals(
-                "T/jCqiFSe1nj9keIq2Cdg5MISs69IIJa1BcmsQ+0iLTuKWNrbOcSS7lvEF7HSWiW8i7Vu4ofhTaw+iob75UB9qVpy8gZBd6UMSWKNUMDXtqj0LbUcov191m6eYLEme9hkg4R/5L9eEaTGvMuuEjxJ05/GgJe2wj2hhun1WoKGBaNCV9y7UrT6CXODMl45AprtttCpB5smjaCtfnW6NaIijHRanKjjIKLu7XaxYVuEFEYvsgm+aQKdKa1gi90qT48zt/R8MNLqoOH1P4NHAXXnplTh5j1BJEDKk1QMsZBS71KhbQU3y3dRjjf/+NqnCX6nZP35S2FZGg+mGiNv/Lirg==",
+                "fR0Gyn8VfC8eCwq10x5eYAcxXh4nv6331hWAAr77l72zfFScbw3hFSE6iBNklCYc0mfnKezsuRo3re+fTNNHO1oZhfhjc9i4UYxTxBiOEslHrKx9NkXkBZh2RALx/LnhlpyMwB5BBOlFlNeR9Hyj5E8c/a2pObBZRmrZ3cgAnoWF8hhY5Y9XwLS2WIodYIPSQXuQMXyi1UBxhxAbniZ5m1uRSt8gaPmQGMCQtUzvZ8KUXtSvugGPsXHwh94EccZCfjS0sdIQK8AcZ8t5YL6bqkqJ7eVzbxoX6U1nOZVy3MxQMKQ/PFS297er6qsVsGwKbNfaTUvymEb46mM/gQdQDQ==",
                 result
         );
     }

@@ -11,6 +11,7 @@ import java.io.File
 import kotlin.test.assertEquals
 
 private val config = Config(
+    bunqServer = BUNQ_SANDBOX_SERVER,
     apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
     serviceName = "PeterScript",
     publicKeyFile = File("../../public_key.pem"),
@@ -24,7 +25,7 @@ class ApiTest {
         val signing = Signing(config)
         val context = initContext(config)
         val sdk = Sdk(handler(signing, context))
-        val res = sdk.rEAD_User(context.userId,)
+        val res = sdk.rEAD_User(context.userId)
         val body = when (res) {
             is READ_User.Response200 -> res.body
             is READ_User.Response400 -> error("Cannot read user")
@@ -37,7 +38,7 @@ class ApiTest {
         val signing = Signing(config)
         val context = initContext(config)
         val sdk = Sdk(handler(signing, context))
-        val res = sdk.list_all_MonetaryAccountBank_for_User(context.userId)
+        val res = sdk.list_all_MonetaryAccountBank_for_User(context.userId, null, null, null)
         val body = when (res) {
             is List_all_MonetaryAccountBank_for_User.Response200 -> res.body
             is List_all_MonetaryAccountBank_for_User.Response400 -> error("Could not get bank accounts")
@@ -62,12 +63,12 @@ class ApiTest {
 
     @Test
     @Throws(Exception::class)
-    fun testListAllMonetaryAccountBankForUser()= runTest {
+    fun testListAllMonetaryAccountBankForUser() = runTest {
         val signing = Signing(config)
         val context = initContext(config)
         val sdk = Sdk(handler(signing, context))
         val res: List_all_MonetaryAccountBank_for_User.Response<*> =
-            sdk.list_all_MonetaryAccountBank_for_User(context.userId)
+            sdk.list_all_MonetaryAccountBank_for_User(context.userId, null, null, null)
         if (res is List_all_MonetaryAccountBank_for_User.Response200) {
             Assertions.assertEquals("D. Byrne", res.body[0].display_name)
         } else {

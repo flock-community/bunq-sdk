@@ -17,7 +17,6 @@ import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.javaType
 
-val baseUrl = "https://public-api.sandbox.bunq.com/v1/"
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -63,7 +62,7 @@ val serialization: Wirespec.Serialization<String> =
 fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
     val client = java.net.http.HttpClient.newBuilder().build()
 
-    val baseUri = java.net.URI(baseUrl + req.path.joinToString("/"))
+    val baseUri = java.net.URI(signing.getBaseUrl() + req.path.joinToString("/"))
     val uri = if (req.queries.isNotEmpty()) {
         val queryString = req.queries.entries.joinToString("&") { (key, value) ->
             value.joinToString("&") { v -> "$key=${java.net.URLEncoder.encode(v, Charsets.UTF_8)}" }

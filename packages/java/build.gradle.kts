@@ -13,6 +13,7 @@ import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 plugins {
     alias(libs.plugins.wirespec)
     id("java")
+    `maven-publish`
 }
 
 repositories {
@@ -68,6 +69,30 @@ tasks.register<ConvertWirespecTask>("wirespec") {
 tasks.named("compileJava") {
     dependsOn("wirespec")
 }
+
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+    dependsOn("wirespec", "compileJava")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifact(sourcesJar.get())
+            groupId = project.group.toString()
+            artifactId = project.name
+            version = project.version.toString()
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
+}
+
 class SdkJavaEmitter(val packageName: PackageName, emitShared: EmitShared) : JavaEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
