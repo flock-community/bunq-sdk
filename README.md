@@ -42,7 +42,50 @@ Each SDK provides a consistent API for interacting with the Bunq API. The genera
 
 - Model classes for all API objects
 - Endpoint definitions for all API endpoints
-- A `Sdk` class that provides a unified interface for making API calls
+- A `Context` class that manages authentication and session state
+
+### Session Management
+
+All SDKs provide session management capabilities to handle authentication and session expiry with the Bunq API:
+
+- **Session Creation**: Initialize a context with API credentials to establish a session
+- **Session Expiry Tracking**: Monitor when sessions will expire 
+- **Session Refresh**: Renew sessions before they expire to maintain API access
+
+For detailed session management documentation for each language, see:
+
+- [Java Session Management](docs/java.md)
+- [Kotlin Session Management](docs/kotlin.md)
+- [TypeScript/npm Session Management](docs/typescript.md)
+- [Python Session Management](docs/python.md)
+
+**Quick Examples:**
+
+Java:
+```java
+Context context = Context.initContext(config);
+// Session expiry tracking and refresh planned for future implementation
+```
+
+Kotlin:
+```kotlin
+val context = initContext(config, signing)
+val expiryTime: Instant? = context.sessionExpiryTime
+val refreshedContext = context.refreshSession(config)
+```
+
+TypeScript:
+```typescript
+const context = await initContext(config, signing);
+const expiryTime: Date | undefined = context.sessionExpiryTime;
+// Refresh functionality planned for future implementation
+```
+
+Python:
+```python
+context = Context(config)
+# Session expiry tracking and refresh planned for future implementation
+```
 
 ## Contributing
 

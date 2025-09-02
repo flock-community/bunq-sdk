@@ -2,9 +2,10 @@ import community.flock.kotlinx.openapi.bindings.v3.OpenAPI
 import community.flock.kotlinx.openapi.bindings.v3.OperationObject
 import community.flock.kotlinx.openapi.bindings.v3.ParameterLocation
 import community.flock.kotlinx.openapi.bindings.v3.ParameterObject
-import community.flock.kotlinx.openapi.bindings.v3.ParameterOrReferenceObject
 import community.flock.kotlinx.openapi.bindings.v3.PathItemObject
+import community.flock.kotlinx.openapi.bindings.v3.Ref
 import community.flock.kotlinx.openapi.bindings.v3.ReferenceObject
+import community.flock.kotlinx.openapi.bindings.v3.RequestBodyObject
 import community.flock.kotlinx.openapi.bindings.v3.SchemaObject
 import community.flock.kotlinx.openapi.bindings.v3.Type
 import kotlinx.serialization.json.Json
@@ -32,6 +33,14 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         "DeviceServerCreate" to "Id",
         "MonetaryAccountBankRead" to "MonetaryAccountBank",
         "SandboxUserPersonCreate" to "ApiKey"
+    )
+
+    private val createInputSchemas = mapOf(
+        "RequestInquiry" to "CreateRequestInquiry"
+    )
+
+    private val updateRequestBodyType = mapOf(
+        "CREATE_RequestInquiry_for_User_MonetaryAccount" to "CreateRequestInquiry"
     )
 
     /**
@@ -124,33 +133,91 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         // Parse the OpenAPI schema
         val openApi = OpenAPI(Json { ignoreUnknownKeys = true }).decodeFromString(schema)
 
+//        println("$openApi")
         // Process the paths in the schema
         val processedOpenApi = openApi.copy(
+            components = openApi.components?.copy(
+                schemas = openApi.components?.schemas?.let { schemas ->
+                    val processedSchemas = schemas.mapValues { (key, schema) ->
+                        when (schema) {
+                            is ReferenceObject -> schema
+                            is SchemaObject -> {
+                                wrapResponse[key]
+                                    ?.let { prop ->
+                                        SchemaObject(
+                                            type = Type.OBJECT,
+                                            properties = mapOf(prop to schema)
+                                        )
+                                    }
+                                    ?: schema
+                            }
+                        }
+                    }.toMutableMap()
+
+                    // Create input schemas for CREATE operations
+                    createInputSchemas.forEach { (originalKey, inputKey) ->
+                        schemas[originalKey]?.let { originalSchema ->
+                            if (originalSchema is SchemaObject) {
+                                // For scaffolding, create CreateRequestInquiry with all fields as strings
+                                val createRequestInquirySchema = SchemaObject(
+                                    type = Type.OBJECT,
+                                    properties = mapOf(
+                                        "amount_inquired" to ReferenceObject(Ref("#/components/schemas/Amount")),
+                                        "counterparty_alias" to ReferenceObject(Ref("#/components/schemas/Pointer")),
+                                        "description" to SchemaObject(
+                                            type = Type.STRING,
+                                            description = "The description for the RequestInquiry"
+                                        ),
+                                        "allow_bunqme" to SchemaObject(
+                                            type = Type.BOOLEAN,
+                                            description = "Whether or not sending a bunq.me request is allowed"
+                                        ),
+                                    ),
+                                    required = listOf(
+                                        "amount_inquired",
+                                        "counterparty_alias",
+                                        "description",
+                                        "allow_bunqme"
+                                    ) // No required fields for now
+                                )
+                                processedSchemas[inputKey] = createRequestInquirySchema
+                            }
+                        }
+                    }
+
+                    processedSchemas
+                }
+            ),
             paths = openApi.paths.mapValues { (_, pathItem) ->
                 pathItem.applyToAllOperations { operation: OperationObject ->
-                    operation.copy(
+                    val updatedOperation = operation.copy(
                         parameters = operation.parameters?.filter(::shouldKeepParameter)
                             ?.let { it.addPaginationParams(operation) }
                     )
-                }
-            },
-            components = openApi.components?.copy(
-                schemas = openApi.components?.schemas?.mapValues { (key, schema) ->
-                    when (schema) {
-                        is ReferenceObject -> schema
-                        is SchemaObject -> {
-                            wrapResponse[key]
-                                ?.let { prop ->
-                                    SchemaObject(
-                                        type = Type.OBJECT,
-                                        properties = mapOf(prop to schema)
-                                    )
-                                }
-                                ?: schema
+
+                    val uppdatedOperation =
+                        updateRequestBodyType[updatedOperation.operationId]?.let { newRequestBodyReference ->
+                            val requestBody = updatedOperation.requestBody
+                            println("Updating request body for ${updatedOperation.operationId}: $requestBody")
+                            if (requestBody is RequestBodyObject) {
+                                updatedOperation.copy(
+                                    requestBody = RequestBodyObject(
+                                        description = requestBody.description,
+                                        required = requestBody.required,
+                                        xProperties = requestBody.xProperties,
+                                        content = requestBody.content?.mapValues {
+                                            it.value.copy(schema = ReferenceObject(Ref("#/components/schemas/$newRequestBodyReference")))
+
+                                        }
+                                    ))
+
+                            } else updatedOperation
                         }
-                    }
+                            ?: updatedOperation
+
+                    uppdatedOperation
                 }
-            )
+            }
         )
 
         // Serialize the processed schema back to JSON
