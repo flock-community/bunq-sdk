@@ -13,8 +13,6 @@ export type Context = {
     sessionId: number
     sessionToken: string
     userId: number,
-    sessionExpiryTime?: Date
-    sessionTimeoutSeconds?: number
     cacheControl?: string
     region?: string
     clientRequestId?: string
