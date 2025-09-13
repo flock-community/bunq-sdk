@@ -3,7 +3,7 @@ package com.bunq.sdk
 /**
  * Exception thrown when configuration validation fails
  */
-open class ConfigValidationException(message: String, cause: Throwable? = null) : Exception(message, cause)
+sealed class ConfigValidationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
 /**
  * Exception thrown when PEM format validation fails

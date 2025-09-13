@@ -1,7 +1,7 @@
 import {Wirespec} from "./gen/Wirespec";
-import {type Signing} from "./signing";
-import {List_all_MonetaryAccountBank_for_User} from "./gen/endpoint";
+import {Signing} from "./signing";
 import {Context} from "./context";
+import {ValidatedConfig} from "./config";
 
 function headersIteratorToRecord(headersIterator: Headers): Record<string, string> {
     const record: Record<string, string> = {};
@@ -39,10 +39,9 @@ export const serialization: Wirespec.Serialization = {
     }
 };
 
-export const rawHandler: (signing: Signing, rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (signing, rawRequest) => {
+export const rawHandler: (config: ValidatedConfig, rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (config, rawRequest) => {
     const url = "https://public-api.sandbox.bunq.com/v1/" + rawRequest.path.join("/")
-    const [privateKey, _] = await signing.loadRsaKeyPair()
-    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  signing.signData(rawRequest.body, privateKey)} : {}
+    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  Signing.signData(config, rawRequest.body)} : {}
     const headers: Record<string, string> = {
         ...rawRequest.headers,
         ...signatureHeader,
@@ -73,7 +72,7 @@ export const rawHandler: (signing: Signing, rawRequest:Wirespec.RawRequest) => P
 }
 
 type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
-export const initHandler: (signing: Signing, context: Context) => Handler = (signing, context) => async (client, req) => {
+export const initHandler: (config: ValidatedConfig, context: Context) => Handler = (config, context) => async (client, req) => {
     const rawReq = client(serialization).to(req)
     const authReq: Wirespec.RawRequest = {
         ...rawReq,
@@ -83,6 +82,6 @@ export const initHandler: (signing: Signing, context: Context) => Handler = (sig
             "X-Bunq-Client-Authentication": context.sessionToken,
         }
     }
-    const rawRes = await rawHandler(signing, authReq)
+    const rawRes = await rawHandler(config, authReq)
     return client(serialization).from(rawRes)
 };

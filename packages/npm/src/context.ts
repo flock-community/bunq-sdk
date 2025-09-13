@@ -3,7 +3,7 @@ import {DeviceServer, Installation, SessionServer} from "./gen/model";
 import {CREATE_DeviceServer, CREATE_Installation, CREATE_SessionServer,} from "./gen/endpoint";
 import {rawHandler, serialization} from "./wirespec";
 import {Wirespec} from "./gen/Wirespec";
-import {Config} from "./config";
+import {ValidatedConfig, getPublicKeyAsString, Config} from "./config";
 
 export type Context = {
     apiKey: string,
@@ -17,16 +17,16 @@ export type Context = {
     region?: string
     clientRequestId?: string
     geolocation?: string
+    config: Config
 }
 
 
-export async function initContext(config:Config, singing: Signing): Promise<Context> {
+export async function initContext(config: ValidatedConfig): Promise<Context> {
     const createInstallation = async () => {
-        const [_, publicKeyPem] = await singing.loadRsaKeyPair()
-        const body: Installation = {client_public_key: publicKeyPem}
+        const body: Installation = {client_public_key: getPublicKeyAsString(config)}
         const req = CREATE_Installation.request({body})
         const rawReq = CREATE_Installation.client(serialization).to(req)
-        const rawRes = await rawHandler(singing, rawReq)
+        const rawRes = await rawHandler(config, rawReq)
         const res = CREATE_Installation.client(serialization).from(rawRes)
         if (res.status === 200) {
             return res.body
@@ -50,7 +50,7 @@ export async function initContext(config:Config, singing: Signing): Promise<Cont
                 "X-Bunq-Client-Authentication": token,
             }
         }
-        const rawRes = await rawHandler(singing, authReq)
+        const rawRes = await rawHandler(config, authReq)
         const res = CREATE_DeviceServer.client(serialization).from(rawRes)
         if (res.status === 200) {
             return res.body
@@ -73,7 +73,7 @@ export async function initContext(config:Config, singing: Signing): Promise<Cont
                 "X-Bunq-Client-Authentication": token,
             }
         }
-        const rawRes = await rawHandler(singing, authReq)
+        const rawRes = await rawHandler(config, authReq)
         const res = CREATE_SessionServer.client(serialization).from(rawRes)
         if (res.status === 200) {
             return res.body
@@ -118,5 +118,6 @@ export async function initContext(config:Config, singing: Signing): Promise<Cont
         region: config.region,
         clientRequestId: config.clientRequestId,
         geolocation: config.geolocation,
+        config: config
     }
 }

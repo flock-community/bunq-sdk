@@ -12,10 +12,15 @@ import java.security.SecureRandom
 import java.security.Security
 
 object RsaKeyPairGenerator {
+    val keyPairGenerator: KeyPairGenerator
+
     init {
         if (Security.getProvider("BC") == null) {
             Security.addProvider(BouncyCastleProvider())
         }
+
+        keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC")
+        keyPairGenerator.initialize(2048, SecureRandom())
     }
 
     /**
@@ -25,8 +30,6 @@ object RsaKeyPairGenerator {
      * both represented as strings in PEM format.
      */
     fun generateRsaKeyPair(): Pair<String, String> {
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC")
-        keyPairGenerator.initialize(2048, SecureRandom())
         val keyPair = keyPairGenerator.generateKeyPair()
 
         val privateKeyPem = convertPrivateKeyToPem(keyPair.private)
@@ -48,8 +51,6 @@ object RsaKeyPairGenerator {
             println("bunq - using existing keypair")
         }
 
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC")
-        keyPairGenerator.initialize(2048, SecureRandom())
         val keyPair = keyPairGenerator.generateKeyPair()
 
         val privateKeyPem = convertPrivateKeyToPem(keyPair.private)
