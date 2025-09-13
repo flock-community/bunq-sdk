@@ -77,7 +77,7 @@ fun initContext(config: Config): Context {
 
 private fun createInstallation(config: Config): InstallationCreate {
     val body = Installation(
-        client_public_key = config.publicKeyPem
+        client_public_key = config.getPublicKeyAsString()
     )
     val request = CREATE_Installation.Request(
         body = body,
@@ -148,7 +148,7 @@ private fun createSessionServer(
 private fun SessionServerCreate.getUserId(): Long {
     return UserPerson?.id
         ?: UserCompany?.id
-        ?: UserApiKey?.id // <-- TODO is this id okay, or should we use the id of the UserApiKeyAnchoredUser?
+        ?: UserApiKey?.id
         ?: UserPaymentServiceProvider?.id
         ?: error("No user id found in the SessionServerCreate response")
 }

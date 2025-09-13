@@ -11,8 +11,8 @@ class SigningTest {
 
         val config = Config(
             bunqServer = BUNQ_SANDBOX_SERVER,
-            serviceName = "",
-            apiKey = "",
+            serviceName = "test",
+            apiKey = "test",
             publicKeyPem = """
                 |-----BEGIN PUBLIC KEY-----
                 |MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNN/tvunpRQby6Nv5Jpd
