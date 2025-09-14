@@ -7,10 +7,6 @@ import requests
 
 from api.wirespec import Wirespec, T
 
-from signing import Signing
-
-baseUrl = "https://public-api.sandbox.bunq.com/v1/"
-
 class Serialization(Wirespec.Serialization):
 
     def serialize(self, value: T, t: Type[T]) -> str:
@@ -57,14 +53,27 @@ class Serialization(Wirespec.Serialization):
         else:
             return value
 
-def send(signing:Signing, raw_req:Wirespec.RawRequest) -> Wirespec.RawResponse:
+def send(config, raw_req:Wirespec.RawRequest) -> Wirespec.RawResponse:
+    from config import Config
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    import base64
+    
     req_headers = dict(map(lambda kv: (kv[0], next(iter(kv[1]), None)), raw_req.headers.items()))
 
-    signature_header = {'X-Bunq-Client-Signature':  signing.sign_data(raw_req.body)} if raw_req.body is not None else{}
+    signature_header = {}
+    if raw_req.body is not None:
+        # Sign the request body using the private key
+        signature = config.signing_keys.private_key().sign(
+            raw_req.body.encode('utf-8'),
+            padding.PKCS1v15(),
+            hashes.SHA256()
+        )
+        signature_header = {'X-Bunq-Client-Signature': base64.b64encode(signature).decode('utf-8')}
 
-    res  = requests.request(
+    res = requests.request(
         method = raw_req.method,
-        url = baseUrl + '/'.join(raw_req.path),
+        url = config.bunq_server.base_url + '/'.join(raw_req.path),
         headers = {**req_headers, **signature_header},
         data = raw_req.body)
 
