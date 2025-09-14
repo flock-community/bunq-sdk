@@ -19,8 +19,8 @@ data class Context(
     val sessionId: Long,
     val sessionToken: String,
     val userId: Long,
-    val sessionExpiryTime: Instant? = null,
-    val installationToken: String? = null,
+    val sessionExpiryTime: Instant,
+    val installationToken: String,
     val config: Config
 )
 
@@ -31,16 +31,17 @@ data class Context(
  * @return A new Context with refreshed session information
  */
 fun Context.refreshSession(): Context {
-    val installationToken = installationToken
-        ?: error("Cannot refresh session: no installation token available in context")
-
     val serverSession = createSessionServer(
         token = installationToken,
         config = config
     )
 
     val sessionTimeoutSeconds = serverSession.getSessionTimeout()
-    val sessionExpiryTime = sessionTimeoutSeconds?.let {
+        ?: run {
+            println("No session timeout found in session server response, using default of 30 minutes")
+            30 * 60L
+        }
+    val sessionExpiryTime = sessionTimeoutSeconds.let {
         Instant.now().plusSeconds(it)
     }
 
@@ -58,8 +59,12 @@ fun initContext(config: Config): Context {
     val deviceServer = createDeviceServer(installation.Token.token, config)
     val serverSession = createSessionServer(installation.Token.token, config)
 
-    val sessionTimeoutSeconds = serverSession.getSessionTimeout()
-    val sessionExpiryTime = sessionTimeoutSeconds?.let {
+    val sessionTimeoutSeconds: Long = serverSession.getSessionTimeout() ?: run {
+        println("No session timeout found in session server response, using default of 30 minutes")
+        30 * 60L
+    }
+
+    val sessionExpiryTime = sessionTimeoutSeconds.let {
         Instant.now().plusSeconds(it)
     }
 

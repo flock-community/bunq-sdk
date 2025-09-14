@@ -6,9 +6,12 @@ import com.bunq.sdk.generated.endpoint.READ_User;
 import com.bunq.sdk.generated.model.UserPerson;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SdkTest {
 
@@ -84,5 +87,52 @@ public class SdkTest {
         } else {
             throw new RuntimeException("Cannot list monetary accounts");
         }
+    }
+
+    @Test
+    public void testRefreshSession() throws Exception {
+        // First API call with original context
+        List_all_MonetaryAccountBank_for_User.Response<?> res1 = sdk.list_all_MonetaryAccountBank_for_User(
+                context.userId(), 
+                Optional.empty(), 
+                Optional.empty(), 
+                Optional.empty()
+        ).get();
+        
+        if (!(res1 instanceof List_all_MonetaryAccountBank_for_User.Response200 response1)) {
+            throw new RuntimeException("Could not get bank accounts with original session");
+        }
+        
+        assertEquals(1, response1.getBody().size());
+        var monetaryAccountBankListing1 = response1.getBody().get(0);
+        assertNotNull(monetaryAccountBankListing1);
+        assertEquals(1989601L, monetaryAccountBankListing1.id().orElseThrow());
+        assertTrue(monetaryAccountBankListing1.balance()
+                .flatMap(balance -> balance.value())
+                .map(value -> new BigDecimal(value).compareTo(BigDecimal.ZERO) > 0)
+                .orElse(false));
+
+        // Refresh the session
+        Context refreshedContext = context.refreshSession();
+        Sdk refreshedSdk = new Sdk(Wirespec.handler(refreshedContext));
+
+        // Second API call with refreshed context
+        List_all_MonetaryAccountBank_for_User.Response<?> res2 = refreshedSdk.list_all_MonetaryAccountBank_for_User(
+                refreshedContext.userId(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        ).get();
+
+        if (!(res2 instanceof List_all_MonetaryAccountBank_for_User.Response200 response2)) {
+            throw new RuntimeException("Could not get bank accounts with refreshed session");
+        }
+
+        var monetaryAccountBankListing2 = response2.getBody().get(0);
+        assertNotNull(monetaryAccountBankListing2);
+        
+        // Verify both sessions return the same account data
+        assertEquals(monetaryAccountBankListing1.id(), monetaryAccountBankListing2.id());
+        assertEquals(monetaryAccountBankListing1.display_name(), monetaryAccountBankListing2.display_name());
     }
 }
