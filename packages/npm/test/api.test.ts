@@ -1,8 +1,9 @@
 import {describe, expect, test} from 'vitest';
-import {initContext} from "../src/context";
+import {initContext, refreshSession} from "../src/context";
 import {initHandler} from "../src/wirespec";
 import {Sdk} from "../src/gen/Sdk";
 import {createConfig} from "../src/config";
+import {BUNQ_SANDBOX_SERVER} from "../src/bunq-server";
 
 // For testing, we'll use the same keys from the test files
 const PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
@@ -44,16 +45,17 @@ UWmmCQB0dhg2j2teZOcUJDM8h/QoNnl6TtZZzmOb5WFGQQjLWEMaVH3+SHWUYeFU
 rQIDAQAB
 -----END PUBLIC KEY-----`;
 
-const config = createConfig({
-    serverName: "PeterScript",
-    apiKey: "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
-    privateKeyPem: PRIVATE_KEY_PEM,
-    publicKeyPem: PUBLIC_KEY_PEM,
-});
+const config = createConfig(
+    BUNQ_SANDBOX_SERVER,
+    "PeterScript",
+    "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
+    PRIVATE_KEY_PEM,
+    PUBLIC_KEY_PEM
+);
 
 describe("API test", async () => {
     const context = await initContext(config);
-    const handler = initHandler(config, context);
+    const handler = initHandler(context);
     const sdk = Sdk(handler);
 
     test('READ_User should return Donald Byrne', async () => {
@@ -100,5 +102,29 @@ describe("API test", async () => {
         } else {
             throw new Error("Cannot list monetary accounts");
         }
+    });
+
+    test('refresh session should create refreshed session context', async () => {
+        // Refresh the session
+        const refreshedContext = await refreshSession(context);
+        
+        // Verify the context maintains correct data
+        expect(refreshedContext.userId).toBe(context.userId); // Same user
+        expect(refreshedContext.deviceId).toBe(context.deviceId); // Same device
+        expect(refreshedContext.serverPublicKey).toBe(context.serverPublicKey); // Same server key
+        expect(refreshedContext.installationToken).toBe(context.installationToken); // Same installation token
+        expect(refreshedContext.config).toBe(context.config); // Same config
+        
+        // Verify session expiry time was updated (should be newer)
+        expect(refreshedContext.sessionExpiryTime.getTime()).toBeGreaterThanOrEqual(context.sessionExpiryTime.getTime());
+        
+        // Verify session token and ID are present (bunq may reuse tokens in sandbox)
+        expect(refreshedContext.sessionToken).toBeTruthy();
+        expect(refreshedContext.sessionId).toBeTruthy();
+        expect(typeof refreshedContext.sessionToken).toBe('string');
+        expect(typeof refreshedContext.sessionId).toBe('number');
+        
+        // The refreshed context should be able to create a valid SDK handler
+        expect(() => initHandler(refreshedContext)).not.toThrow();
     });
 });
