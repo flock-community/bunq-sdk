@@ -56,6 +56,7 @@ public class SdkTest {
             """;
 
     private static final Config config = new Config(
+            BunqServer.BUNQ_SANDBOX_SERVER,
             "PeterScript",
             "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
             PRIVATE_KEY_PEM,

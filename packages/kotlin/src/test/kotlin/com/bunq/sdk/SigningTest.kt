@@ -13,7 +13,10 @@ class SigningTest {
             bunqServer = BUNQ_SANDBOX_SERVER,
             serviceName = "test",
             apiKey = "test",
-            publicKeyPem = """
+            signingKeys = SigningKeys.FromPem(
+
+
+                publicKeyAsPem = """
                 |-----BEGIN PUBLIC KEY-----
                 |MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNN/tvunpRQby6Nv5Jpd
                 |CcpQd7Jh135NByStNoS9BcTGOiURVp06q1MjCO84uCr7gNOg7F4WnB9GWZBjeEmq
@@ -24,7 +27,7 @@ class SigningTest {
                 |rQIDAQAB
                 |-----END PUBLIC KEY-----
             """.trimMargin(),
-            privateKeyPem = """
+                privateKeyAsPem = """
                 |-----BEGIN PRIVATE KEY-----
                 |MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCc03+2+6elFBvL
                 |o2/kml0JylB3smHXfk0HJK02hL0FxMY6JRFWnTqrUyMI7zi4KvuA06DsXhacH0ZZ
@@ -54,8 +57,8 @@ class SigningTest {
                 |os8c7u7MfsR3Tl/MGtJGsH0=
                 |-----END PRIVATE KEY-----
                 """.trimMargin(),
-
-            )
+                )
+        )
         val res = Signing.signData(config, "Hello")
         assertEquals(
             "fR0Gyn8VfC8eCwq10x5eYAcxXh4nv6331hWAAr77l72zfFScbw3hFSE6iBNklCYc0mfnKezsuRo3re+fTNNHO1oZhfhjc9i4UYxTxBiOEslHrKx9NkXkBZh2RALx/LnhlpyMwB5BBOlFlNeR9Hyj5E8c/a2pObBZRmrZ3cgAnoWF8hhY5Y9XwLS2WIodYIPSQXuQMXyi1UBxhxAbniZ5m1uRSt8gaPmQGMCQtUzvZ8KUXtSvugGPsXHwh94EccZCfjS0sdIQK8AcZ8t5YL6bqkqJ7eVzbxoX6U1nOZVy3MxQMKQ/PFS297er6qsVsGwKbNfaTUvymEb46mM/gQdQDQ==",

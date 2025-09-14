@@ -11,7 +11,7 @@ public class Signing {
 
     public static String signData(Config config, String data) {
         try {
-            PrivateKey privateKey = config.privateKey();
+            PrivateKey privateKey = config.signingKeys().privateKey();
             // Ensure the data is encoded in UTF-8 exactly as it will be sent
             byte[] encodedData = data.getBytes(StandardCharsets.UTF_8);
 
@@ -30,7 +30,7 @@ public class Signing {
 
     public static boolean verifyResponse(Config config, String responseBody, String signature) {
         try {
-            PublicKey publicKey = config.publicKey();
+            PublicKey publicKey = config.signingKeys().publicKey();
             byte[] decodedSignature = Base64.getDecoder().decode(signature);
 
             Signature verifier = Signature.getInstance("SHA256withRSA", "BC");

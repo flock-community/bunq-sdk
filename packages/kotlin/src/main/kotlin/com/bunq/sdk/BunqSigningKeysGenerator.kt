@@ -10,9 +10,11 @@ import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.SecureRandom
 import java.security.Security
+import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPublicKey
 
-object RsaKeyPairGenerator {
-    val keyPairGenerator: KeyPairGenerator
+object BunqSigningKeysGenerator {
+    private val keyPairGenerator: KeyPairGenerator
 
     init {
         if (Security.getProvider("BC") == null) {
@@ -24,19 +26,15 @@ object RsaKeyPairGenerator {
     }
 
     /**
-     * Generates an RSA key pair consisting of a private key and a public key, both encoded in PEM format.
+     * Generates an RSA key pair using 2048-bit key size.
      *
-     * @return A pair containing the private key as the first element and the public key as the second element,
-     * both represented as strings in PEM format.
+     * @return A KeyPair containing the generated private and public keys.
      */
-    fun generateRsaKeyPair(): Pair<String, String> {
+    fun generateBunqSigningKeys(): SigningKeys {
         val keyPair = keyPairGenerator.generateKeyPair()
+        println("bunq - created new keypair [KEEP IT SAFE]")
+        return SigningKeys.FromRSAKeys(keyPair.private as RSAPrivateKey, keyPair.public as RSAPublicKey)
 
-        val privateKeyPem = convertPrivateKeyToPem(keyPair.private)
-        val publicKeyPem = convertPublicKeyToPem(keyPair.public)
-
-        println("bunq - created new keypair [KEEP THESE FILES SAFE]")
-        return Pair(privateKeyPem, publicKeyPem)
     }
 
     /**
@@ -46,23 +44,21 @@ object RsaKeyPairGenerator {
      * @param privateKeyFile The file where the generated private key will be stored or retrieved from if it already exists.
      * @param publicKeyFile The file where the generated public key will be stored or retrieved from if it already exists.
      */
-    fun generateRsaKeyPair(privateKeyFile: File, publicKeyFile: File) {
+    fun generateBunqSigningKeys(privateKeyFile: File, publicKeyFile: File): SigningKeys {
         if (privateKeyFile.exists() && publicKeyFile.exists()) {
             println("bunq - using existing keypair")
+            return SigningKeys.FromPem(privateKeyFile.readText(), publicKeyFile.readText())
         }
 
-        val keyPair = keyPairGenerator.generateKeyPair()
-
-        val privateKeyPem = convertPrivateKeyToPem(keyPair.private)
-        val publicKeyPem = convertPublicKeyToPem(keyPair.public)
-
-        privateKeyFile.writeText(privateKeyPem)
-        publicKeyFile.writeText(publicKeyPem)
+        val signingKeys = generateBunqSigningKeys()
+        privateKeyFile.writeText(signingKeys.privateKeyAsPem())
+        publicKeyFile.writeText(signingKeys.publicKeyAsPem())
 
         println("bunq - created new keypair [KEEP THESE FILES SAFE]")
+        return signingKeys
     }
 
-    private fun convertPrivateKeyToPem(privateKey: PrivateKey): String {
+    internal fun convertPrivateKeyToPem(privateKey: PrivateKey): String {
         return StringWriter().use { stringWriter ->
             PemWriter(stringWriter).use { pemWriter ->
                 pemWriter.writeObject(PemObject("PRIVATE KEY", privateKey.encoded))
@@ -71,7 +67,7 @@ object RsaKeyPairGenerator {
         }
     }
 
-    private fun convertPublicKeyToPem(publicKey: PublicKey): String {
+    internal fun convertPublicKeyToPem(publicKey: PublicKey): String {
         return StringWriter().use { stringWriter ->
             PemWriter(stringWriter).use { pemWriter ->
                 pemWriter.writeObject(PemObject("PUBLIC KEY", publicKey.encoded))

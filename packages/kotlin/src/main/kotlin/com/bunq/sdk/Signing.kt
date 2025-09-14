@@ -15,7 +15,7 @@ object Signing{
     }
 
     fun signData(config: Config, data: String): String {
-        val privateKey = config.privateKey
+        val privateKey = config.signingKeys.privateKey()
         // Ensure the data is encoded in UTF-8 exactly as it will be sent
         val encodedData = data.toByteArray(StandardCharsets.UTF_8)
 
@@ -36,7 +36,7 @@ object Signing{
         responseBody: String,
         signature: String,
     ): Boolean = try {
-        val publicKey = config.publicKey
+        val publicKey = config.signingKeys.publicKey()
         val decodedSignature = Base64.getDecoder().decode(signature)
 
         val verifier = Signature.getInstance("SHA256withRSA", "BC")

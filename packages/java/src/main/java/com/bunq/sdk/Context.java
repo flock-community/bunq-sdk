@@ -41,7 +41,7 @@ public record Context(
     public static Context initContext(Config config) {
 
         try {
-            InstallationCreate installation = createInstallation(config, config.publicKeyPem()).get();
+            InstallationCreate installation = createInstallation(config).get();
             var installationToken = Optional.ofNullable(installation.Token())
                     .flatMap(it -> it)
                     .flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
@@ -70,8 +70,8 @@ public record Context(
         return () -> new IllegalStateException(message);
     }
 
-    private static CompletableFuture<InstallationCreate> createInstallation(Config config, String publicKeyPem) {
-        Installation body = new Installation(publicKeyPem);
+    private static CompletableFuture<InstallationCreate> createInstallation(Config config) {
+        Installation body = new Installation(config.signingKeys().publicKeyPem());
 
         CREATE_Installation.Request request = new CREATE_Installation.Request(body);
 

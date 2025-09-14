@@ -77,7 +77,7 @@ fun initContext(config: Config): Context {
 
 private fun createInstallation(config: Config): InstallationCreate {
     val body = Installation(
-        client_public_key = config.getPublicKeyAsString()
+        client_public_key = config.signingKeys.publicKeyAsPem()
     )
     val request = CREATE_Installation.Request(
         body = body,

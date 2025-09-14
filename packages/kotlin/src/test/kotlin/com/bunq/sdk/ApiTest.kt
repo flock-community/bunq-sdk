@@ -29,18 +29,8 @@ private val config = Config(
     bunqServer = BUNQ_SANDBOX_SERVER,
     apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
     serviceName = "PeterScript",
-    publicKeyPem = """
-            |-----BEGIN PUBLIC KEY-----
-            |MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNN/tvunpRQby6Nv5Jpd
-            |CcpQd7Jh135NByStNoS9BcTGOiURVp06q1MjCO84uCr7gNOg7F4WnB9GWZBjeEmq
-            |ydDcBYvDSuNGaZMk2IM7PNDqoczjZyraXxGbYBCjpxKHRcdsZ6dA8y1VrRb56Q3D
-            |/HUOuZJZhurQ5p592cjy0MuGDib3pkmlNxNYtQI9G/o128o/12C73PNxPP+BZUdf
-            |N7oGg0aUzfzcFO2eUo//K8iOCX92mIlTiD/ptGmCc7zyfAAgtm3uFzWwSks5nXjx
-            |UWmmCQB0dhg2j2teZOcUJDM8h/QoNnl6TtZZzmOb5WFGQQjLWEMaVH3+SHWUYeFU
-            |rQIDAQAB
-            |-----END PUBLIC KEY-----
-        """.trimMargin(),
-    privateKeyPem = """
+    signingKeys = SigningKeys.FromPem(
+        """
             |-----BEGIN PRIVATE KEY-----
             |MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCc03+2+6elFBvL
             |o2/kml0JylB3smHXfk0HJK02hL0FxMY6JRFWnTqrUyMI7zi4KvuA06DsXhacH0ZZ
@@ -70,6 +60,18 @@ private val config = Config(
             |os8c7u7MfsR3Tl/MGtJGsH0=
             |-----END PRIVATE KEY-----
         """.trimMargin(),
+        """
+            |-----BEGIN PUBLIC KEY-----
+            |MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNN/tvunpRQby6Nv5Jpd
+            |CcpQd7Jh135NByStNoS9BcTGOiURVp06q1MjCO84uCr7gNOg7F4WnB9GWZBjeEmq
+            |ydDcBYvDSuNGaZMk2IM7PNDqoczjZyraXxGbYBCjpxKHRcdsZ6dA8y1VrRb56Q3D
+            |/HUOuZJZhurQ5p592cjy0MuGDib3pkmlNxNYtQI9G/o128o/12C73PNxPP+BZUdf
+            |N7oGg0aUzfzcFO2eUo//K8iOCX92mIlTiD/ptGmCc7zyfAAgtm3uFzWwSks5nXjx
+            |UWmmCQB0dhg2j2teZOcUJDM8h/QoNnl6TtZZzmOb5WFGQQjLWEMaVH3+SHWUYeFU
+            |rQIDAQAB
+            |-----END PUBLIC KEY-----
+        """.trimMargin(),
+    )
 )
 
 class ApiTest {

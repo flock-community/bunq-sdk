@@ -2,7 +2,12 @@ package com.bunq.sdk;
 
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Signature;
+import java.util.Base64;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SigningTest {
     
@@ -52,6 +57,7 @@ public class SigningTest {
     @Test
     public void testSigning() {
         Config config = new Config(
+                BunqServer.BUNQ_SANDBOX_SERVER,
                 "TestService",
                 "test-api-key",
                 PRIVATE_KEY_PEM,
@@ -68,9 +74,10 @@ public class SigningTest {
     
     @Test
     public void testConfigValidation() {
-        // Test that invalid PEM format throws exception
+        // Test that invalid PEM format throws an exception
         try {
             new Config(
+                    BunqServer.BUNQ_SANDBOX_SERVER,
                     "TestService",
                     "test-api-key",
                     "invalid-private-key",
@@ -80,5 +87,57 @@ public class SigningTest {
         } catch (InvalidPemFormatException e) {
             // Expected
         }
+    }
+
+
+    @Test
+    void testSigningAndVerifyingFile() throws Exception {
+        SigningKeys keyPair = BunqSigningKeysGenerator.generateBunqSigningKeys();
+        String testData = "{\"key\": \"value\"}";
+        byte[] testDataBytes = testData.getBytes(StandardCharsets.UTF_8);
+
+        Signature signer = Signature.getInstance("SHA256withRSA", "BC");
+        signer.initSign(keyPair.privateKey());
+        signer.update(testDataBytes);
+        String signature = Base64.getEncoder().encodeToString(signer.sign());
+
+        Signature verifier = Signature.getInstance("SHA256withRSA", "BC");
+        verifier.initVerify(keyPair.publicKey());
+        verifier.update(testDataBytes);
+        assertTrue(verifier.verify(Base64.getDecoder().decode(signature)));
+    }
+
+    @Test
+    void testVerifyResponseSignature() throws Exception {
+        SigningKeys signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys();
+        String responseBody = "{\"Response\":[{\"result\":\"success\"}]}";
+
+        Signature signer = Signature.getInstance("SHA256withRSA", "BC");
+        signer.initSign(signingKeys.privateKey());
+        signer.update(responseBody.getBytes(StandardCharsets.UTF_8));
+        String signature = Base64.getEncoder().encodeToString(signer.sign());
+
+        Signature verifier = Signature.getInstance("SHA256withRSA", "BC");
+        verifier.initVerify(signingKeys.publicKey());
+        verifier.update(responseBody.getBytes(StandardCharsets.UTF_8));
+        assertTrue(verifier.verify(Base64.getDecoder().decode(signature)));
+    }
+
+    @Test
+    void testSigningAndVerification() throws Exception {
+        SigningKeys signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys();
+        String testData = "Test message for signing";
+        byte[] testDataBytes = testData.getBytes(StandardCharsets.UTF_8);
+
+        Signature signer = Signature.getInstance("SHA256withRSA", "BC");
+        signer.initSign(signingKeys.privateKey());
+        signer.update(testDataBytes);
+        byte[] signature = signer.sign();
+
+        Signature verifier = Signature.getInstance("SHA256withRSA", "BC");
+        verifier.initVerify(signingKeys.publicKey());
+        verifier.update(testDataBytes);
+
+        assertTrue(verifier.verify(signature));
     }
 }
