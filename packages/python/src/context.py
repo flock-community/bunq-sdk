@@ -50,6 +50,17 @@ def init_context(config: Config) -> Context:
     session_timeout_seconds = _get_session_timeout(session_server)
     session_expiry_time = datetime.now() + timedelta(seconds=session_timeout_seconds)
     
+    if installation.ServerPublicKey is None or installation.ServerPublicKey.server_public_key is None:
+        raise Exception("Server public key not available")
+    if device_server.Id is None or device_server.Id.id is None:
+        raise Exception("Device ID not available")
+    if session_server.Id is None or session_server.Id.id is None:
+        raise Exception("Session ID not available")
+    if session_server.Token is None or session_server.Token.token is None:
+        raise Exception("Session token not available")
+    if installation.Token is None or installation.Token.token is None:
+        raise Exception("Installation token not available")
+    
     return Context(
         server_public_key=installation.ServerPublicKey.server_public_key,
         device_id=device_server.Id.id,
@@ -83,6 +94,11 @@ def refresh_session(context: Context) -> Context:
     user_id = _get_user_id(session_server)
     session_timeout_seconds = _get_session_timeout(session_server)
     session_expiry_time = datetime.now() + timedelta(seconds=session_timeout_seconds)
+    
+    if session_server.Id is None or session_server.Id.id is None:
+        raise Exception("Session ID not available")
+    if session_server.Token is None or session_server.Token.token is None:
+        raise Exception("Session token not available")
     
     return Context(
         server_public_key=context.server_public_key,
@@ -154,13 +170,13 @@ def _create_session_server(config: Config, token: str, serialization: Serializat
 
 def _get_user_id(session_server: SessionServerCreate) -> int:
     """Sessions can be for various types of users, of which only one is filled."""
-    if session_server.UserPerson is not None:
+    if session_server.UserPerson is not None and session_server.UserPerson.id is not None:
         return session_server.UserPerson.id
-    elif session_server.UserCompany is not None:
+    elif session_server.UserCompany is not None and session_server.UserCompany.id is not None:
         return session_server.UserCompany.id
-    elif session_server.UserApiKey is not None:
+    elif session_server.UserApiKey is not None and session_server.UserApiKey.id is not None:
         return session_server.UserApiKey.id
-    elif session_server.UserPaymentServiceProvider is not None:
+    elif session_server.UserPaymentServiceProvider is not None and session_server.UserPaymentServiceProvider.id is not None:
         return session_server.UserPaymentServiceProvider.id
     else:
         raise Exception("No user id found in the SessionServerCreate response")

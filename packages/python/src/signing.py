@@ -1,86 +1,17 @@
-import os
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
+import hashlib
+
+from cryptography.hazmat.primitives import hashes
 import base64
 
-from config import Config
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+
 
 class Signing:
 
-    def __init__(self, config: Config):
-        self.config = config
-
-
-    def generate_rsa_key_pair(self):
-        private_key_file = self.config.private_key_file
-        public_key_file = self.config.public_key_file
-
-        # Check if the key files exist
-        if os.path.exists(private_key_file) and os.path.exists(public_key_file):
-            # Read the existing keys from the text files
-            with open(private_key_file, 'r') as private_file:
-                private_key_pem = private_file.read()
-
-            with open(public_key_file, 'r') as public_file:
-                public_key_pem = public_file.read()
-
-        else:
-            # Generate new RSA keys with 2048 bits as required by Bunq
-            private_key = rsa.generate_private_key(
-                public_exponent=65537,
-                key_size=2048,
-                backend=default_backend()
-            )
-            public_key = private_key.public_key()
-
-            # Serialize private key to PEM format (PKCS#8 as required by Bunq)
-            private_key_pem = private_key.private_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PrivateFormat.PKCS8,
-                encryption_algorithm=serialization.NoEncryption()
-            ).decode('utf-8')
-
-            # Serialize public key to PEM format
-            public_key_pem = public_key.public_bytes(
-                encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
-            ).decode('utf-8')
-
-            # Save the keys to text files
-            with open(private_key_file, 'w') as private_file:
-                private_file.write(private_key_pem)
-
-            with open(public_key_file, 'w') as public_file:
-                public_file.write(public_key_pem)
-
-            print("bunq - creating new keypair [KEEP THESE FILES SAFE]")
-
-        return private_key_pem, public_key_pem
-
-
-    def load_private_key(self, private_key_pem):
-        """Load a private key from PEM format."""
-        return load_pem_private_key(private_key_pem.encode(), password=None, backend=default_backend())
-
-
-    def load_public_key(self, public_key_pem):
-        """Load a public key from PEM format."""
-        return serialization.load_pem_public_key(
-            public_key_pem.encode(),
-            backend=default_backend()
-        )
-
-
-    def sign_data(self, data):
-
-        private_key_file = self.config.private_key_file
-
-        with open(private_key_file, 'r') as private_file:
-            private_key_pem = private_file.read()
-
-        private_key = self.load_private_key(private_key_pem)
+    @staticmethod
+    def sign_data(config, data):
+        private_key = config.signing_keys.private_key()
 
         # Ensure the data is encoded in UTF-8 exactly as it will be sent
         encoded_data = data.encode('utf-8')
@@ -105,7 +36,6 @@ class Signing:
         # print("[DEBUG] Base64 Encoded Signature:", encoded_signature)
 
         return encoded_signature
-
 
     def verify_response(response_body, signature, server_public_key_pem):
         """Verifies the server's response signature.
@@ -136,4 +66,3 @@ class Signing:
         except Exception as e:
             print(f"[ERROR] Signature verification failed: {e}")
             return False
-

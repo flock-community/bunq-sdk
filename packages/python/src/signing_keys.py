@@ -6,7 +6,7 @@ RSA key objects, ensuring they remain synchronized.
 """
 
 from abc import ABC, abstractmethod
-from typing import Final
+from typing import Final, Optional
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.exceptions import InvalidSignature
@@ -14,7 +14,7 @@ from cryptography.exceptions import InvalidSignature
 
 class ConfigValidationError(Exception):
     """Base exception for configuration validation errors"""
-    def __init__(self, message: str, cause: Exception = None):
+    def __init__(self, message: str, cause: Optional[Exception] = None):
         super().__init__(message)
         self.cause = cause
 
