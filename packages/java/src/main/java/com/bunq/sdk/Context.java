@@ -14,14 +14,18 @@ import com.bunq.sdk.generated.model.InstallationToken;
 import com.bunq.sdk.generated.model.SessionServer;
 import com.bunq.sdk.generated.model.SessionServerCreate;
 import com.bunq.sdk.generated.model.SessionServerToken;
+import com.bunq.sdk.generated.model.UserApiKey;
+import com.bunq.sdk.generated.model.UserApiKeyAnchoredUser;
+import com.bunq.sdk.generated.model.UserCompany;
+import com.bunq.sdk.generated.model.UserPaymentServiceProvider;
 import com.bunq.sdk.generated.model.UserPerson;
 import community.flock.wirespec.java.Wirespec.RawRequest;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -30,93 +34,98 @@ import static com.bunq.sdk.Wirespec.send;
 import static com.bunq.sdk.Wirespec.serialization;
 
 
-public class Context {
-    private final String apiKey;
-    private final String serviceName;
-    private final String serverPublicKey;
-    private final long deviceId;
-    private final long sessionId;
-    private final String sessionToken;
-    private final long userId;
-
-    public Context(String apiKey, String serviceName, String serverPublicKey, long deviceId, long sessionId, String sessionToken, long userId) {
-        this.apiKey = apiKey;
-        this.serviceName = serviceName;
-        this.serverPublicKey = serverPublicKey;
-        this.deviceId = deviceId;
-        this.sessionId = sessionId;
-        this.sessionToken = sessionToken;
-        this.userId = userId;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public String getServerPublicKey() {
-        return serverPublicKey;
-    }
-
-    public long getDeviceId() {
-        return deviceId;
-    }
-
-    public long getSessionId() {
-        return sessionId;
-    }
-
-    public String getSessionToken() {
-        return sessionToken;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
+public record Context(
+        String serverPublicKey,
+        long deviceId,
+        long sessionId,
+        String sessionToken,
+        long userId,
+        Instant sessionExpiryTime,
+        String installationToken,
+        Config config
+) {
 
     public static Context initContext(Config config) {
-        Signing signing = new Signing(config);
 
         try {
-            InstallationCreate installation = createInstallation(signing, config.serviceName(), signing.generateRsaKeyPair().publicKey()).get();
-            var installationToken = Optional.ofNullable(installation.Token()).flatMap(it -> it).flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
+            InstallationCreate installation = createInstallation(config).get();
+            var installationToken = Optional.ofNullable(installation.Token())
+                    .flatMap(it -> it)
+                    .flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
 
+            DeviceServerCreate deviceServer = createDeviceServer(config, installationToken).get();
+            SessionServerCreate serverSession = createSessionServer(config, installationToken).get();
 
-            DeviceServerCreate deviceServer = createDeviceServer(signing, config.serviceName(), config.apiKey(), installationToken).get();
-            SessionServerCreate serverSession = createSessionServer(signing, config.serviceName(), config.apiKey(), installationToken).get();
+            Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
+                    .orElseGet(() -> {
+                        System.out.println("bunq - No session timeout found in session server response, using default of 30 minutes");
+                        return 30 * 60L;
+                    });
+            Instant sessionExpiryTime = Instant.now().plusSeconds(sessionTimeoutSeconds);
 
             return new Context(
-                    config.apiKey(),
-                    config.serviceName(),
                     installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")),
                     deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")),
                     serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")),
                     serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")),
-                    serverSession.UserPerson().flatMap(UserPerson::id).orElseThrow(error("No user id")));
+                    getUserId(serverSession),
+                    sessionExpiryTime,
+                    installationToken,
+                    config);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static <T> T throwRuntimeException(String message) {
-        throw error(message).get();
+    /**
+     * Refresh this context's session.
+     * This recreates the session with the same device and installation but gets a new session token.
+     *
+     * @return A new Context with refreshed session information
+     */
+    public Context refreshSession() {
+        if (installationToken == null) {
+            throw new IllegalStateException("Cannot refresh session: no installation token available in context");
+        }
+
+        try {
+            SessionServerCreate serverSession = createSessionServer(config, installationToken).get();
+
+            Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
+                    .orElseGet(() -> {
+                        System.out.println("bunq - No session timeout found in session server response, using default of 30 minutes");
+                        return 30 * 60L;
+                    });
+            Instant sessionExpiryTime = Instant.now().plusSeconds(sessionTimeoutSeconds);
+
+            return new Context(
+                    this.serverPublicKey,
+                    this.deviceId,
+                    serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")),
+                    serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")),
+                    getUserId(serverSession),
+                    sessionExpiryTime,
+                    this.installationToken,
+                    this.config
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to refresh session", e);
+        }
     }
+
 
     private static @NotNull Supplier<RuntimeException> error(String message) {
         return () -> new IllegalStateException(message);
     }
 
-    private static CompletableFuture<InstallationCreate> createInstallation(Signing signing, String serviceName, String publicKeyPem) {
-        Installation body = new Installation(publicKeyPem);
+    private static CompletableFuture<InstallationCreate> createInstallation(Config config) {
+        Installation body = new Installation(config.signingKeys().publicKeyPem());
 
         CREATE_Installation.Request request = new CREATE_Installation.Request(body);
 
         RawRequest rawRequest = CREATE_Installation.Handler.toRequest(serialization, request);
-        return send(signing, rawRequest).thenApply(rawResponse -> {
+        return send(config, rawRequest).thenApply(rawResponse -> {
             Object response = CREATE_Installation.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_Installation.Response200) {
                 return ((CREATE_Installation.Response200) response).getBody();
@@ -128,8 +137,8 @@ public class Context {
         });
     }
 
-    private static CompletableFuture<DeviceServerCreate> createDeviceServer(Signing signing, String serviceName, String apiKey, String token) {
-        DeviceServer body = new DeviceServer(serviceName, apiKey, Optional.of(Collections.singletonList("*")));
+    private static CompletableFuture<DeviceServerCreate> createDeviceServer(Config config, String token) {
+        DeviceServer body = new DeviceServer(config.serviceName(), config.apiKey(), Optional.of(Collections.singletonList("*")));
 
         CREATE_DeviceServer.Request request = new CREATE_DeviceServer.Request(body);
 
@@ -141,7 +150,7 @@ public class Context {
                 Map.of("X-Bunq-Client-Authentication", List.of(token)),
                 rawRequest.body()
         );
-        return send(signing, authRequest).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_DeviceServer.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_DeviceServer.Response200) {
                 return ((CREATE_DeviceServer.Response200) response).getBody();
@@ -153,8 +162,8 @@ public class Context {
         });
     }
 
-    private static CompletableFuture<SessionServerCreate> createSessionServer(Signing signing, String serviceName, String apiKey, String token) {
-        SessionServer body = new SessionServer(apiKey);
+    private static CompletableFuture<SessionServerCreate> createSessionServer(Config config, String token) {
+        SessionServer body = new SessionServer(config.apiKey());
 
         CREATE_SessionServer.Request request = new CREATE_SessionServer.Request(body);
         RawRequest rawRequest = CREATE_SessionServer.Handler.toRequest(serialization, request);
@@ -163,12 +172,12 @@ public class Context {
                 rawRequest.path(),
                 rawRequest.queries(),
                 Map.of(
-                        "UserAgent", List.of(serviceName),
+                        "UserAgent", List.of(config.serviceName()),
                         "X-Bunq-Client-Authentication", List.of(token)
                 ),
                 rawRequest.body()
         );
-        return send(signing, authRequest).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_SessionServer.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_SessionServer.Response200) {
                 return ((CREATE_SessionServer.Response200) response).getBody();
@@ -180,21 +189,40 @@ public class Context {
         });
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Context context = (Context) o;
-        return deviceId == context.deviceId && sessionId == context.sessionId && userId == context.userId && Objects.equals(apiKey, context.apiKey) && Objects.equals(serviceName, context.serviceName) && Objects.equals(serverPublicKey, context.serverPublicKey) && Objects.equals(sessionToken, context.sessionToken);
+    /**
+     * Sessions can be for various types of users, of which only one is filled.
+     */
+    private static long getUserId(SessionServerCreate sessionServer) {
+        return sessionServer.UserPerson().flatMap(UserPerson::id)
+                .or(() -> sessionServer.UserCompany().flatMap(UserCompany::id))
+                .or(() -> sessionServer.UserApiKey().flatMap(UserApiKey::id))
+                .or(() -> sessionServer.UserPaymentServiceProvider().flatMap(UserPaymentServiceProvider::id))
+                .orElseThrow(() -> new IllegalStateException("No user id found in the SessionServerCreate response"));
+    }
+
+    /**
+     * Extract session timeout from the user in the SessionServerCreate response.
+     */
+    private static Optional<Long> getSessionTimeout(SessionServerCreate sessionServer) {
+        return sessionServer.UserPerson().flatMap(UserPerson::session_timeout)
+                .or(() -> sessionServer.UserCompany().flatMap(UserCompany::session_timeout))
+                .or(() -> sessionServer.UserPaymentServiceProvider().flatMap(UserPaymentServiceProvider::session_timeout))
+                .or(() -> sessionServer.UserApiKey().flatMap(Context::getUserApiKeySessionTimeout));
+    }
+
+    private static Optional<Long> getUserApiKeySessionTimeout(UserApiKey userApiKey) {
+        return userApiKey.granted_by_user().flatMap(Context::getUserApiKeyAnchoredUserSessionTimeout)
+                .or(() -> userApiKey.requested_by_user().flatMap(Context::getUserApiKeyAnchoredUserSessionTimeout));
+    }
+
+    private static Optional<Long> getUserApiKeyAnchoredUserSessionTimeout(UserApiKeyAnchoredUser anchoredUser) {
+        return anchoredUser.UserPerson().flatMap(UserPerson::session_timeout)
+                .or(() -> anchoredUser.UserCompany().flatMap(UserCompany::session_timeout))
+                .or(() -> anchoredUser.UserPaymentServiceProvider().flatMap(UserPaymentServiceProvider::session_timeout));
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(apiKey, serviceName, serverPublicKey, deviceId, sessionId, sessionToken, userId);
-    }
-
-    @Override
-    public String toString() {
-        return "Context{" + "apiKey='" + apiKey + '\'' + ", serviceName='" + serviceName + '\'' + ", serverPublicKey='" + serverPublicKey + '\'' + ", deviceId=" + deviceId + ", sessionId=" + sessionId + ", sessionToken='" + sessionToken + '\'' + ", userId=" + userId + '}';
+    public @NotNull String toString() {
+        return "Context{" + "serverPublicKey='" + serverPublicKey + '\'' + ", deviceId=" + deviceId + ", sessionId=" + sessionId + ", sessionToken='" + sessionToken + '\'' + ", userId=" + userId + ", config=" + config + '}';
     }
 }

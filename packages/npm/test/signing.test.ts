@@ -1,15 +1,11 @@
-import unittest
+import { describe, expect, test } from 'vitest';
+import { Signing } from '../src/signing';
+import { createConfig } from '../src/config';
+import { BUNQ_SANDBOX_SERVER } from '../src/bunq-server';
 
-from bunq_server import BUNQ_SANDBOX_SERVER
-from config import Config
-from signing import Signing
-from signing_keys import SigningKeysFromPem
-
-USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
-service_name = 'PeterScript'
-
-PRIVATE_KEY_PEM = """
------BEGIN PRIVATE KEY-----
+describe('Signing', () => {
+    test('signing should produce expected signature', () => {
+        const PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCc03+2+6elFBvL
 o2/kml0JylB3smHXfk0HJK02hL0FxMY6JRFWnTqrUyMI7zi4KvuA06DsXhacH0ZZ
 kGN4SarJ0NwFi8NK40ZpkyTYgzs80OqhzONnKtpfEZtgEKOnEodFx2xnp0DzLVWt
@@ -36,10 +32,9 @@ ZOvT5VUoocXg4IVXBJdce3lL2THFrD5FystRWtAlAoGABTdVLZ4iHuEHClRMgxXM
 +kJ1iRyz54nDySJI7922TYt9LmMOWhWqijAuLbbbZ7PAsxtO6TCqUdSsy+Jx2Y2G
 PO/olJBKnIN3f0MpCBz5oFBMkfNsbQ4bPVD2V3pwcdf2HLydTwk49o6WZFar/FGG
 os8c7u7MfsR3Tl/MGtJGsH0=
------END PRIVATE KEY-----"""
+-----END PRIVATE KEY-----`;
 
-PUBLIC_KEY_PEM = """"
------BEGIN PUBLIC KEY-----
+        const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnNN/tvunpRQby6Nv5Jpd
 CcpQd7Jh135NByStNoS9BcTGOiURVp06q1MjCO84uCr7gNOg7F4WnB9GWZBjeEmq
 ydDcBYvDSuNGaZMk2IM7PNDqoczjZyraXxGbYBCjpxKHRcdsZ6dA8y1VrRb56Q3D
@@ -47,28 +42,18 @@ ydDcBYvDSuNGaZMk2IM7PNDqoczjZyraXxGbYBCjpxKHRcdsZ6dA8y1VrRb56Q3D
 N7oGg0aUzfzcFO2eUo//K8iOCX92mIlTiD/ptGmCc7zyfAAgtm3uFzWwSks5nXjx
 UWmmCQB0dhg2j2teZOcUJDM8h/QoNnl6TtZZzmOb5WFGQQjLWEMaVH3+SHWUYeFU
 rQIDAQAB
------END PUBLIC KEY-----
-"""
+-----END PUBLIC KEY-----`;
 
-config = Config(
-    bunq_server=BUNQ_SANDBOX_SERVER,
-    api_key = USER_API_KEY,
-    service_name = service_name,
-    signing_keys = SigningKeysFromPem(PRIVATE_KEY_PEM, PUBLIC_KEY_PEM)
-)
+        const config = createConfig(
+            BUNQ_SANDBOX_SERVER,
+            "test", 
+            "test",
+            PRIVATE_KEY_PEM,
+            PUBLIC_KEY_PEM
+        );
 
-class Testing(unittest.TestCase):
-
-    def test_signing(self):
-        print("Testing signing")
-
-        signature = Signing.sign_data(config, "Hello")
-
-        print(signature)
-        self.assertEqual(signature, "fR0Gyn8VfC8eCwq10x5eYAcxXh4nv6331hWAAr77l72zfFScbw3hFSE6iBNklCYc0mfnKezsuRo3re+fTNNHO1oZhfhjc9i4UYxTxBiOEslHrKx9NkXkBZh2RALx/LnhlpyMwB5BBOlFlNeR9Hyj5E8c/a2pObBZRmrZ3cgAnoWF8hhY5Y9XwLS2WIodYIPSQXuQMXyi1UBxhxAbniZ5m1uRSt8gaPmQGMCQtUzvZ8KUXtSvugGPsXHwh94EccZCfjS0sdIQK8AcZ8t5YL6bqkqJ7eVzbxoX6U1nOZVy3MxQMKQ/PFS297er6qsVsGwKbNfaTUvymEb46mM/gQdQDQ==")
-
-def main():
-    unittest.main()
-
-if __name__ == "__main__":
-    main()
+        const result = Signing.signData(config, "Hello");
+        
+        expect(result).toBe("fR0Gyn8VfC8eCwq10x5eYAcxXh4nv6331hWAAr77l72zfFScbw3hFSE6iBNklCYc0mfnKezsuRo3re+fTNNHO1oZhfhjc9i4UYxTxBiOEslHrKx9NkXkBZh2RALx/LnhlpyMwB5BBOlFlNeR9Hyj5E8c/a2pObBZRmrZ3cgAnoWF8hhY5Y9XwLS2WIodYIPSQXuQMXyi1UBxhxAbniZ5m1uRSt8gaPmQGMCQtUzvZ8KUXtSvugGPsXHwh94EccZCfjS0sdIQK8AcZ8t5YL6bqkqJ7eVzbxoX6U1nOZVy3MxQMKQ/PFS297er6qsVsGwKbNfaTUvymEb46mM/gQdQDQ==");
+    });
+});

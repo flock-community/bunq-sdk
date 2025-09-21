@@ -2,9 +2,11 @@ import unittest
 
 from api.endpoint import READ_User, List_all_MonetaryAccountBank_for_User
 from api.sdk import Sdk
-from context import Context
 from config import Config
-from signing import Signing
+from context import init_context
+from signing_keys import SigningKeysFromPem
+from signing_test import PRIVATE_KEY_PEM, PUBLIC_KEY_PEM
+from bunq_server import BUNQ_SANDBOX_SERVER
 from wirespec import Serialization, handler
 
 USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
@@ -12,14 +14,14 @@ service_name = 'PeterScript'
 
 serialization = Serialization()
 config = Config(
+    bunq_server=BUNQ_SANDBOX_SERVER,
     api_key = USER_API_KEY,
     service_name = service_name,
-    public_key_file="../../../test/public_key.pem",
-    private_key_file="../../../test/private_key.pem"
+    signing_keys = SigningKeysFromPem(PRIVATE_KEY_PEM, PUBLIC_KEY_PEM),
 )
-signing = Signing(config)
-context = Context(config)
-sdk = Sdk(handler(signing, context), serialization)
+
+context = init_context(config)
+sdk = Sdk(handler(context), serialization)
 
 
 class Testing(unittest.TestCase):

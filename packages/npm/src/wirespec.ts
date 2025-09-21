@@ -1,7 +1,7 @@
 import {Wirespec} from "./gen/Wirespec";
-import {type Signing} from "./signing";
-import {List_all_MonetaryAccountBank_for_User} from "./gen/endpoint";
+import {Signing} from "./signing";
 import {Context} from "./context";
+import {Config} from "./config";
 
 function headersIteratorToRecord(headersIterator: Headers): Record<string, string> {
     const record: Record<string, string> = {};
@@ -39,10 +39,9 @@ export const serialization: Wirespec.Serialization = {
     }
 };
 
-export const rawHandler: (signing: Signing, rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (signing, rawRequest) => {
-    const url = "https://public-api.sandbox.bunq.com/v1/" + rawRequest.path.join("/")
-    const [privateKey, _] = await signing.loadRsaKeyPair()
-    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  signing.signData(rawRequest.body, privateKey)} : {}
+export const rawHandler: (config: Config, rawRequest:Wirespec.RawRequest) => Promise<Wirespec.RawResponse> = async (config, rawRequest) => {
+    const url = config.bunqServer.baseUrl + rawRequest.path.join("/")
+    const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  Signing.signData(config, rawRequest.body)} : {}
     const headers: Record<string, string> = {
         ...rawRequest.headers,
         ...signatureHeader,
@@ -73,16 +72,22 @@ export const rawHandler: (signing: Signing, rawRequest:Wirespec.RawRequest) => P
 }
 
 type Handler = <REQ extends Wirespec.Request<unknown>, RES extends Wirespec.Response<unknown>> (client: Wirespec.Client<REQ, RES>, req:REQ) => Promise<RES>
-export const initHandler: (signing: Signing, context: Context) => Handler = (signing, context) => async (client, req) => {
+export const initHandler: (context: Context) => Handler = (context) => async (client, req) => {
     const rawReq = client(serialization).to(req)
     const authReq: Wirespec.RawRequest = {
         ...rawReq,
         headers: {
             ...rawReq.headers,
-            "UserAgent": context.serverName,
+            "UserAgent": context.config.serviceName,
             "X-Bunq-Client-Authentication": context.sessionToken,
+            ...(context.config.userAgent && { "UserAgent": context.config.userAgent }),
+            ...(context.config.cacheControl && { "Cache-Control": context.config.cacheControl }),
+            ...(context.config.language && { "X-Bunq-Language": context.config.language }),
+            ...(context.config.region && { "X-Bunq-Region": context.config.region }),
+            ...(context.config.clientRequestId && { "X-Bunq-Client-Request-Id": context.config.clientRequestId }),
+            ...(context.config.geolocation && { "X-Bunq-Geolocation": context.config.geolocation }),
         }
     }
-    const rawRes = await rawHandler(signing, authReq)
+    const rawRes = await rawHandler(context.config, authReq)
     return client(serialization).from(rawRes)
 };

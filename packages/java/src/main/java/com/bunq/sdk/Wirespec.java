@@ -48,7 +48,7 @@ public class Wirespec {
 
     public static final Serialization<String> serialization = new BunqSerialization();
 
-    public static CompletableFuture<RawResponse> send(Signing signing, RawRequest req) {
+    public static CompletableFuture<RawResponse> send(Config config, RawRequest req) {
         HttpClient client = HttpClient.newBuilder().build();
 
         // Build the URI
@@ -81,7 +81,7 @@ public class Wirespec {
         String[] headers;
         if (req.body() != null) {
             headersList.add("X-Bunq-Client-Signature");
-            headersList.add(signing.signData(req.body()));
+            headersList.add(Signing.signData(config, req.body()));
             headers = headersList.toArray(new String[0]);
         } else {
             headers = headersList.toArray(new String[0]);
@@ -169,8 +169,7 @@ public class Wirespec {
 
     }
 
-    public static <Req extends community.flock.wirespec.java.Wirespec.Request<?>, Res extends community.flock.wirespec.java.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(
-            Signing signing, Context context) {
+    public static <Req extends community.flock.wirespec.java.Wirespec.Request<?>, Res extends community.flock.wirespec.java.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(Context context) {
         return (request -> {
             try {
                 // Get the declaring class of the request
@@ -210,7 +209,7 @@ public class Wirespec {
 
                 // Add the authentication header
                 Map<String, List<String>> headers = new HashMap<>(rawRequest.headers());
-                headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.getSessionToken()));
+                headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.sessionToken()));
 
                 // Create a new raw request with the updated headers
                 RawRequest reqToken = new RawRequest(
@@ -222,7 +221,7 @@ public class Wirespec {
                 );
 
                 // Send the request
-                return send(signing, reqToken).thenApply(raw -> {
+                return send(context.config(), reqToken).thenApply(raw -> {
                             try {
                                 // Get the from method from the client
                                 Method fromMethod = client.getClass().getMethod("from", RawResponse.class);

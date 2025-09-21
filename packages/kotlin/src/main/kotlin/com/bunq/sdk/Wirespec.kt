@@ -11,10 +11,8 @@ import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
-import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.memberProperties
 import kotlin.reflect.javaType
 
 
@@ -59,10 +57,10 @@ val serialization: Wirespec.Serialization<String> =
         }
     }
 
-fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
+fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     val client = java.net.http.HttpClient.newBuilder().build()
 
-    val baseUri = java.net.URI(signing.getBaseUrl() + req.path.joinToString("/"))
+    val baseUri = java.net.URI(config.bunqServer.baseUrl + req.path.joinToString("/"))
     val uri = if (req.queries.isNotEmpty()) {
         val queryString = req.queries.entries.joinToString("&") { (key, value) ->
             value.joinToString("&") { v -> "$key=${java.net.URLEncoder.encode(v, Charsets.UTF_8)}" }
@@ -79,7 +77,7 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .let {
             // Sign request
             if (req.body != null) {
-                it + arrayOf("X-Bunq-Client-Signature", signing.signData(req.body!!))
+                it + arrayOf("X-Bunq-Client-Signature", Signing.signData(config, req.body!!))
             } else {
                 it
             }
@@ -106,18 +104,17 @@ fun send(signing: Signing, req: Wirespec.RawRequest): Wirespec.RawResponse {
 
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
-    userAgent?.let { "UserAgent" to it },
-    cacheControl?.let { "CacheControl" to it },
-    language?.let { "X-Bunq-Language" to it },
-    region?.let { "X-Bunq-Region" to it },
-    clientRequestId?.let { "X-Bunq-Client-Request-Id" to it },
-    geolocation?.let { "X-Bunq-GeoLocation" to it },
+    config.userAgent?.let { "UserAgent" to it },
+    config.cacheControl?.let { "CacheControl" to it },
+    config.language?.let { "X-Bunq-Language" to it },
+    config.region?.let { "X-Bunq-Region" to it },
+    config.clientRequestId?.let { "X-Bunq-Client-Request-Id" to it },
+    config.geolocation?.let { "X-Bunq-GeoLocation" to it },
 )
     .toMap()
     .mapValues { (_, value) -> listOf(value) }
 
 fun <Req : Wirespec.Request<*>, Res : Wirespec.Response<*>> handle(
-    signing: Signing,
     context: Context,
     request: Req
 ): Res {
@@ -128,16 +125,15 @@ fun <Req : Wirespec.Request<*>, Res : Wirespec.Response<*>> handle(
     val client = instance.client(serialization)
     val rawRequest = client.to(request as Wirespec.Request<*>)
     val reqToken = rawRequest.copy(headers = rawRequest.headers + context.toHeaders())
-    val rawResponse = send(signing, reqToken)
+    val rawResponse = send(context.config, reqToken)
     return client.from(rawResponse) as Res
 }
 
-fun handler(signing: Signing, context: Context): (Wirespec.Request<*>) -> Wirespec.Response<*> =
-    { req -> handle(signing, context, req) }
+fun handler(context: Context): (Wirespec.Request<*>) -> Wirespec.Response<*> =
+    { req -> handle(context, req) }
 
 fun handler(config: Config): (Wirespec.Request<*>) -> Wirespec.Response<*> {
-    val signing = Signing(config)
     val context = initContext(config)
-    return { req -> handle(signing, context, req) }
+    return { req -> handle(context, req) }
 }
 

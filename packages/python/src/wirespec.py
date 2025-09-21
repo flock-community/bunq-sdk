@@ -1,10 +1,9 @@
-from signing import Signing
 from context import Context
 from transport import Serialization, send
 
 from api.wirespec import Wirespec
 
-def handler(signing: Signing, context: Context):
+def handler(context: Context):
     serialization = Serialization()
     token = context.session_token
 
@@ -17,7 +16,7 @@ def handler(signing: Signing, context: Context):
 
         raw_req: Wirespec.RawRequest = endpoint.Convert.to_raw_request(serialization, req)
         raw_req.headers["X-Bunq-Client-Authentication"] = [token]
-        raw_res = send(signing, raw_req)
+        raw_res = send(context.config, raw_req)
 
         return endpoint.Convert.from_raw_response(serialization, raw_res)
 
