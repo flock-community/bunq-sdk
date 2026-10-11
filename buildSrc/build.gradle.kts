@@ -1,7 +1,7 @@
 plugins {
-    id("community.flock.wirespec.plugin.gradle") version "0.16.3"
-    kotlin("jvm") version "2.1.0"
-    kotlin("plugin.serialization") version "2.1.0"
+    id("community.flock.wirespec.plugin.gradle") version "0.19.7"
+    kotlin("jvm") version "2.3.20"
+    kotlin("plugin.serialization") version "2.3.20"
 }
 
 repositories {
@@ -11,6 +11,5 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation("community.flock.wirespec.compiler:core-jvm:0.16.3")
-    implementation("community.flock.kotlinx.openapi.bindings:kotlin-openapi-bindings-jvm:0.0.25")
+    implementation("community.flock.wirespec.compiler:core-jvm:0.19.7")
 }

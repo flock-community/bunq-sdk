@@ -128,7 +128,7 @@ public record Context(
         return send(config, rawRequest).thenApply(rawResponse -> {
             Object response = CREATE_Installation.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_Installation.Response200) {
-                return ((CREATE_Installation.Response200) response).getBody();
+                return ((CREATE_Installation.Response200) response).body();
             } else if (response instanceof CREATE_Installation.Response400) {
                 throw new RuntimeException("Cannot create installation");
             } else {
@@ -153,7 +153,7 @@ public record Context(
         return send(config, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_DeviceServer.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_DeviceServer.Response200) {
-                return ((CREATE_DeviceServer.Response200) response).getBody();
+                return ((CREATE_DeviceServer.Response200) response).body();
             } else if (response instanceof CREATE_DeviceServer.Response400) {
                 throw new RuntimeException("Cannot create device server");
             } else {
@@ -179,7 +179,7 @@ public record Context(
         return send(config, authRequest).thenApply(rawResponse -> {
             Object response = CREATE_SessionServer.Handler.fromResponse(serialization, rawResponse);
             if (response instanceof CREATE_SessionServer.Response200) {
-                return ((CREATE_SessionServer.Response200) response).getBody();
+                return ((CREATE_SessionServer.Response200) response).body();
             } else if (response instanceof CREATE_SessionServer.Response400) {
                 throw new RuntimeException("Cannot create session server");
             } else {

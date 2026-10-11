@@ -7,11 +7,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.kotlin.KotlinModule;
-import community.flock.wirespec.integration.jackson.java.WirespecModuleJava;
+import community.flock.wirespec.integration.jackson.v2.java.WirespecModuleJava;
 import community.flock.wirespec.java.Wirespec.RawRequest;
 import community.flock.wirespec.java.Wirespec.RawResponse;
 import community.flock.wirespec.java.Wirespec.Serialization;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
+import community.flock.wirespec.java.serde.DefaultPathSerialization;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -46,7 +48,7 @@ public class Wirespec {
                 .registerModule(new Jdk8Module());
     }
 
-    public static final Serialization<String> serialization = new BunqSerialization();
+    public static final Serialization serialization = new BunqSerialization();
 
     private static final HttpClient client = HttpClient.newBuilder().build();
 
@@ -81,9 +83,9 @@ public class Wirespec {
 
         // Sign request if body is present
         String[] headers;
-        if (req.body() != null) {
+        if (req.body().isPresent()) {
             headersList.add("X-Bunq-Client-Signature");
-            headersList.add(Signing.signData(config, req.body()));
+            headersList.add(Signing.signData(config, new String(req.body().get(), StandardCharsets.UTF_8)));
             headers = headersList.toArray(new String[0]);
         } else {
             headers = headersList.toArray(new String[0]);
@@ -94,29 +96,28 @@ public class Wirespec {
                 .uri(uri)
                 .method(
                         req.method().toUpperCase(),
-                        req.body() != null
-                                ? HttpRequest.BodyPublishers.ofString(req.body())
+                        req.body().isPresent()
+                                ? HttpRequest.BodyPublishers.ofByteArray(req.body().get())
                                 : HttpRequest.BodyPublishers.noBody()
                 )
                 .headers(headers);
 
-        return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+        return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
                 .thenApply(response -> new RawResponse(
                         response.statusCode(),
                         response.headers().map(),
-                        response.body()
+                        Optional.ofNullable(response.body())
                 ));
     }
 
-    private static class BunqSerialization implements Serialization<String>, DefaultParamSerialization {
+    private static class BunqSerialization implements Serialization, DefaultParamSerialization, DefaultPathSerialization {
         @Override
-        public <T> String serialize(T t, Type type) {
+        public <T> byte[] serializeBody(T t, Type type) {
             if (t == null) {
                 return null;
             }
             try {
-
-                return objectMapper.writeValueAsString(t);
+                return objectMapper.writeValueAsBytes(t);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize object", e);
             }
@@ -128,7 +129,7 @@ public class Wirespec {
         }
 
         @Override
-        public <T> T deserialize(String raw, Type type) {
+        public <T> T deserializeBody(byte[] raw, Type type) {
             try {
                 var tree = objectMapper.readTree(raw);
                 var response = tree.get("Response");

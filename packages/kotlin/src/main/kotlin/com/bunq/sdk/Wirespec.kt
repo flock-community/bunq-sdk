@@ -2,39 +2,44 @@
 
 package com.bunq.sdk
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.module.kotlin.KotlinFeature
-import com.fasterxml.jackson.module.kotlin.kotlinModule
-import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
+import community.flock.wirespec.integration.jackson.v3.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
+import community.flock.wirespec.kotlin.Wirespec.PathSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
+import community.flock.wirespec.kotlin.serde.DefaultPathSerialization
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.javaType
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.node.ObjectNode
+import tools.jackson.module.kotlin.KotlinFeature
+import tools.jackson.module.kotlin.kotlinModule
 
 
 private val logger = KotlinLogging.logger {}
 
-val objectMapper: ObjectMapper = ObjectMapper()
+val objectMapper: ObjectMapper = JsonMapper.builder()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    .registerModule(kotlinModule {
+    .addModule(kotlinModule {
         enable(KotlinFeature.KotlinPropertyNameAsImplicitName)
     })
-    .registerModule(WirespecModuleKotlin())
+    .addModule(WirespecModuleKotlin())
+    .build()
 
 
-val serialization: Wirespec.Serialization<String> =
-    object : Wirespec.Serialization<String>, ParamSerialization by DefaultParamSerialization() {
-        override fun <T> serialize(t: T, kType: KType): String {
-            if (t is Unit) return ""
-            return objectMapper.writeValueAsString(t)
+val serialization: Wirespec.Serialization =
+    object : Wirespec.Serialization, ParamSerialization by DefaultParamSerialization(),
+        PathSerialization by DefaultPathSerialization() {
+        override fun <T : Any> serializeBody(t: T, kType: KType): ByteArray {
+            if (t is Unit) return ByteArray(0)
+            return objectMapper.writeValueAsBytes(t)
         }
 
-        override fun <T> deserialize(raw: String, kType: KType): T {
+        override fun <T : Any> deserializeBody(raw: ByteArray, kType: KType): T {
             val tree = objectMapper.readTree(raw)
             val response = tree.get("Response").asIterable()
 
@@ -42,14 +47,14 @@ val serialization: Wirespec.Serialization<String> =
                 kType.classifier == List::class -> response
                     .filterIsInstance<ObjectNode>()
                     .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
-                        acc.addAll(jsonNode.fieldNames().asSequence().map { jsonNode.get(it) }.toList())
+                        acc.addAll(jsonNode.propertyNames().asSequence().map { jsonNode.get(it) }.toList())
                     }
 
                 else -> {
                     response
                         .filterIsInstance<ObjectNode>()
                         .fold(objectMapper.createObjectNode()) { acc, jsonNode ->
-                            acc.apply { setAll<ObjectNode>(jsonNode) }
+                            acc.apply { setAll(jsonNode.properties().associate { it.key to it.value }) }
                         }
                 }
             }
@@ -80,7 +85,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .let {
             // Sign request
             if (req.body != null) {
-                it + arrayOf("X-Bunq-Client-Signature", Signing.signData(config, req.body!!))
+                it + arrayOf("X-Bunq-Client-Signature", Signing.signData(config, String(req.body!!, Charsets.UTF_8)))
             } else {
                 it
             }
@@ -90,13 +95,13 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .uri(uri)
         .method(
             req.method.uppercase(), req.body
-                ?.let { java.net.http.HttpRequest.BodyPublishers.ofString(it) }
+                ?.let { java.net.http.HttpRequest.BodyPublishers.ofByteArray(it) }
                 ?: java.net.http.HttpRequest.BodyPublishers.noBody())
         .headers(*headers)
 
     // Send HTTP request
     logger.debug { "${req.method} $uri" }
-    val response = httpClient.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofString())
+    val response = httpClient.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofByteArray())
     logger.debug { "${response.statusCode()} ${req.method} $uri" }
 
     // Construct Wirespec.RawResponse

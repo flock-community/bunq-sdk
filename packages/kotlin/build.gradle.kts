@@ -1,16 +1,19 @@
+import community.flock.wirespec.emitters.kotlin.KotlinEmitter
+import community.flock.wirespec.compiler.core.emit.EmitShared
 import arrow.core.NonEmptyList
-import community.flock.wirespec.compiler.core.emit.KotlinEmitter
-import community.flock.wirespec.compiler.core.emit.common.EmitShared
-import community.flock.wirespec.compiler.core.emit.common.Emitted
-import community.flock.wirespec.compiler.core.emit.common.PackageName
-import community.flock.wirespec.compiler.core.parse.Endpoint
-import community.flock.wirespec.compiler.core.parse.Module
+import community.flock.wirespec.compiler.core.emit.Emitted
+import community.flock.wirespec.compiler.core.emit.importReferences
+import community.flock.wirespec.compiler.core.emit.paramList
+import community.flock.wirespec.compiler.core.emit.spacer
+import community.flock.wirespec.compiler.core.emit.PackageName
+import community.flock.wirespec.compiler.core.parse.ast.Endpoint
+import community.flock.wirespec.compiler.core.parse.ast.Module
 import community.flock.wirespec.plugin.Format
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
     alias(libs.plugins.wirespec)
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.3.20"
     `maven-publish`
 }
 
@@ -21,13 +24,13 @@ repositories {
 
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    implementation("tools.jackson.core:jackson-databind:3.2.3")
+    implementation("tools.jackson.module:jackson-module-kotlin:3.2.3")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
     implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
     implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
     implementation("org.slf4j:slf4j-api:2.0.17")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
@@ -96,7 +99,7 @@ publishing {
 }
 
 
-class SdkKotlinEmitter(val packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
+class SdkKotlinEmitter(packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger) +
             Emitted("${packageName.toDir()}/Sdk", """

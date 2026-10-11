@@ -1,11 +1,14 @@
+import community.flock.wirespec.emitters.java.JavaEmitter
+import community.flock.wirespec.compiler.core.emit.EmitShared
 import arrow.core.NonEmptyList
-import community.flock.wirespec.compiler.core.emit.JavaEmitter
-import community.flock.wirespec.compiler.core.emit.common.EmitShared
-import community.flock.wirespec.compiler.core.emit.common.Emitted
-import community.flock.wirespec.compiler.core.emit.common.PackageName
-import community.flock.wirespec.compiler.core.emit.common.Spacer
-import community.flock.wirespec.compiler.core.parse.Endpoint
-import community.flock.wirespec.compiler.core.parse.Module
+import community.flock.wirespec.compiler.core.emit.Emitted
+import community.flock.wirespec.compiler.core.emit.importReferences
+import community.flock.wirespec.compiler.core.emit.paramList
+import community.flock.wirespec.compiler.core.emit.spacer
+import community.flock.wirespec.compiler.core.emit.PackageName
+import community.flock.wirespec.compiler.core.emit.Spacer
+import community.flock.wirespec.compiler.core.parse.ast.Endpoint
+import community.flock.wirespec.compiler.core.parse.ast.Module
 import community.flock.wirespec.compiler.utils.Logger
 import community.flock.wirespec.plugin.Format
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
@@ -28,7 +31,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${libs.versions.jackson.get()}")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
     implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
@@ -93,9 +96,10 @@ publishing {
     }
 }
 
-class SdkJavaEmitter(val packageName: PackageName, emitShared: EmitShared) : JavaEmitter(packageName, emitShared) {
+class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
+            .map { emitted -> emitted.copy(result = emitted.result.withExplicitPathTypes()) }
             .plus(
                 Emitted(
                     "${packageName.toDir()}/Sdk", """
@@ -124,7 +128,14 @@ class SdkJavaEmitter(val packageName: PackageName, emitShared: EmitShared) : Jav
                 )
             )
         }
-        fun Endpoint.emitMethod(request: Endpoint.Request) = """
+
+    // Wirespec 0.19.7 emits `new Request(deserializePath(..), ..)` with an inferred type, which is ambiguous
+    // with the (Path, Method, Queries, RequestHeaders, Body) constructor for endpoints with four path parameters.
+    private fun String.withExplicitPathTypes() = replace(Regex("""serialization\.deserializePath\((.*?), Wirespec\.getType\((\w+)\.class, null\)\)""")) {
+        "serialization.<${it.groupValues[2]}>deserializePath(${it.groupValues[1]}, Wirespec.getType(${it.groupValues[2]}.class, null))"
+    }
+
+    fun Endpoint.emitMethod(request: Endpoint.Request) = """
             |public java.util.concurrent.CompletableFuture<${emit(identifier)}.Response<?>> ${emit(identifier).firstToLower()}(${request.emitSdkInterface(this)}) {
             |${Spacer}var req = new ${emit(identifier)}.Request(${request.paramList(this).joinToString(", ") { emit(it.identifier) }});
             |${Spacer}return handle(req); 
