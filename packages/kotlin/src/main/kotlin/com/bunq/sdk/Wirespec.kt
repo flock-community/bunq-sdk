@@ -105,7 +105,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
     config.userAgent?.let { "User-Agent" to it },
-    config.cacheControl?.let { "CacheControl" to it },
+    config.cacheControl?.let { "Cache-Control" to it },
     config.language?.let { "X-Bunq-Language" to it },
     config.region?.let { "X-Bunq-Region" to it },
     config.clientRequestId?.let { "X-Bunq-Client-Request-Id" to it },

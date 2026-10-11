@@ -8,16 +8,18 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class UserAgentHeaderTest {
+class HeaderNamesTest {
 
     @Test
-    fun `user agent is sent as User-Agent header`() {
+    fun `header names are sent hyphenated`() {
         val receivedUserAgents = mutableListOf<String?>()
+        val receivedCacheControls = mutableListOf<String?>()
         val receivedLegacyHeaders = mutableListOf<String?>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
             createContext("/") { exchange ->
                 receivedUserAgents += exchange.requestHeaders.getFirst("User-Agent")
-                receivedLegacyHeaders += exchange.requestHeaders.getFirst("UserAgent")
+                receivedCacheControls += exchange.requestHeaders.getFirst("Cache-Control")
+                receivedLegacyHeaders += exchange.requestHeaders.getFirst("UserAgent") ?: exchange.requestHeaders.getFirst("CacheControl")
                 exchange.sendResponseHeaders(200, -1)
                 exchange.close()
             }
@@ -30,6 +32,7 @@ class UserAgentHeaderTest {
                 apiKey = "test",
                 signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
                 userAgent = "my-agent",
+                cacheControl = "no-cache",
             )
             val context = Context(
                 serverPublicKey = "",
@@ -45,6 +48,7 @@ class UserAgentHeaderTest {
             send(config, Wirespec.RawRequest("GET", listOf("ping"), emptyMap(), context.toHeaders(), null))
 
             assertEquals(listOf<String?>("my-agent"), receivedUserAgents)
+            assertEquals(listOf<String?>("no-cache"), receivedCacheControls)
             assertNull(receivedLegacyHeaders.single())
         } finally {
             server.stop(0)
