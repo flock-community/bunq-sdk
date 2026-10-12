@@ -38,8 +38,8 @@ Each SDK package uses the Wirespec Gradle plugin to:
 
 ## Requirements
 
-- Kotlin package: Kotlin 2.3+, Jackson 3 (`tools.jackson`), Wirespec 0.19.x runtime, JVM 17+
-- Java package: Jackson 2, Wirespec 0.19.x runtime, JVM 17+
+- Kotlin package: Kotlin 2.3+, Wirespec 0.21.x runtime, JVM 17+; consumers bring their own kotlinx-coroutines (the client functions are `suspend`)
+- Java package: not available in this release (being ported to Wirespec 0.21)
 
 ## Using the SDKs
 
