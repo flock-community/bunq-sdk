@@ -1,16 +1,5 @@
-import community.flock.wirespec.emitters.java.JavaEmitter
-import community.flock.wirespec.compiler.core.emit.EmitShared
-import arrow.core.NonEmptyList
-import community.flock.wirespec.compiler.core.emit.Emitted
-import community.flock.wirespec.compiler.core.emit.importReferences
-import community.flock.wirespec.compiler.core.emit.paramList
-import community.flock.wirespec.compiler.core.emit.spacer
-import community.flock.wirespec.compiler.core.emit.PackageName
-import community.flock.wirespec.compiler.core.emit.Spacer
-import community.flock.wirespec.compiler.core.parse.ast.Endpoint
-import community.flock.wirespec.compiler.core.parse.ast.Module
-import community.flock.wirespec.compiler.utils.Logger
 import community.flock.wirespec.plugin.Format
+import community.flock.wirespec.plugin.Language
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
@@ -62,10 +51,10 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     output = layout.buildDirectory.dir("generated/wirespec")
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
-    emitterClass = SdkJavaEmitter::class.java
     format = Format.OpenAPIV3
+    languages = listOf(Language.Java)
     strict = true
-    shared = true
+    shared = false
     preProcessor = OpenApiPreProcessor
 }
 
@@ -94,69 +83,4 @@ publishing {
     repositories {
         mavenLocal()
     }
-}
-
-class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmitter(packageName, emitShared) {
-    override fun emit(module: Module, logger: Logger): NonEmptyList<Emitted> {
-        return super.emit(module, logger)
-            .plus(
-                Emitted(
-                    "${packageName.toDir()}/Sdk", """
-                |package ${packageName.value};
-                |
-                |import community.flock.wirespec.java.Wirespec;
-                |
-                |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)};" }}
-                |
-                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value};" }}   
-                |
-                |public class Sdk {
-                |${Spacer}private final java.util.function.Function<Wirespec.Request<?>, java.util.concurrent.CompletableFuture<Wirespec.Response<?>>> handler;
-                |
-                |${Spacer}public Sdk(java.util.function.Function<Wirespec.Request<?>, java.util.concurrent.CompletableFuture<Wirespec.Response<?>>> handler) {
-                |${Spacer(2)}this.handler = handler;
-                |${Spacer}}
-                |
-                |${Spacer}public <Req extends Wirespec.Request<?>, Res extends Wirespec.Response<?>> java.util.concurrent.CompletableFuture<Res> handle(Req req) {
-                |${Spacer(2)}return (java.util.concurrent.CompletableFuture<Res>) this.handler.apply(req);
-                |}
-                |
-                |${module.emitEndpointRequest("\n") { (endpoint, request) -> endpoint.emitMethod(request) }.spacer(1)}
-                |}
-            """.trimMargin()
-                )
-            )
-        }
-
-    // Wirespec 0.19.7 emits `new Request(deserializePath(..), ..)` with an inferred type, which is ambiguous
-    // with the (Path, Method, Queries, RequestHeaders, Body) constructor for endpoints with four path parameters.
-    // Remove when upgrading to Wirespec 0.20+, whose IR-based Java emitter (flock-community/wirespec#695) emits the explicit type argument.
-    override fun emit(endpoint: Endpoint): String = super.emit(endpoint).withExplicitPathTypes()
-
-    private fun String.withExplicitPathTypes() = replace(Regex("""serialization\.deserializePath\((.*?), Wirespec\.getType\((\w+)\.class, null\)\)""")) {
-        "serialization.<${it.groupValues[2]}>deserializePath(${it.groupValues[1]}, Wirespec.getType(${it.groupValues[2]}.class, null))"
-    }
-
-    fun Endpoint.emitMethod(request: Endpoint.Request) = """
-            |public java.util.concurrent.CompletableFuture<${emit(identifier)}.Response<?>> ${emit(identifier).firstToLower()}(${request.emitSdkInterface(this)}) {
-            |${Spacer}var req = new ${emit(identifier)}.Request(${request.paramList(this).joinToString(", ") { emit(it.identifier) }});
-            |${Spacer}return handle(req); 
-            |}
-            |
-        """.trimMargin()
-
-    fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
-        this.paramList(endpoint).joinToString(", ") { "${it.reference.emit()} ${emit(it.identifier)}" }
-
-    fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
-        |suspend fun ${emit(endpoint.identifier).firstToLower()}(${request.emitSdkInterface(endpoint)}) = 
-        |   ${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
-        |     .let{req -> handler(req) as ${emit(endpoint.identifier)}.Response<*> }
-    """.trimMargin()
-
-    fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =
-        statements
-            .filterIsInstance<Endpoint>()
-            .flatMap { endpoint -> endpoint.requests.map { request -> Pair(endpoint, request) } }
-            .joinToString(separator) { endpointRequest -> emit(endpointRequest) }
 }

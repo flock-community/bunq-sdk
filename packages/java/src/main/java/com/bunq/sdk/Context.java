@@ -1,8 +1,8 @@
 package com.bunq.sdk;
 
-import com.bunq.sdk.generated.endpoint.CREATE_DeviceServer;
-import com.bunq.sdk.generated.endpoint.CREATE_Installation;
-import com.bunq.sdk.generated.endpoint.CREATE_SessionServer;
+import com.bunq.sdk.generated.endpoint.CreateDeviceServer;
+import com.bunq.sdk.generated.endpoint.CreateInstallation;
+import com.bunq.sdk.generated.endpoint.CreateSessionServer;
 import com.bunq.sdk.generated.model.BunqId;
 import com.bunq.sdk.generated.model.DeviceServer;
 import com.bunq.sdk.generated.model.DeviceServerCreate;
@@ -122,14 +122,14 @@ public record Context(
     private static CompletableFuture<InstallationCreate> createInstallation(Config config) {
         Installation body = new Installation(config.signingKeys().publicKeyPem());
 
-        CREATE_Installation.Request request = new CREATE_Installation.Request(body);
+        CreateInstallation.Request request = new CreateInstallation.Request(body);
 
-        RawRequest rawRequest = CREATE_Installation.Handler.toRequest(serialization, request);
+        RawRequest rawRequest = CreateInstallation.toRawRequest(serialization, request);
         return send(config, rawRequest).thenApply(rawResponse -> {
-            Object response = CREATE_Installation.Handler.fromResponse(serialization, rawResponse);
-            if (response instanceof CREATE_Installation.Response200) {
-                return ((CREATE_Installation.Response200) response).body();
-            } else if (response instanceof CREATE_Installation.Response400) {
+            Object response = CreateInstallation.fromRawResponse(serialization, rawResponse);
+            if (response instanceof CreateInstallation.Response200) {
+                return ((CreateInstallation.Response200) response).body();
+            } else if (response instanceof CreateInstallation.Response400) {
                 throw new RuntimeException("Cannot create installation");
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
@@ -140,9 +140,9 @@ public record Context(
     private static CompletableFuture<DeviceServerCreate> createDeviceServer(Config config, String token) {
         DeviceServer body = new DeviceServer(config.serviceName(), config.apiKey(), Optional.of(Collections.singletonList("*")));
 
-        CREATE_DeviceServer.Request request = new CREATE_DeviceServer.Request(body);
+        CreateDeviceServer.Request request = new CreateDeviceServer.Request(body);
 
-        var rawRequest = CREATE_DeviceServer.Handler.toRequest(serialization, request);
+        var rawRequest = CreateDeviceServer.toRawRequest(serialization, request);
         var authRequest = new RawRequest(
                 rawRequest.method(),
                 rawRequest.path(),
@@ -151,10 +151,10 @@ public record Context(
                 rawRequest.body()
         );
         return send(config, authRequest).thenApply(rawResponse -> {
-            Object response = CREATE_DeviceServer.Handler.fromResponse(serialization, rawResponse);
-            if (response instanceof CREATE_DeviceServer.Response200) {
-                return ((CREATE_DeviceServer.Response200) response).body();
-            } else if (response instanceof CREATE_DeviceServer.Response400) {
+            Object response = CreateDeviceServer.fromRawResponse(serialization, rawResponse);
+            if (response instanceof CreateDeviceServer.Response200) {
+                return ((CreateDeviceServer.Response200) response).body();
+            } else if (response instanceof CreateDeviceServer.Response400) {
                 throw new RuntimeException("Cannot create device server");
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
@@ -165,8 +165,8 @@ public record Context(
     private static CompletableFuture<SessionServerCreate> createSessionServer(Config config, String token) {
         SessionServer body = new SessionServer(config.apiKey());
 
-        CREATE_SessionServer.Request request = new CREATE_SessionServer.Request(body);
-        RawRequest rawRequest = CREATE_SessionServer.Handler.toRequest(serialization, request);
+        CreateSessionServer.Request request = new CreateSessionServer.Request(body);
+        RawRequest rawRequest = CreateSessionServer.toRawRequest(serialization, request);
         var authRequest = new RawRequest(
                 rawRequest.method(),
                 rawRequest.path(),
@@ -177,10 +177,10 @@ public record Context(
                 rawRequest.body()
         );
         return send(config, authRequest).thenApply(rawResponse -> {
-            Object response = CREATE_SessionServer.Handler.fromResponse(serialization, rawResponse);
-            if (response instanceof CREATE_SessionServer.Response200) {
-                return ((CREATE_SessionServer.Response200) response).body();
-            } else if (response instanceof CREATE_SessionServer.Response400) {
+            Object response = CreateSessionServer.fromRawResponse(serialization, rawResponse);
+            if (response instanceof CreateSessionServer.Response200) {
+                return ((CreateSessionServer.Response200) response).body();
+            } else if (response instanceof CreateSessionServer.Response400) {
                 throw new RuntimeException("Cannot create session server");
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
