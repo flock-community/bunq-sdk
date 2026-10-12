@@ -87,16 +87,13 @@ try {
 ```typescript
 async function apiCallWithSessionCheck<T>(
   apiCall: (context: Context) => Promise<T>,
-  context: Context,
-  config: Config,
-  signing: Signing
+  context: Context
 ): Promise<{ result: T; context: Context }> {
   let currentContext = context;
   
   // Check if session needs refresh
-  if (currentContext.sessionExpiryTime && 
-      currentContext.sessionExpiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    currentContext = await initContext(config);
+  if (currentContext.sessionExpiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
+    currentContext = await refreshSession(currentContext);
   }
   
   try {
@@ -104,7 +101,7 @@ async function apiCallWithSessionCheck<T>(
     return { result, context: currentContext };
   } catch (error) {
     // If API call fails, try refreshing session once
-    currentContext = await initContext(config);
+    currentContext = await refreshSession(currentContext);
     const result = await apiCall(currentContext);
     return { result, context: currentContext };
   }

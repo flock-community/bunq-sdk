@@ -12,6 +12,7 @@ import com.bunq.sdk.BunqSigningKeysGenerator
 import com.bunq.sdk.Config
 import com.bunq.sdk.Context
 import com.bunq.sdk.initContext
+import com.bunq.sdk.refreshSession
 import java.time.Instant
 
 val config = Config(
@@ -27,7 +28,7 @@ val context: Context = initContext(config)
 
 ## Calling an Endpoint
 
-Pass `handler(context)` to the generated `Sdk`:
+Pass `handler(context)` to the generated `Sdk`. The generated calls are `suspend` functions named after the operation id (for example `rEAD_User`):
 
 ```kotlin
 import com.bunq.sdk.generated.Sdk

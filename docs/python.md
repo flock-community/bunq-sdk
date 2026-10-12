@@ -95,6 +95,8 @@ except Exception as error:
 
 ```python
 import time
+from context import Context, refresh_session
+from config import Config
 from typing import Optional
 
 def api_call_with_session_retry(
@@ -108,7 +110,7 @@ def api_call_with_session_retry(
     Returns tuple of (result, updated_context).
     """
     current_context = context
-    last_exception = None
+    last_exception: Exception | None = None
     
     for attempt in range(max_retries + 1):
         try:
@@ -123,6 +125,7 @@ def api_call_with_session_retry(
             else:
                 break
     
+    assert last_exception is not None
     raise last_exception
 
 # Usage example
