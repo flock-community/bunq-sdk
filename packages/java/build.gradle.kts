@@ -41,7 +41,7 @@ sourceSets {
     main {
         java {
             srcDirs(
-                layout.buildDirectory.dir("generated").get(),
+                layout.buildDirectory.dir("generated/wirespec").get(),
                 "src/main/customGenerated"
             )
         }
@@ -59,7 +59,7 @@ tasks.withType<Test> {
 
 tasks.register<ConvertWirespecTask>("wirespec") {
     description = "Compile Wirespec to Java"
-    output = layout.buildDirectory.dir("generated")
+    output = layout.buildDirectory.dir("generated/wirespec")
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
     emitterClass = SdkJavaEmitter::class.java

@@ -41,7 +41,7 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDir("${layout.buildDirectory.get()}/generated")
+            srcDir("${layout.buildDirectory.get()}/generated/wirespec")
         }
     }
 }
@@ -64,7 +64,7 @@ tasks.withType<Test> {
 
 tasks.register<ConvertWirespecTask>("wirespec") {
     description = "Compile Wirespec to Kotlin"
-    output = layout.buildDirectory.dir("generated")
+    output = layout.buildDirectory.dir("generated/wirespec")
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
     emitterClass = SdkKotlinEmitter::class.java
