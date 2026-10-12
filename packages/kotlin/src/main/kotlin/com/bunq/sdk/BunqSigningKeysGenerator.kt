@@ -1,5 +1,6 @@
 package com.bunq.sdk
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.PemObject
 import org.bouncycastle.util.io.pem.PemWriter
@@ -14,6 +15,7 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 
 object BunqSigningKeysGenerator {
+    private val logger = KotlinLogging.logger {}
     private val keyPairGenerator: KeyPairGenerator
 
     init {
@@ -32,7 +34,7 @@ object BunqSigningKeysGenerator {
      */
     fun generateBunqSigningKeys(): SigningKeys {
         val keyPair = keyPairGenerator.generateKeyPair()
-        println("bunq - created new keypair [KEEP IT SAFE]")
+        logger.info { "bunq - created new keypair" }
         return SigningKeys.FromRSAKeys(keyPair.private as RSAPrivateKey, keyPair.public as RSAPublicKey)
 
     }
@@ -46,7 +48,7 @@ object BunqSigningKeysGenerator {
      */
     fun generateBunqSigningKeys(privateKeyFile: File, publicKeyFile: File): SigningKeys {
         if (privateKeyFile.exists() && publicKeyFile.exists()) {
-            println("bunq - using existing keypair")
+            logger.info { "bunq - using existing keypair" }
             return SigningKeys.FromPem(privateKeyFile.readText(), publicKeyFile.readText())
         }
 
@@ -54,7 +56,7 @@ object BunqSigningKeysGenerator {
         privateKeyFile.writeText(signingKeys.privateKeyAsPem())
         publicKeyFile.writeText(signingKeys.publicKeyAsPem())
 
-        println("bunq - created new keypair [KEEP THESE FILES SAFE]")
+        logger.info { "bunq - created new keypair [KEEP THESE FILES SAFE]" }
         return signingKeys
     }
 

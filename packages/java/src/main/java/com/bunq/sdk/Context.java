@@ -172,7 +172,6 @@ public record Context(
                 rawRequest.path(),
                 rawRequest.queries(),
                 Map.of(
-                        "UserAgent", List.of(config.serviceName()),
                         "X-Bunq-Client-Authentication", List.of(token)
                 ),
                 rawRequest.body()

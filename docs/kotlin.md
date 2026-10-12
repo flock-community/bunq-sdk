@@ -4,6 +4,46 @@
 
 The bunq Kotlin SDK provides simple session management through the `Context` data class and extension functions. Sessions automatically expire and need to be refreshed periodically to maintain API access.
 
+## Creating a Context
+
+```kotlin
+import com.bunq.sdk.BUNQ_SANDBOX_SERVER
+import com.bunq.sdk.BunqSigningKeysGenerator
+import com.bunq.sdk.Config
+import com.bunq.sdk.Context
+import com.bunq.sdk.initContext
+import com.bunq.sdk.refreshSession
+import java.time.Instant
+
+val config = Config(
+    bunqServer = BUNQ_SANDBOX_SERVER,
+    serviceName = "MyApp",
+    apiKey = "your-api-key",
+    signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
+)
+val context: Context = initContext(config)
+```
+
+`generateBunqSigningKeys()` creates a new key pair on every call. To keep the same keys across restarts, use `generateBunqSigningKeys(privateKeyFile, publicKeyFile)`, which reuses existing files or writes new ones, or build `SigningKeys.FromPem(privateKeyAsPem, publicKeyAsPem)` from stored PEM strings.
+
+## Calling an Endpoint
+
+Pass `handler(context)` to the generated `Sdk`. The generated calls are `suspend` functions named after the operation id (for example `rEAD_User`):
+
+```kotlin
+import com.bunq.sdk.generated.Sdk
+import com.bunq.sdk.generated.endpoint.READ_User
+import com.bunq.sdk.handler
+
+suspend fun readLegalName(context: Context): String? {
+    val sdk = Sdk(handler(context))
+    return when (val res = sdk.rEAD_User(context.userId)) {
+        is READ_User.Response200 -> res.body.UserPerson?.legal_name
+        is READ_User.Response400 -> error("Cannot read user")
+    }
+}
+```
+
 ## Session Expiry
 
 ### Check Session Expiry Time
@@ -11,13 +51,11 @@ The bunq Kotlin SDK provides simple session management through the `Context` dat
 Every `Context` instance contains the session expiry time:
 
 ```kotlin
-val context = initContext(config, signing)
-val expiryTime: Instant? = context.sessionExpiryTime
+val context = initContext(config)
+val expiryTime: Instant = context.sessionExpiryTime
 
 // Check if session will expire soon
-val willExpireSoon = expiryTime?.let { 
-    it.isBefore(Instant.now().plusMinutes(5))
-} ?: true
+val willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60))
 ```
 
 ## Session Refresh
@@ -27,15 +65,10 @@ val willExpireSoon = expiryTime?.let {
 Use the `refreshSession()` extension function to refresh your session:
 
 ```kotlin
-val config = Config(
-    bunqServer = BUNQ_SANDBOX_SERVER,
-    serviceName = "MyApp",
-    apiKey = "your-api-key",
-    // ... other config
-)
+val context = initContext(config)
 
 // Refresh the session
-val refreshedContext = context.refreshSession(config)
+val refreshedContext = context.refreshSession()
 
 // Use the new context for subsequent API calls
 ```
@@ -43,13 +76,13 @@ val refreshedContext = context.refreshSession(config)
 ### Complete Example
 
 ```kotlin
-fun maintainSession(initialContext: Context, config: Config): Context {
+fun maintainSession(initialContext: Context): Context {
     val expiryTime = initialContext.sessionExpiryTime
     
-    return if (expiryTime != null && expiryTime.isBefore(Instant.now().plusMinutes(5))) {
+    return if (expiryTime.isBefore(Instant.now().plusSeconds(5 * 60))) {
         // Session expires in less than 5 minutes, refresh it
         println("Session expiring soon, refreshing...")
-        initialContext.refreshSession(config)
+        initialContext.refreshSession()
     } else {
         // Session is still valid
         initialContext
@@ -60,8 +93,12 @@ fun maintainSession(initialContext: Context, config: Config): Context {
 ## Requirements
 
 - The context must contain a valid `installationToken` to refresh sessions
-- The same `Config` used for initial context creation should be used for refresh
+- The refresh uses the `Config` stored in the context
 - A new `Context` instance is returned with updated session information
+
+## Logging
+
+The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and credentials are never logged.
 
 ## Error Handling
 
@@ -72,7 +109,7 @@ The `refreshSession()` function will throw an error if:
 
 ```kotlin
 try {
-    val refreshedContext = context.refreshSession(config)
+    val refreshedContext = context.refreshSession()
     // Use refreshed context
 } catch (e: Exception) {
     println("Session refresh failed: ${e.message}")

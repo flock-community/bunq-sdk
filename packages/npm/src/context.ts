@@ -64,7 +64,6 @@ export async function initContext(config: Config): Promise<Context> {
             ...rawReq,
             headers: {
                 ...rawReq.headers,
-                "UserAgent": config.serviceName,
                 "X-Bunq-Client-Authentication": token,
             }
         }
@@ -175,7 +174,6 @@ export async function refreshSession(context: Context): Promise<Context> {
             ...rawReq,
             headers: {
                 ...rawReq.headers,
-                "UserAgent": context.config.serviceName,
                 "X-Bunq-Client-Authentication": token,
             }
         }

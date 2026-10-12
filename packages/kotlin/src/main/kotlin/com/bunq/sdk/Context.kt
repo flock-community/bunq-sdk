@@ -11,7 +11,10 @@ import com.bunq.sdk.generated.model.SessionServer
 import com.bunq.sdk.generated.model.SessionServerCreate
 import com.bunq.sdk.generated.model.UserApiKey
 import com.bunq.sdk.generated.model.UserApiKeyAnchoredUser
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
+
+private val logger = KotlinLogging.logger {}
 
 data class Context(
     val serverPublicKey: String,
@@ -38,7 +41,7 @@ fun Context.refreshSession(): Context {
 
     val sessionTimeoutSeconds = serverSession.getSessionTimeout()
         ?: run {
-            println("No session timeout found in session server response, using default of 30 minutes")
+            logger.warn { "No session timeout found in session server response, using default of 30 minutes" }
             30 * 60L
         }
     val sessionExpiryTime = sessionTimeoutSeconds.let {
@@ -60,7 +63,7 @@ fun initContext(config: Config): Context {
     val serverSession = createSessionServer(installation.Token.token, config)
 
     val sessionTimeoutSeconds: Long = serverSession.getSessionTimeout() ?: run {
-        println("No session timeout found in session server response, using default of 30 minutes")
+        logger.warn { "No session timeout found in session server response, using default of 30 minutes" }
         30 * 60L
     }
 
@@ -133,7 +136,7 @@ private fun createSessionServer(
 
     val rawRequest = CREATE_SessionServer.toRequest(serialization, request)
     val authRequest = rawRequest.copy(
-        headers = rawRequest.headers + ("UserAgent" to listOf(config.serviceName)) + ("X-Bunq-Client-Authentication" to listOf(
+        headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(
             token
         ))
     )

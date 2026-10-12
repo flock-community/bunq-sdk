@@ -11,10 +11,13 @@ import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.javaType
 
+
+private val logger = KotlinLogging.logger {}
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -57,9 +60,9 @@ val serialization: Wirespec.Serialization<String> =
         }
     }
 
-fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
-    val client = java.net.http.HttpClient.newBuilder().build()
+private val httpClient: java.net.http.HttpClient = java.net.http.HttpClient.newBuilder().build()
 
+fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     val baseUri = java.net.URI(config.bunqServer.baseUrl + req.path.joinToString("/"))
     val uri = if (req.queries.isNotEmpty()) {
         val queryString = req.queries.entries.joinToString("&") { (key, value) ->
@@ -70,7 +73,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         baseUri
     }
 
-    val headers = req.headers
+    val headers = (req.headers + ("User-Agent" to listOf(config.userAgent?.takeIf { it.isNotBlank() } ?: config.serviceName)))
         .mapValues { (_, values) -> values.filter { it.isNotBlank() } }
         .flatMap { (key, values) -> values.map { key to it } }
         .flatMap { listOf(it.first, it.second) }.toTypedArray()
@@ -92,7 +95,9 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .headers(*headers)
 
     // Send HTTP request
-    val response = client.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofString())
+    logger.debug { "${req.method} $uri" }
+    val response = httpClient.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofString())
+    logger.debug { "${response.statusCode()} ${req.method} $uri" }
 
     // Construct Wirespec.RawResponse
     return Wirespec.RawResponse(
@@ -104,8 +109,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
 
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
-    config.userAgent?.let { "UserAgent" to it },
-    config.cacheControl?.let { "CacheControl" to it },
+    config.cacheControl?.let { "Cache-Control" to it },
     config.language?.let { "X-Bunq-Language" to it },
     config.region?.let { "X-Bunq-Region" to it },
     config.clientRequestId?.let { "X-Bunq-Client-Request-Id" to it },
