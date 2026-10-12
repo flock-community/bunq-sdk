@@ -34,6 +34,10 @@ describe('User-Agent header', () => {
         expect(await userAgentSentFor()).toBe('my-service');
     });
 
+    test('treats a blank user agent as unset', async () => {
+        expect(await userAgentSentFor({userAgent: ''})).toBe('my-service');
+    });
+
     test('uses the configured user agent', async () => {
         expect(await userAgentSentFor({userAgent: 'my-agent'})).toBe('my-agent');
     });

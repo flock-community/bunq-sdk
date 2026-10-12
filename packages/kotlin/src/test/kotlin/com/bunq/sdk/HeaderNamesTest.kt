@@ -60,7 +60,7 @@ class HeaderNamesTest {
     }
 
     @Test
-    fun `installation request falls back to the service name as User-Agent`() {
+    fun `installation request falls back to the service name as User-Agent when unset or blank`() {
         val receivedUserAgents = mutableListOf<String?>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
             createContext("/") { exchange ->
@@ -71,16 +71,19 @@ class HeaderNamesTest {
             start()
         }
         try {
-            val config = Config(
-                bunqServer = BunqServer("http://127.0.0.1:${server.address.port}/", ""),
-                serviceName = "my-service",
-                apiKey = "test",
-                signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
-            )
+            listOf(null, "").forEach { userAgent ->
+                val config = Config(
+                    bunqServer = BunqServer("http://127.0.0.1:${server.address.port}/", ""),
+                    serviceName = "my-service",
+                    apiKey = "test",
+                    signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
+                    userAgent = userAgent,
+                )
 
-            assertFails { initContext(config) }
+                assertFails { initContext(config) }
+            }
 
-            assertEquals(listOf<String?>("my-service"), receivedUserAgents)
+            assertEquals(listOf<String?>("my-service", "my-service"), receivedUserAgents)
         } finally {
             server.stop(0)
         }

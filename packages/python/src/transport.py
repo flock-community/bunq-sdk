@@ -66,7 +66,7 @@ def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
     res = requests.request(
         method=raw_req.method,
         url=config.bunq_server.base_url + '/'.join(raw_req.path),
-        headers={'User-Agent': config.user_agent or config.service_name, **req_headers, **signature_header},
+        headers={'User-Agent': (config.user_agent or '').strip() or config.service_name, **req_headers, **signature_header},
         data=raw_req.body)
 
     res_headers: Dict[str, List[str]] = dict(map(lambda kv: (kv[0].lower(), list(kv[1])), res.headers.items()))

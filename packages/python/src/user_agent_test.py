@@ -44,6 +44,9 @@ class UserAgentTest(unittest.TestCase):
     def test_defaults_to_service_name(self):
         self.assertEqual(['my-service'], self.user_agent_sent_for())
 
+    def test_blank_user_agent_falls_back_to_service_name(self):
+        self.assertEqual(['my-service'], self.user_agent_sent_for(user_agent=''))
+
     def test_uses_configured_user_agent(self):
         self.assertEqual(['my-agent'], self.user_agent_sent_for(user_agent='my-agent'))
 

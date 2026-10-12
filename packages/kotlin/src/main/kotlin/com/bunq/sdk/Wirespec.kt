@@ -73,7 +73,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         baseUri
     }
 
-    val headers = (req.headers + ("User-Agent" to listOf(config.userAgent ?: config.serviceName)))
+    val headers = (req.headers + ("User-Agent" to listOf(config.userAgent?.takeIf { it.isNotBlank() } ?: config.serviceName)))
         .mapValues { (_, values) -> values.filter { it.isNotBlank() } }
         .flatMap { (key, values) -> values.map { key to it } }
         .flatMap { listOf(it.first, it.second) }.toTypedArray()

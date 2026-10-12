@@ -69,7 +69,7 @@ public class Wirespec {
         // Process headers
         List<String> headersList = new ArrayList<>();
         headersList.add("User-Agent");
-        headersList.add(config.userAgent() != null ? config.userAgent() : config.serviceName());
+        headersList.add(config.userAgent() != null && !config.userAgent().isBlank() ? config.userAgent() : config.serviceName());
         req.headers().forEach((key, values) -> {
             values.stream()
                     .filter(value -> !value.isBlank())
