@@ -15,7 +15,7 @@ import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
     alias(libs.plugins.wirespec)
-    id("java")
+    id("java-library")
     `maven-publish`
 }
 
@@ -26,11 +26,11 @@ repositories {
 
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
+    api("com.fasterxml.jackson.core:jackson-databind:2.15.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${libs.versions.jackson.get()}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${libs.versions.jackson.get()}")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
-    implementation("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
+    api("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
@@ -129,8 +129,6 @@ class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmi
             )
         }
 
-    // Wirespec 0.19.7 emits `new Request(deserializePath(..), ..)` with an inferred type, which is ambiguous
-    // with the (Path, Method, Queries, RequestHeaders, Body) constructor for endpoints with four path parameters.
     private fun String.withExplicitPathTypes() = replace(Regex("""serialization\.deserializePath\((.*?), Wirespec\.getType\((\w+)\.class, null\)\)""")) {
         "serialization.<${it.groupValues[2]}>deserializePath(${it.groupValues[1]}, Wirespec.getType(${it.groupValues[2]}.class, null))"
     }
