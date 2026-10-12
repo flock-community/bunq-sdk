@@ -44,7 +44,7 @@ export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<
     const refreshed = (used: Context): Promise<Context | undefined> => {
         // another request may have refreshed the session while this one was in flight
         if (current.sessionToken !== used.sessionToken) return Promise.resolve(current);
-        refreshing ??= refresh(used)
+        refreshing ??= Promise.resolve().then(() => refresh(used))
             .then(fresh => current = fresh)
             .catch(error => {
                 console.warn(`bunq session refresh failed: ${error?.message}`);

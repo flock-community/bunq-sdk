@@ -63,6 +63,14 @@ describe('transportation session refresh', () => {
         expect(seenTokens).toEqual(['stale']);
     });
 
+    test('a refresh that throws synchronously returns the original 403', async () => {
+        const context = await contextRejectingWith(authenticationError);
+        const transport = transportation(context, () => { throw new Error('boom'); });
+
+        expect((await transport.transport(request)).statusCode).toBe(403);
+        expect(seenTokens).toEqual(['stale']);
+    });
+
     test('another 403 does not refresh', async () => {
         const context = await contextRejectingWith('{"Error":[{"error_description":"You are not allowed to make this call."}]}');
         let refreshes = 0;
