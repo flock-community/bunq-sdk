@@ -5,16 +5,23 @@ Test suite for session refresh functionality in the Python bunq SDK.
 import unittest
 from datetime import datetime, timedelta
 
+import httpx
+
+from api.Client import Client
+from api.endpoint.ReadUser import Response200
+
 from context import Context, init_context, refresh_session
 from config import create_config
 from bunq_server import BUNQ_SANDBOX_SERVER
 from bunq_signing_keys_generator import BunqSigningKeysGenerator
+from transport import Serialization
+from wirespec import transportation
 
 
-class SessionRefreshTest(unittest.TestCase):
+class SessionRefreshTest(unittest.IsolatedAsyncioTestCase):
     """Test session refresh functionality"""
     
-    def test_session_refresh_preserves_context_integrity(self):
+    async def test_session_refresh_preserves_context_integrity(self):
         """Test that session refresh maintains context integrity while updating session-specific fields"""
         # Generate key pair for testing
         private_key_pem, public_key_pem = BunqSigningKeysGenerator.generate_bunq_signing_keys_as_pem()
@@ -29,14 +36,14 @@ class SessionRefreshTest(unittest.TestCase):
         )
         
         # Initialize context
-        original_context = init_context(config)
+        original_context = await init_context(config)
         
         # Wait a small amount to ensure different timestamps
         import time
         time.sleep(0.001)
         
         # Refresh the session
-        refreshed_context = refresh_session(original_context)
+        refreshed_context = await refresh_session(original_context)
         
         # Verify that core context fields are preserved
         self.assertEqual(refreshed_context.server_public_key, original_context.server_public_key)
@@ -59,6 +66,38 @@ class SessionRefreshTest(unittest.TestCase):
         # Verify that the session expiry is within a reasonable range (should be hours, not days)
         max_expected_expiry = current_time + timedelta(hours=24)  # bunq sessions typically last hours
         self.assertLess(original_context.session_expiry_time,refreshed_context.session_expiry_time)
+
+    async def test_dead_session_is_refreshed_once_and_the_call_succeeds(self):
+        """Fresh sandbox user, session deleted on the server: the next call refreshes once and returns 200."""
+        async with httpx.AsyncClient() as http:
+            sandbox_user = await http.post(
+                BUNQ_SANDBOX_SERVER.base_url + 'sandbox-user-person',
+                headers={'User-Agent': 'Python SDK Test', 'Content-Type': 'application/json'},
+                content=b'{}')
+        api_key = sandbox_user.json()['Response'][0]['ApiKey']['api_key']
+        private_key_pem, public_key_pem = BunqSigningKeysGenerator.generate_bunq_signing_keys_as_pem()
+        config = create_config(
+            bunq_server=BUNQ_SANDBOX_SERVER,
+            service_name="Python SDK Test",
+            api_key=api_key,
+            private_key_pem=private_key_pem,
+            public_key_pem=public_key_pem
+        )
+        context = await init_context(config)
+        refreshes = 0
+
+        async def counting_refresh(ctx: Context) -> Context:
+            nonlocal refreshes
+            refreshes += 1
+            return await refresh_session(ctx)
+
+        client = Client(Serialization(), transportation(context, counting_refresh))
+        await client.delete_session(context.session_id)
+
+        res = await client.read_user(context.user_id)
+
+        self.assertIsInstance(res, Response200)
+        self.assertEqual(1, refreshes)
 
 
 def main():

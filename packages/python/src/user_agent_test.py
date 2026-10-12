@@ -9,9 +9,9 @@ from transport import send
 from api.wirespec import Wirespec
 
 
-class UserAgentTest(unittest.TestCase):
+class UserAgentTest(unittest.IsolatedAsyncioTestCase):
 
-    def user_agent_sent_for(self, **config_options):
+    async def user_agent_sent_for(self, **config_options):
         received = []
 
         class Handler(BaseHTTPRequestHandler):
@@ -35,20 +35,20 @@ class UserAgentTest(unittest.TestCase):
                 private_key_pem=private_key_pem,
                 public_key_pem=public_key_pem,
                 **config_options)
-            send(config, Wirespec.RawRequest('POST', ['ping'], {}, {}, '{}'))
+            await send(config, Wirespec.RawRequest('POST', ['ping'], {}, {}, b'{}'))
         finally:
             server.shutdown()
             server.server_close()
         return received
 
-    def test_defaults_to_service_name(self):
-        self.assertEqual(['my-service'], self.user_agent_sent_for())
+    async def test_defaults_to_service_name(self):
+        self.assertEqual(['my-service'], await self.user_agent_sent_for())
 
-    def test_blank_user_agent_falls_back_to_service_name(self):
-        self.assertEqual(['my-service'], self.user_agent_sent_for(user_agent=''))
+    async def test_blank_user_agent_falls_back_to_service_name(self):
+        self.assertEqual(['my-service'], await self.user_agent_sent_for(user_agent=''))
 
-    def test_uses_configured_user_agent(self):
-        self.assertEqual(['my-agent'], self.user_agent_sent_for(user_agent='my-agent'))
+    async def test_uses_configured_user_agent(self):
+        self.assertEqual(['my-agent'], await self.user_agent_sent_for(user_agent='my-agent'))
 
 
 if __name__ == '__main__':
