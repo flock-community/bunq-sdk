@@ -127,4 +127,27 @@ class SigningKeyValidationTest {
             SigningKeys.FromPem(valid.privateKeyAsPem(), valid.privateKeyAsPem())
         }
     }
+
+    @Test
+    fun `CR only line endings load`() {
+        val cr = valid.privateKeyAsPem().replace("\n", "\r")
+        SigningKeys.FromPem(cr, valid.publicKeyAsPem())
+    }
+
+    @Test
+    fun `trailing spaces load`() {
+        val spaced = valid.privateKeyAsPem().lines().joinToString("\n") { "$it   " }
+        SigningKeys.FromPem(spaced, valid.publicKeyAsPem())
+    }
+
+    @Test
+    fun `indented PEM loads`() {
+        val indented = valid.publicKeyAsPem().lines().joinToString("\n") { "    $it" }
+        SigningKeys.FromPem(valid.privateKeyAsPem(), indented)
+    }
+
+    @Test
+    fun `concatenated private and public PEM uses the first block`() {
+        SigningKeys.FromPem(valid.privateKeyAsPem() + valid.publicKeyAsPem(), valid.publicKeyAsPem())
+    }
 }

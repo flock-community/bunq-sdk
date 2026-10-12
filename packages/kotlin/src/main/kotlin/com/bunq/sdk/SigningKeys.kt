@@ -3,8 +3,10 @@ package com.bunq.sdk
 import com.bunq.sdk.BunqSigningKeysGenerator.convertPrivateKeyToPem
 import com.bunq.sdk.BunqSigningKeysGenerator.convertPublicKeyToPem
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.util.io.pem.PemHeader
 import org.bouncycastle.util.io.pem.PemReader
 import java.io.StringReader
+import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.Security
 import java.security.interfaces.RSAPrivateKey
@@ -70,7 +72,6 @@ private const val PKCS8_FIX =
 private const val PUBLIC_FROM_PRIVATE_FIX = "openssl rsa -in private_key_pkcs8.pem -pubout -out public_key.pem"
 
 internal fun validateAndLoadPrivateKey(privateKeyPem: String): RSAPrivateKey {
-    rejectUnsupportedPrivateKeyFormat(privateKeyPem)
     val der = readPemBody(privateKeyPem, "PRIVATE KEY", KeyType.PRIVATE)
     try {
         ensureBouncyCastleProvider()
@@ -85,7 +86,6 @@ internal fun validateAndLoadPrivateKey(privateKeyPem: String): RSAPrivateKey {
 }
 
 internal fun validateAndLoadPublicKey(publicKeyPem: String): RSAPublicKey {
-    rejectUnsupportedPublicKeyFormat(publicKeyPem)
     val der = readPemBody(publicKeyPem, "PUBLIC KEY", KeyType.PUBLIC)
     try {
         ensureBouncyCastleProvider()
@@ -98,70 +98,49 @@ internal fun validateAndLoadPublicKey(publicKeyPem: String): RSAPublicKey {
     }
 }
 
-private fun rejectUnsupportedPrivateKeyFormat(pem: String) {
-    when {
-        pem.contains("ENCRYPTED PRIVATE KEY") || pem.contains("Proc-Type: 4,ENCRYPTED") ->
-            throw InvalidPemFormatException(
-                "the key is encrypted, which is not supported. Decrypt it first (the command asks for the passphrase): " +
-                    "openssl pkcs8 -topk8 -nocrypt -in encrypted_key.pem -out private_key_pkcs8.pem",
-                KeyType.PRIVATE,
-            )
-
-        pem.contains("-----BEGIN RSA PRIVATE KEY-----") ->
-            throw InvalidPemFormatException(
-                "the key is in PKCS#1 format but PKCS#8 ('-----BEGIN PRIVATE KEY-----') is required. Convert it with: $PKCS8_FIX",
-                KeyType.PRIVATE,
-            )
-
-        pem.contains("-----BEGIN PUBLIC KEY-----") || pem.contains("-----BEGIN RSA PUBLIC KEY-----") ->
-            throw InvalidPemFormatException(
-                "this is a public key, a private key is expected. The keys may be swapped.",
-                KeyType.PRIVATE,
-            )
-    }
-}
-
-private fun rejectUnsupportedPublicKeyFormat(pem: String) {
-    when {
-        pem.contains("-----BEGIN RSA PUBLIC KEY-----") ->
-            throw InvalidPemFormatException(
-                "the key is in PKCS#1 format but X.509 ('-----BEGIN PUBLIC KEY-----') is required. Convert it with: " +
-                    "openssl rsa -RSAPublicKey_in -in public_key.pem -pubout -out public_key_spki.pem",
-                KeyType.PUBLIC,
-            )
-
-        pem.contains("PRIVATE KEY-----") ->
-            throw InvalidPemFormatException(
-                "this is a private key, a public key is expected. The keys may be swapped. " +
-                    "Derive the public key with: $PUBLIC_FROM_PRIVATE_FIX",
-                KeyType.PUBLIC,
-            )
-    }
-}
-
 private fun readPemBody(pem: String, label: String, keyType: KeyType): ByteArray {
-    val begin = "-----BEGIN $label-----"
-    val end = "-----END $label-----"
     fun invalid(detail: String, cause: Throwable? = null): Nothing =
         throw InvalidPemFormatException(detail, keyType, cause)
 
-    if (!pem.contains(begin)) invalid("expected a PEM starting with '$begin'")
-    if (!pem.contains(end)) invalid("the '$end' line is missing, the PEM looks truncated")
     if (pem.contains("\\n")) invalid("the PEM contains literal \\n sequences; replace them with real newlines")
-    if (!pem.trim().contains('\n')) invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines")
+    val lines = pem.lines().map { it.trim() }.filter { it.isNotEmpty() }
+    if (lines.size < 2) invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines")
+    if (lines.none { it.startsWith("-----END ") }) invalid("the '-----END $label-----' line is missing, the PEM looks truncated")
 
     val block = try {
-        PemReader(StringReader(pem)).readPemObject()
+        PemReader(StringReader(lines.joinToString("\n"))).readPemObject()
     } catch (e: Exception) {
         invalid("the body is not valid base64 or is malformed (${e.message}). Re-export the key without modifying it.", e)
-    } ?: invalid("no PEM block could be read; check that no line is indented and all line breaks are real newlines")
+    } ?: invalid("no PEM block could be read; check that the BEGIN line is present and the line breaks are real newlines")
 
-    if (block.type != label) invalid("the first PEM block is '${block.type}' but '$label' is expected")
-    return block.content
+    val encrypted = block.type == "ENCRYPTED PRIVATE KEY" ||
+        block.headers.filterIsInstance<PemHeader>().any { it.name == "Proc-Type" && it.value.contains("ENCRYPTED") }
+    val expectsPrivate = keyType == KeyType.PRIVATE
+    when {
+        block.type == label && !encrypted -> return block.content
+        encrypted && expectsPrivate -> invalid(
+            "the key is encrypted, which is not supported. Decrypt it first (the command asks for the passphrase): " +
+                "openssl pkcs8 -topk8 -nocrypt -in encrypted_key.pem -out private_key_pkcs8.pem"
+        )
+        block.type == "RSA PRIVATE KEY" && expectsPrivate -> invalid(
+            "the key is in PKCS#1 format but PKCS#8 ('-----BEGIN PRIVATE KEY-----') is required. Convert it with: $PKCS8_FIX"
+        )
+        block.type == "RSA PUBLIC KEY" && !expectsPrivate -> invalid(
+            "the key is in PKCS#1 format but X.509 ('-----BEGIN PUBLIC KEY-----') is required. Convert it with: " +
+                "openssl rsa -RSAPublicKey_in -in public_key.pem -pubout -out public_key_spki.pem"
+        )
+        expectsPrivate && block.type.endsWith("PUBLIC KEY") ->
+            invalid("this is a public key, a private key is expected. The keys may be swapped.")
+        !expectsPrivate && block.type.endsWith("PRIVATE KEY") -> invalid(
+            "this is a private key, a public key is expected. The keys may be swapped. " +
+                "Derive the public key with: $PUBLIC_FROM_PRIVATE_FIX"
+        )
+        else -> invalid("the first PEM block is '${block.type}' but '$label' is expected")
+    }
 }
 
 internal fun validateKeyCompatibility(privateKey: RSAPrivateKey, publicKey: RSAPublicKey) {
-    if (publicKey.publicExponent.toLong() != 65537L) {
+    if (publicKey.publicExponent != BigInteger.valueOf(65537)) {
         throw InvalidRsaKeyException("unexpected public exponent. Expected 65537, got ${publicKey.publicExponent}", KeyType.PUBLIC)
     }
     if (privateKey.modulus != publicKey.modulus) {
