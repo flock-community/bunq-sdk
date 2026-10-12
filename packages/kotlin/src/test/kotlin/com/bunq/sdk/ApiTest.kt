@@ -2,6 +2,7 @@ package com.bunq.sdk
 
 import com.bunq.sdk.generated.Client
 import com.bunq.sdk.generated.endpoint.CreateRequestInquiryForUserMonetaryAccount
+import com.bunq.sdk.generated.endpoint.DeleteSession
 import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser
 import com.bunq.sdk.generated.endpoint.ReadMonetaryAccountBankForUser
 import com.bunq.sdk.generated.endpoint.ReadUser
@@ -182,6 +183,24 @@ class ApiTest {
         assertEquals(monetaryAccountBankListing2, monetaryAccountBankListing)
 
 
+    }
+
+    @Test
+    fun `a dead session is refreshed once and the call succeeds`() = runTest {
+        val context = initContext(config)
+        var refreshCount = 0
+        val client = Client(serialization, transportation(context) { refreshCount++; it.refreshSession() })
+
+        assertTrue(client.listAllMonetaryAccountBankForUser(context.userId, null, null, null) is ListAllMonetaryAccountBankForUser.Response200)
+        assertEquals(0, refreshCount)
+
+        val deleted = client.deleteSession(context.sessionId)
+        assertTrue(deleted is DeleteSession.Response200)
+
+        val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)
+        println("refreshes=$refreshCount, status after refresh=${(res as? ListAllMonetaryAccountBankForUser.Response200)?.status}")
+        assertTrue(res is ListAllMonetaryAccountBankForUser.Response200)
+        assertEquals(1, refreshCount)
     }
 
     @Disabled("Slow test, deliberately there to validate create request inquiry works")

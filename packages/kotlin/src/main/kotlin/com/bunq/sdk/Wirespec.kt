@@ -11,6 +11,8 @@ import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultPathSerialization
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.reflect.KType
 import kotlin.reflect.javaType
 import tools.jackson.databind.DeserializationFeature
@@ -126,28 +128,41 @@ fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
 
 fun bunqClient(context: Context): Client = Client(serialization, transportation(context))
 
-fun bunqClient(config: Config): Client = bunqClient(initContext(config))
+
+private fun Wirespec.RawResponse.isSessionRejected(): Boolean =
+    statusCode == 403 && runCatching {
+        objectMapper.readTree(body).get("Error").any { it.get("error_description")?.asString() == "Insufficient authentication." }
+    }.getOrDefault(false)
 
 /**
  * Sends requests with the context's authentication headers.
- * When bunq answers 401 the session is refreshed once and the request is retried with the new session token.
+ * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
+ * and the request is retried with the new session token. A plain 403 ("not allowed") is returned as is, as is
+ * the original response when the refresh itself fails.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  */
-fun transportation(context: Context): Wirespec.Transportation {
-    val current = AtomicReference(context)
+fun transportation(context: Context): Wirespec.Transportation = transportation(context) { it.refreshSession() }
+
+internal fun transportation(context: Context, refresh: (Context) -> Context): Wirespec.Transportation {
+    var current = context
+    val mutex = Mutex()
 
     fun sendWith(used: Context, request: Wirespec.RawRequest) =
         send(used.config, request.copy(headers = request.headers + used.toHeaders()))
 
     return Wirespec.Transportation { request ->
-        val used = current.get()
+        val used = current
         val response = sendWith(used, request)
-        if (response.statusCode != 401) return@Transportation response
+        if (!response.isSessionRejected()) return@Transportation response
 
-        val refreshed = synchronized(current) {
-            current.get().takeIf { it.sessionToken != used.sessionToken }
-                ?: used.refreshSession().also(current::set)
-        }
+        val refreshed = mutex.withLock {
+            // another request may have refreshed the session while this one waited
+            current.takeIf { it.sessionToken != used.sessionToken }
+                ?: runCatching { refresh(used) }
+                    .onSuccess { current = it }
+                    .onFailure { logger.warn { "bunq session refresh failed: ${it.message}" } }
+                    .getOrNull()
+        } ?: return@Transportation response
         sendWith(refreshed, request)
     }
 }

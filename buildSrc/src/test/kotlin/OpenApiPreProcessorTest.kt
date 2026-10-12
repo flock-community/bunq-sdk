@@ -15,6 +15,13 @@ class OpenApiPreProcessorTest {
     }
 
     @Test
+    fun `digits, acronyms and mixed case segments`() {
+        assertEquals("readGeneratedCvc2ForUserCard", OpenApiPreProcessor.camelCaseOperationId("READ_GeneratedCvc2_for_User_Card"))
+        assertEquals("readIbanForUser", OpenApiPreProcessor.camelCaseOperationId("READ_IBAN_for_User"))
+        assertEquals("readOAuthClientForUser", OpenApiPreProcessor.camelCaseOperationId("READ_OAuthClient_for_User"))
+    }
+
+    @Test
     fun `colliding operation ids fail the build`() {
         val op = { id: String -> """{"operationId":"$id"}""" }
         val spec = """{"openapi":"3.0.0","paths":{"/a":{"get":${op("READ_User")}},"/b":{"get":${op("Read_User")}}}}"""
