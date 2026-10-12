@@ -158,14 +158,10 @@ public class Wirespec {
                 return json;
             }
 
-            ObjectNode json = null;
-            // Reduce the ObjectNodes to a single ObjectNode
+            ObjectNode json = objectMapper.createObjectNode();
+            // Reduce the ObjectNodes to a single ObjectNode; an empty response yields an empty object
             for (ObjectNode node : objectNodes) {
-                if (json == null) {
-                    json = node;
-                } else {
-                    json.setAll(node);
-                }
+                json.setAll(node);
             }
             return json;
         }
