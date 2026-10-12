@@ -5,8 +5,9 @@ pluginManagement {
     }
 }
 
-// java and npm are disabled until their slices are ported to Wirespec 0.21 (no custom emitters anymore).
 include(
+    "packages:java",
     "packages:kotlin",
+    "packages:npm",
     "packages:python",
 )

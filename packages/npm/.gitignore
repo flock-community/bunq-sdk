@@ -1,7 +1,6 @@
 private_key.pem
 public_key.pem
 
-src/gen/endpoint
-src/gen/model
 
 lib
+src/gen
