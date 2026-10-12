@@ -78,8 +78,8 @@ internal fun validateAndLoadPrivateKey(privateKeyPem: String): RSAPrivateKey {
         return KeyFactory.getInstance("RSA", "BC").generatePrivate(PKCS8EncodedKeySpec(der)) as RSAPrivateKey
     } catch (e: Exception) {
         throw InvalidRsaKeyException(
-            "not a valid RSA key (${e.message}). " +
-                "Only RSA keys are supported; generate one with: openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048",
+            "not a valid RSA key (${e.message}). The key may be truncated or corrupted, or not an RSA key " +
+                "(only RSA keys are supported). Generate one with: openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048",
             KeyType.PRIVATE, e,
         )
     }
@@ -92,7 +92,8 @@ internal fun validateAndLoadPublicKey(publicKeyPem: String): RSAPublicKey {
         return KeyFactory.getInstance("RSA", "BC").generatePublic(X509EncodedKeySpec(der)) as RSAPublicKey
     } catch (e: Exception) {
         throw InvalidRsaKeyException(
-            "not a valid RSA key (${e.message}). Only RSA keys are supported; derive it with: $PUBLIC_FROM_PRIVATE_FIX",
+            "not a valid RSA key (${e.message}). The key may be truncated or corrupted, or not an RSA key " +
+                "(only RSA keys are supported). Derive it with: $PUBLIC_FROM_PRIVATE_FIX",
             KeyType.PUBLIC, e,
         )
     }

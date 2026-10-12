@@ -150,4 +150,13 @@ class SigningKeyValidationTest {
     fun `concatenated private and public PEM uses the first block`() {
         SigningKeys.FromPem(valid.privateKeyAsPem() + valid.publicKeyAsPem(), valid.publicKeyAsPem())
     }
+
+    @Test
+    fun `dropped body line mentions truncated or corrupted`() {
+        val lines = valid.privateKeyAsPem().lines().toMutableList()
+        lines.removeAt(2)
+        assertFailure<InvalidRsaKeyException>(KeyType.PRIVATE, ValidationStage.RSA_VALIDATION, "may be truncated or corrupted") {
+            SigningKeys.FromPem(lines.joinToString("\n"), valid.publicKeyAsPem())
+        }
+    }
 }
