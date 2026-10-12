@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -196,7 +197,7 @@ public class Wirespec {
                 lock.lock();
                 try {
                     // another request may have refreshed the session while this one waited
-                    if (!current.get().sessionToken().equals(used.sessionToken())) {
+                    if (!Objects.equals(current.get().sessionToken(), used.sessionToken())) {
                         refreshed = current.get();
                     } else {
                         refreshed = refresh.apply(used);

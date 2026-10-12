@@ -110,6 +110,9 @@ public record Context(
                     this.config
             );
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new RuntimeException("Failed to refresh session", e);
         }
     }
