@@ -34,7 +34,7 @@ object BunqSigningKeysGenerator {
      */
     fun generateBunqSigningKeys(): SigningKeys {
         val keyPair = keyPairGenerator.generateKeyPair()
-        logger.info { "bunq - created new keypair [KEEP IT SAFE]" }
+        logger.info { "bunq - created new keypair" }
         return SigningKeys.FromRSAKeys(keyPair.private as RSAPrivateKey, keyPair.public as RSAPublicKey)
 
     }
