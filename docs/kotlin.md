@@ -48,7 +48,7 @@ val context: Context = initContext(config)
 
 ## Creating the Client and Calling an Endpoint
 
-`bunqClient(context)` returns the client that Wirespec generates. Its methods are `suspend` functions named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). Query parameters have no defaults: pass `null` for the ones you do not use.
+`bunqClient(context)` returns the client that Wirespec generates. Its methods are `suspend` functions named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). Query parameters have no defaults: pass `null` for the ones you do not use. To call a `suspend` method from non-suspending code, wrap it in `runBlocking { }` (kotlinx-coroutines).
 
 ```kotlin
 import com.bunq.sdk.bunqClient
@@ -74,18 +74,13 @@ suspend fun listAccountNames(context: Context): List<String?> {
 
 ## Session Refresh
 
-The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
 
-1. creates a new session once and retries the request with the new token, signed again;
-2. shares that one refresh between concurrent calls (guarded by a `Mutex`), and uses the new token for later calls on the same client.
-
-If the refresh fails, the original 403 response is returned and a warning is logged. Other 403 responses are returned unchanged.
-
-Keep using the same `bunqClient(context)` instance so that calls share the refreshed session.
+The shared refresh is guarded by a `Mutex`, and the refresh-failure warning is logged through kotlin-logging (see Logging). Keep using the same `bunqClient(context)` instance.
 
 ### Manual Refresh
 
-`Context.refreshSession()` is still available. It creates a new session with the same device and installation and returns a new `Context`:
+`Context.refreshSession()` creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```kotlin
 val refreshedContext = context.refreshSession()
@@ -105,7 +100,7 @@ val willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60))
 
 ## Logging
 
-The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and credentials are never logged.
+The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and a failed session refresh is logged as a warning. Credentials are never logged.
 
 ## Error Handling
 

@@ -2,14 +2,13 @@
 
 ## Overview
 
-`src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test` in `packages/npm`.
-
 The package exports `bunqClient`, `initContext`, `refreshSession`, `createConfig` and the generated models and endpoints from one entry point.
 
 ## Requirements
 
-- Node.js with a global `fetch` (CI uses Node 20)
-- TypeScript 5 with `strict` enabled (the package is type-checked that way)
+- Node.js 18+ (global `fetch`; CI uses Node 20)
+- TypeScript 5; the code on this page is type-checked with `strict` enabled
+- JDK 17+ to run the Gradle code generation (CI uses 21)
 
 ## Install
 
@@ -19,7 +18,7 @@ There is no versioned release yet. Build and pack the package, then install the 
 ./gradlew :packages:npm:wirespec
 npm --prefix packages/npm install
 npm pack ./packages/npm
-npm install ./bunq-sdk-1.0.0.tgz
+npm install /path/to/bunq-sdk/bunq-sdk-1.0.0.tgz   # run in your project
 ```
 
 ## Creating a Context
@@ -35,8 +34,9 @@ const {privateKey, publicKey} = generateKeyPairSync("rsa", {
 });
 
 const config = createConfig(BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", privateKey, publicKey);
-const context = await initContext(config);
 ```
+
+The package is CommonJS and has no top-level `await`: call `initContext` and the client from inside `async function main() { ... } main();`, as in the next section.
 
 Generate the key pair once and store it: a new pair means a new installation at bunq. `createConfig` takes an optional last argument `{userAgent, cacheControl, language, region, clientRequestId, geolocation}`.
 
@@ -47,44 +47,43 @@ Generate the key pair once and store it: a new pair means a new installation at 
 ```typescript
 import {bunqClient} from "bunq-sdk";
 
-const client = bunqClient(context);
+async function main() {
+  const context = await initContext(config);
+  const client = bunqClient(context);
 
-const user = await client.readUser({itemId: context.userId});
-if (user.status === 200) {
-  console.log(user.body.UserPerson?.legal_name);
+  const user = await client.readUser({itemId: context.userId});
+  if (user.status === 200) {
+    console.log(user.body.UserPerson?.legal_name);
+  }
+
+  const accounts = await client.listAllMonetaryAccountBankForUser({userID: context.userId});
+  if (accounts.status === 200) {
+    accounts.body.forEach(account => console.log(account.display_name));
+  }
 }
 
-const accounts = await client.listAllMonetaryAccountBankForUser({
-  userID: context.userId,
-  count: undefined,
-  newer_id: undefined,
-  older_id: undefined,
-});
-if (accounts.status === 200) {
-  accounts.body.forEach(account => console.log(account.display_name));
-}
+main();
 ```
+
+The optional query parameters (`count`, `newer_id`, `older_id`) can be left out.
 
 ## Session Refresh
 
-The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
 
-1. creates a new session once and retries the request with the new token, signed again;
-2. shares that one refresh between concurrent calls, and uses the new token for later calls on the same client.
-
-If the refresh fails, the original 403 response is returned and a warning is logged with `console.warn`. Other 403 responses are returned unchanged.
-
-Keep using the same `bunqClient(context)` instance so that calls share the refreshed session.
+Concurrent calls share one in-flight refresh promise, and the refresh-failure warning is logged with `console.warn`. Keep using the same `bunqClient(context)` instance.
 
 ### Manual Refresh
 
 `refreshSession(context)` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```typescript
-import {refreshSession} from "bunq-sdk";
+import {bunqClient, type Context, refreshSession} from "bunq-sdk";
 
-const refreshedContext = await refreshSession(context);
-const refreshedClient = bunqClient(refreshedContext);
+async function refresh(context: Context) {
+  const refreshedContext = await refreshSession(context);
+  return bunqClient(refreshedContext);
+}
 ```
 
 ### Session Expiry Time
@@ -114,9 +113,12 @@ interface Context {
 `initContext` and `refreshSession` reject if session creation fails:
 
 ```typescript
-try {
-  const context = await initContext(config);
-} catch (error) {
-  console.error("Session creation failed:", (error as Error).message);
+async function createContextOrUndefined() {
+  try {
+    return await initContext(config);
+  } catch (error) {
+    console.error("Session creation failed:", (error as Error).message);
+    return undefined;
+  }
 }
 ```

@@ -3,19 +3,22 @@
 ## Requirements
 
 - Python 3.10+ (the generated code uses `match`/`case`)
+- JDK 17+ to run the Gradle code generation (CI uses 21)
 - `httpx`, `cryptography` and `dacite` (see `packages/python/requirements.txt`)
 
 The Python client is async-only: `init_context`, `refresh_session` and every client method are coroutines. Sync code can call them through `asyncio.run(...)`.
 
 ## Setup
 
-The generated code in `packages/python/src/api` is not committed. Generate it, install the dependencies and put `packages/python/src` on your import path:
+The generated code in `packages/python/src/api` is not committed. Generate it, install the dependencies and put `packages/python/src` on your import path (run this from the repository root):
 
 ```bash
 ./gradlew :packages:python:wirespec
 pip install -r packages/python/requirements.txt
-export PYTHONPATH=packages/python/src
+export PYTHONPATH="$(pwd)/packages/python/src"
 ```
+
+The modules are top-level (`config`, `context`, `wirespec`, ...), so a `config.py` or `context.py` in your own project shadows them.
 
 ## Creating a Context
 
@@ -76,18 +79,13 @@ asyncio.run(main())
 
 ## Session Refresh
 
-The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
 
-1. creates a new session once and retries the request with the new token, signed again;
-2. shares that one refresh between concurrent calls (guarded by an `asyncio.Lock`), and uses the new token for later calls on the same client.
-
-If the refresh fails, the original 403 response is returned and a warning is logged. Other 403 responses are returned unchanged. An endpoint whose spec lists no 403 response raises `Cannot match response with status: 403` when it receives one.
-
-Keep using the same `bunq_client(ctx)` instance so that calls share the refreshed session.
+The shared refresh is guarded by an `asyncio.Lock`, and the refresh-failure warning is logged through the `logging` module (logger name `wirespec`). Keep using the same `bunq_client(ctx)` instance.
 
 ### Manual Refresh
 
-`refresh_session(context)` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
+`refresh_session(context)` creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```python
 from context import refresh_session

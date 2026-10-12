@@ -74,18 +74,13 @@ if (accounts instanceof ListAllMonetaryAccountBankForUser.Response200 response) 
 
 ## Session Refresh
 
-The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
 
-1. creates a new session once and retries the request with the new token, signed again;
-2. shares that one refresh between concurrent calls (guarded by a lock), and uses the new token for later calls on the same client.
-
-If the refresh fails, the original 403 response is returned and a warning is logged. Other 403 responses are returned unchanged.
-
-Keep using the same `Wirespec.bunqClient(context)` instance so that calls share the refreshed session.
+The shared refresh is guarded by a `ReentrantLock`, and the refresh-failure warning is logged through `System.Logger`. Keep using the same `Wirespec.bunqClient(context)` instance.
 
 ### Manual Refresh
 
-`context.refreshSession()` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
+`context.refreshSession()` creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```java
 Context refreshedContext = context.refreshSession();
