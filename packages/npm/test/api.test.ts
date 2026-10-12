@@ -1,7 +1,8 @@
 import {describe, expect, test} from 'vitest';
-import {initContext, refreshSession} from "../src/context";
-import {initHandler} from "../src/wirespec";
-import {Sdk} from "../src/gen/Sdk";
+import {Context, initContext, refreshSession} from "../src/context";
+import {client as generatedClient} from "../src/gen/Client";
+import {serialization} from "../src/wirespec";
+import {bunqClient, transportation} from "../src/transportation";
 import {createConfig} from "../src/config";
 import {BUNQ_SANDBOX_SERVER} from "../src/bunq-server";
 
@@ -55,11 +56,10 @@ const config = createConfig(
 
 describe("API test", async () => {
     const context = await initContext(config);
-    const handler = initHandler(context);
-    const sdk = Sdk(handler);
+    const client = bunqClient(context);
 
-    test('READ_User should return Donald Byrne', async () => {
-        const res = await sdk.READ_User({
+    test('readUser should return Donald Byrne', async () => {
+        const res = await client.readUser({
             "itemId": context.userId
         });
         
@@ -70,8 +70,8 @@ describe("API test", async () => {
         }
     });
 
-    test('list_all_MonetaryAccountBank_for_User should return D. Byrne account', async () => {
-        const res = await sdk.List_all_MonetaryAccountBank_for_User({
+    test('listAllMonetaryAccountBankForUser should return D. Byrne account', async () => {
+        const res = await client.listAllMonetaryAccountBankForUser({
             "userID": context.userId,
             count: undefined,
             newer_id: undefined,
@@ -87,7 +87,7 @@ describe("API test", async () => {
     });
 
     test('account should have positive balance', async () => {
-        const res = await sdk.List_all_MonetaryAccountBank_for_User({
+        const res = await client.listAllMonetaryAccountBankForUser({
             "userID": context.userId,
             count: undefined,
             newer_id: undefined,
@@ -124,7 +124,29 @@ describe("API test", async () => {
         expect(typeof refreshedContext.sessionToken).toBe('string');
         expect(typeof refreshedContext.sessionId).toBe('number');
         
-        // The refreshed context should be able to create a valid SDK handler
-        expect(() => initHandler(refreshedContext)).not.toThrow();
+        // The refreshed context should be able to create a valid client
+        expect(() => bunqClient(refreshedContext)).not.toThrow();
+    });
+});
+
+describe("dead session", () => {
+    test('a deleted session is refreshed once and the call succeeds', async () => {
+        const unauthenticated = bunqClient({config} as Context);
+        const sandboxUser = await unauthenticated.createSandboxUserPerson({body: {}});
+        if (sandboxUser.status !== 200 || !sandboxUser.body.ApiKey?.api_key) {
+            throw new Error("Cannot create sandbox user");
+        }
+        const sandboxConfig = createConfig(BUNQ_SANDBOX_SERVER, "PeterScript", sandboxUser.body.ApiKey.api_key, PRIVATE_KEY_PEM, PUBLIC_KEY_PEM);
+        const context = await initContext(sandboxConfig);
+        let refreshes = 0;
+        const client = generatedClient(serialization, transportation(context, async ctx => { refreshes++; return refreshSession(ctx); }));
+
+        expect((await client.listAllMonetaryAccountBankForUser({userID: context.userId})).status).toBe(200);
+        expect(refreshes).toBe(0);
+
+        expect((await client.deleteSession({itemId: context.sessionId})).status).toBe(200);
+
+        expect((await client.listAllMonetaryAccountBankForUser({userID: context.userId})).status).toBe(200);
+        expect(refreshes).toBe(1);
     });
 });
