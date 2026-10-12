@@ -23,12 +23,13 @@ class SigningKeyValidationTest {
         assertEquals(keyType, e.keyType)
         assertEquals(stage, e.stage)
         assertContains(e.message!!, phrase)
+        println("MESSAGE[$phrase]: ${e.message}")
     }
 
     @Test
     fun `PKCS1 private key gets openssl conversion command`() {
         val pkcs1 = PrivateKeyInfo.getInstance(valid.privateKey().encoded).parsePrivateKey().toASN1Primitive().encoded
-        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt") {
+        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "Private key validation failed during PEM parsing: the key is in PKCS#1 format") {
             SigningKeys.FromPem(pem("RSA PRIVATE KEY", pkcs1), valid.publicKeyAsPem())
         }
     }
@@ -36,7 +37,7 @@ class SigningKeyValidationTest {
     @Test
     fun `encrypted private key is rejected`() {
         val encrypted = pem("ENCRYPTED PRIVATE KEY", valid.privateKey().encoded)
-        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "encrypted keys are not supported") {
+        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "the command asks for the passphrase") {
             SigningKeys.FromPem(encrypted, valid.publicKeyAsPem())
         }
     }
@@ -60,7 +61,7 @@ class SigningKeyValidationTest {
     @Test
     fun `EC private key is rejected as non RSA`() {
         val ec = KeyPairGenerator.getInstance("EC").apply { initialize(256) }.generateKeyPair()
-        assertFailure<InvalidRsaKeyException>(KeyType.PRIVATE, ValidationStage.RSA_VALIDATION, "Only RSA keys are supported") {
+        assertFailure<InvalidRsaKeyException>(KeyType.PRIVATE, ValidationStage.RSA_VALIDATION, "Private key validation failed during RSA validation") {
             SigningKeys.FromPem(pem("PRIVATE KEY", ec.private.encoded), valid.publicKeyAsPem())
         }
     }
@@ -68,8 +69,62 @@ class SigningKeyValidationTest {
     @Test
     fun `mismatched key pair is reported for both keys`() {
         val other = BunqSigningKeysGenerator.generateBunqSigningKeys()
-        assertFailure<KeyMismatchException>(KeyType.BOTH, ValidationStage.COMPATIBILITY_CHECK, "do not match") {
+        assertFailure<KeyMismatchException>(KeyType.BOTH, ValidationStage.COMPATIBILITY_CHECK, "Private and public key validation failed during compatibility check") {
             SigningKeys.FromPem(valid.privateKeyAsPem(), other.publicKeyAsPem())
+        }
+    }
+
+    @Test
+    fun `PKCS1 conversion command is included`() {
+        val pkcs1 = PrivateKeyInfo.getInstance(valid.privateKey().encoded).parsePrivateKey().toASN1Primitive().encoded
+        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in private_key.pem -out private_key_pkcs8.pem") {
+            SigningKeys.FromPem(pem("RSA PRIVATE KEY", pkcs1), valid.publicKeyAsPem())
+        }
+    }
+
+    @Test
+    fun `literal backslash n is detected`() {
+        val envVar = valid.privateKeyAsPem().trim().replace("\n", "\\n")
+        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "literal \\n sequences") {
+            SigningKeys.FromPem(envVar, valid.publicKeyAsPem())
+        }
+    }
+
+    @Test
+    fun `single line PEM is detected`() {
+        val oneLine = valid.publicKeyAsPem().trim().replace("\n", " ")
+        assertFailure<InvalidPemFormatException>(KeyType.PUBLIC, ValidationStage.PEM_PARSING, "no line breaks") {
+            SigningKeys.FromPem(valid.privateKeyAsPem(), oneLine)
+        }
+    }
+
+    @Test
+    fun `certificate before the key is reported as wrong block`() {
+        val cert = pem("CERTIFICATE", byteArrayOf(1, 2, 3)) + valid.publicKeyAsPem()
+        assertFailure<InvalidPemFormatException>(KeyType.PUBLIC, ValidationStage.PEM_PARSING, "the first PEM block is 'CERTIFICATE'") {
+            SigningKeys.FromPem(valid.privateKeyAsPem(), cert)
+        }
+    }
+
+    @Test
+    fun `PKCS1 public key gets conversion command`() {
+        val pkcs1Public = pem("RSA PUBLIC KEY", valid.publicKey().encoded)
+        assertFailure<InvalidPemFormatException>(KeyType.PUBLIC, ValidationStage.PEM_PARSING, "openssl rsa -RSAPublicKey_in -in public_key.pem -pubout -out public_key_spki.pem") {
+            SigningKeys.FromPem(valid.privateKeyAsPem(), pkcs1Public)
+        }
+    }
+
+    @Test
+    fun `public key passed as private key`() {
+        assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "may be swapped") {
+            SigningKeys.FromPem(valid.publicKeyAsPem(), valid.publicKeyAsPem())
+        }
+    }
+
+    @Test
+    fun `private key passed as public key`() {
+        assertFailure<InvalidPemFormatException>(KeyType.PUBLIC, ValidationStage.PEM_PARSING, "may be swapped") {
+            SigningKeys.FromPem(valid.privateKeyAsPem(), valid.privateKeyAsPem())
         }
     }
 }

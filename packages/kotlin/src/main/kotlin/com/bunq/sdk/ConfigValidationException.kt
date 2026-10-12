@@ -5,45 +5,43 @@ package com.bunq.sdk
  */
 sealed class ConfigValidationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-enum class KeyType { PRIVATE, PUBLIC, BOTH }
+enum class KeyType(internal val label: String) {
+    PRIVATE("Private key"),
+    PUBLIC("Public key"),
+    BOTH("Private and public key"),
+}
 
-enum class ValidationStage { PEM_PARSING, RSA_VALIDATION, COMPATIBILITY_CHECK }
+enum class ValidationStage(internal val label: String) {
+    PEM_PARSING("PEM parsing"),
+    RSA_VALIDATION("RSA validation"),
+    COMPATIBILITY_CHECK("compatibility check"),
+}
 
 /**
- * Signing key validation failure, reporting which key failed and at which stage.
+ * Signing key validation failure. The message reads
+ * "<key> validation failed during <stage>: <detail>".
  */
 sealed class SigningKeyValidationException(
-    message: String,
+    detail: String,
     val keyType: KeyType,
     val stage: ValidationStage,
     cause: Throwable? = null,
-) : ConfigValidationException(message, cause)
+) : ConfigValidationException("${keyType.label} validation failed during ${stage.label}: $detail", cause)
 
 /**
  * Exception thrown when PEM format validation fails
  */
-class InvalidPemFormatException(
-    message: String,
-    keyType: KeyType,
-    stage: ValidationStage = ValidationStage.PEM_PARSING,
-    cause: Throwable? = null,
-) : SigningKeyValidationException(message, keyType, stage, cause)
+class InvalidPemFormatException(detail: String, keyType: KeyType, cause: Throwable? = null) :
+    SigningKeyValidationException(detail, keyType, ValidationStage.PEM_PARSING, cause)
 
 /**
  * Exception thrown when RSA key validation fails
  */
-class InvalidRsaKeyException(
-    message: String,
-    keyType: KeyType,
-    stage: ValidationStage = ValidationStage.RSA_VALIDATION,
-    cause: Throwable? = null,
-) : SigningKeyValidationException(message, keyType, stage, cause)
+class InvalidRsaKeyException(detail: String, keyType: KeyType, cause: Throwable? = null) :
+    SigningKeyValidationException(detail, keyType, ValidationStage.RSA_VALIDATION, cause)
 
 /**
  * Exception thrown when private and public keys don't match
  */
-class KeyMismatchException(
-    message: String,
-    keyType: KeyType = KeyType.BOTH,
-    stage: ValidationStage = ValidationStage.COMPATIBILITY_CHECK,
-) : SigningKeyValidationException(message, keyType, stage)
+class KeyMismatchException(detail: String) :
+    SigningKeyValidationException(detail, KeyType.BOTH, ValidationStage.COMPATIBILITY_CHECK)
