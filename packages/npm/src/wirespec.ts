@@ -43,6 +43,7 @@ export const rawHandler: (config: Config, rawRequest:Wirespec.RawRequest) => Pro
     const url = config.bunqServer.baseUrl + rawRequest.path.join("/")
     const signatureHeader:{'X-Bunq-Client-Signature': string} | {}  = rawRequest.body ? {'X-Bunq-Client-Signature':  Signing.signData(config, rawRequest.body)} : {}
     const headers: Record<string, string> = {
+        "User-Agent": config.userAgent ?? config.serviceName,
         ...rawRequest.headers,
         ...signatureHeader,
     }
@@ -78,9 +79,7 @@ export const initHandler: (context: Context) => Handler = (context) => async (cl
         ...rawReq,
         headers: {
             ...rawReq.headers,
-            "UserAgent": context.config.serviceName,
             "X-Bunq-Client-Authentication": context.sessionToken,
-            ...(context.config.userAgent && { "UserAgent": context.config.userAgent }),
             ...(context.config.cacheControl && { "Cache-Control": context.config.cacheControl }),
             ...(context.config.language && { "X-Bunq-Language": context.config.language }),
             ...(context.config.region && { "X-Bunq-Region": context.config.region }),
