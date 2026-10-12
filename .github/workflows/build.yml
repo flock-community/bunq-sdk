@@ -75,6 +75,7 @@ jobs:
         run: |
           python -m unittest ./sdk_test.py
           python -m unittest ./signing_test.py
+          python -m unittest ./signing_key_validation_test.py
 
   build-npm:
 
