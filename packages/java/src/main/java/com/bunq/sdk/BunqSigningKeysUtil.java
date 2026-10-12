@@ -15,6 +15,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class BunqSigningKeysUtil {
     private static final BigInteger EXPECTED_RSA_EXPONENT = BigInteger.valueOf(65537);
@@ -57,8 +58,13 @@ class BunqSigningKeysUtil {
         if (lines.size() < 2) {
             throw invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines", keyType, null);
         }
-        if (lines.stream().noneMatch(l -> l.startsWith("-----END "))) {
-            throw invalid("the '-----END " + label + "-----' line is missing, the PEM looks truncated", keyType, null);
+        int beginIndex = IntStream.range(0, lines.size())
+                .filter(i -> lines.get(i).startsWith("-----BEGIN ") && lines.get(i).endsWith("-----")).findFirst().orElse(-1);
+        if (beginIndex >= 0) {
+            String endLine = "-----END " + lines.get(beginIndex).substring("-----BEGIN ".length());
+            if (lines.subList(beginIndex + 1, lines.size()).stream().noneMatch(endLine::equals)) {
+                throw invalid("the '-----END " + label + "-----' line is missing, the PEM looks truncated", keyType, null);
+            }
         }
 
         PemObject block;

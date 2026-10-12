@@ -159,4 +159,15 @@ class SigningKeyValidationTest {
             SigningKeys.FromPem(lines.joinToString("\n"), valid.publicKeyAsPem())
         }
     }
+
+    @Test
+    fun `END line that does not match BEGIN is reported as truncated`() {
+        val mismatched = valid.privateKeyAsPem().replace("-----END PRIVATE KEY-----", "-----END PUBLIC KEY-----")
+        val unclosed = valid.privateKeyAsPem().replace("-----END PRIVATE KEY-----", "-----END PRIVATE KEY")
+        for (pem in listOf(mismatched, unclosed)) {
+            assertFailure<InvalidPemFormatException>(KeyType.PRIVATE, ValidationStage.PEM_PARSING, "the '-----END PRIVATE KEY-----' line is missing, the PEM looks truncated") {
+                SigningKeys.FromPem(pem, valid.publicKeyAsPem())
+            }
+        }
+    }
 }

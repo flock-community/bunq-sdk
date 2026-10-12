@@ -106,7 +106,11 @@ private fun readPemBody(pem: String, label: String, keyType: KeyType): ByteArray
     if (pem.contains("\\n")) invalid("the PEM contains literal \\n sequences; replace them with real newlines")
     val lines = pem.lines().map { it.trim() }.filter { it.isNotEmpty() }
     if (lines.size < 2) invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines")
-    if (lines.none { it.startsWith("-----END ") }) invalid("the '-----END $label-----' line is missing, the PEM looks truncated")
+    val beginIndex = lines.indexOfFirst { it.startsWith("-----BEGIN ") && it.endsWith("-----") }
+    if (beginIndex >= 0) {
+        val endLine = "-----END " + lines[beginIndex].removePrefix("-----BEGIN ")
+        if (lines.drop(beginIndex + 1).none { it == endLine }) invalid("the '-----END $label-----' line is missing, the PEM looks truncated")
+    }
 
     val block = try {
         PemReader(StringReader(lines.joinToString("\n"))).readPemObject()

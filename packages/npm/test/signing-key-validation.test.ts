@@ -150,4 +150,14 @@ describe('signing key validation', () => {
         expectFailure(InvalidRsaKeyError, 'PRIVATE', 'RSA_VALIDATION', 'may be truncated or corrupted',
             () => new SigningKeysFromPem(lines.join('\n'), valid.publicPem));
     });
+
+    test('END line that does not match BEGIN is reported as truncated', () => {
+        const mismatched = valid.privatePem.replace('-----END PRIVATE KEY-----', '-----END PUBLIC KEY-----');
+        const unclosed = valid.privatePem.replace('-----END PRIVATE KEY-----', '-----END PRIVATE KEY');
+        for (const pem of [mismatched, unclosed]) {
+            expectFailure(InvalidPemFormatError, 'PRIVATE', 'PEM_PARSING',
+                "the '-----END PRIVATE KEY-----' line is missing, the PEM looks truncated",
+                () => new SigningKeysFromPem(pem, valid.publicPem));
+        }
+    });
 });

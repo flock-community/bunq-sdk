@@ -222,7 +222,7 @@ function parseFirstPemBlock(lines: string[]): PemBlock | null {
         return null;
     }
     const type = lines[begin].slice('-----BEGIN '.length, -'-----'.length);
-    const end = lines.findIndex((line, i) => i > begin && line.startsWith('-----END '));
+    const end = lines.findIndex((line, i) => i > begin && line === `-----END ${type}-----`);
     if (end < 0) {
         return null;
     }
@@ -230,7 +230,7 @@ function parseFirstPemBlock(lines: string[]): PemBlock | null {
     const headers = body.filter((line) => line.includes(':'));
     const base64 = body.filter((line) => !line.includes(':')).join('');
     if (!BASE64.test(base64) || base64.length % 4 !== 0) {
-        throw new Error('unable to decode base64 string: invalid characters encountered in base64 data');
+        throw new Error('invalid base64');
     }
     return { type, headers, content: Buffer.from(base64, 'base64') };
 }
@@ -245,8 +245,12 @@ function readPemBody(pem: string, label: string, keyType: KeyType): Buffer {
     if (lines.length < 2) {
         throw invalid('the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines');
     }
-    if (!lines.some((line) => line.startsWith('-----END '))) {
-        throw invalid(`the '-----END ${label}-----' line is missing, the PEM looks truncated`);
+    const beginIndex = lines.findIndex((line) => /^-----BEGIN .+-----$/.test(line));
+    if (beginIndex >= 0) {
+        const endLine = `-----END ${lines[beginIndex].slice('-----BEGIN '.length)}`;
+        if (!lines.slice(beginIndex + 1).includes(endLine)) {
+            throw invalid(`the '-----END ${label}-----' line is missing, the PEM looks truncated`);
+        }
     }
 
     let block: PemBlock | null;

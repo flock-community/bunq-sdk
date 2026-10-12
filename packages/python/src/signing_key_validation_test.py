@@ -147,6 +147,15 @@ class SigningKeyValidationTest(unittest.TestCase):
             InvalidRsaKeyError, KeyType.PRIVATE, ValidationStage.RSA_VALIDATION,
             "may be truncated or corrupted", lambda: SigningKeysFromPem("\n".join(lines), self.valid.public_pem))
 
+    def test_end_line_that_does_not_match_begin_is_reported_as_truncated(self) -> None:
+        mismatched = self.valid.private_pem.replace("-----END PRIVATE KEY-----", "-----END PUBLIC KEY-----")
+        unclosed = self.valid.private_pem.replace("-----END PRIVATE KEY-----", "-----END PRIVATE KEY")
+        for bad in (mismatched, unclosed):
+            self.assert_failure(
+                InvalidPemFormatError, KeyType.PRIVATE, ValidationStage.PEM_PARSING,
+                "the '-----END PRIVATE KEY-----' line is missing, the PEM looks truncated",
+                lambda: SigningKeysFromPem(bad, self.valid.public_pem))
+
 
 if __name__ == "__main__":
     unittest.main()

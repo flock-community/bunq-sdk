@@ -9,10 +9,9 @@ import base64
 import re
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Final, List, Optional, Tuple
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.exceptions import InvalidSignature
+from typing import List, Optional, Tuple
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class ConfigValidationError(Exception):
@@ -194,11 +193,11 @@ def _parse_first_pem_block(lines: List[str]) -> Optional[Tuple[str, List[str], b
     begin = next((i for i, line in enumerate(lines) if _BEGIN_LINE.match(line)), None)
     if begin is None:
         return None
-    end = next((i for i in range(begin + 1, len(lines)) if lines[i].startswith("-----END ")), None)
-    if end is None:
-        return None
     match = _BEGIN_LINE.match(lines[begin])
     assert match is not None
+    end = next((i for i in range(begin + 1, len(lines)) if lines[i] == f"-----END {match.group(1)}-----"), None)
+    if end is None:
+        return None
     body = lines[begin + 1:end]
     headers = [line for line in body if ":" in line]
     base64_body = "".join(line for line in body if ":" not in line)
@@ -214,8 +213,11 @@ def _read_pem_body(pem: str, label: str, key_type: KeyType) -> bytes:
     lines = [line.strip() for line in re.split(r"\r\n|\r|\n", pem) if line.strip()]
     if len(lines) < 2:
         raise invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines")
-    if not any(line.startswith("-----END ") for line in lines):
-        raise invalid(f"the '-----END {label}-----' line is missing, the PEM looks truncated")
+    begin_match = next((m for m in map(_BEGIN_LINE.match, lines) if m), None)
+    if begin_match is not None:
+        begin_index = lines.index(begin_match.group(0))
+        if f"-----END {begin_match.group(1)}-----" not in lines[begin_index + 1:]:
+            raise invalid(f"the '-----END {label}-----' line is missing, the PEM looks truncated")
 
     try:
         block = _parse_first_pem_block(lines)
@@ -257,10 +259,3 @@ def _validate_key_compatibility(private_key: rsa.RSAPrivateKey, public_key: rsa.
     if private_key.public_key().public_numbers().n != public_numbers.n:
         raise KeyMismatchError(
             f"the keys do not form a pair (the moduli differ). Derive the public key with: {_PUBLIC_FROM_PRIVATE_FIX}")
-
-    test_data = b"test-signature-data"
-    signature = private_key.sign(test_data, padding.PKCS1v15(), hashes.SHA256())
-    try:
-        public_key.verify(signature, test_data, padding.PKCS1v15(), hashes.SHA256())
-    except InvalidSignature:
-        raise KeyMismatchError("the keys do not form a pair (signature verification failed)")

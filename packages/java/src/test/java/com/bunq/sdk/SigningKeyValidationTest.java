@@ -161,4 +161,15 @@ class SigningKeyValidationTest {
         assertFailure(InvalidRsaKeyException.class, KeyType.PRIVATE, ValidationStage.RSA_VALIDATION,
                 "may be truncated or corrupted", () -> new SigningKeysFromPem(String.join("\n", lines), valid.publicKeyPem()));
     }
+
+    @Test
+    void endLineThatDoesNotMatchBeginIsReportedAsTruncated() {
+        String mismatched = valid.privateKeyPem().replace("-----END PRIVATE KEY-----", "-----END PUBLIC KEY-----");
+        String unclosed = valid.privateKeyPem().replace("-----END PRIVATE KEY-----", "-----END PRIVATE KEY");
+        for (String pem : List.of(mismatched, unclosed)) {
+            assertFailure(InvalidPemFormatException.class, KeyType.PRIVATE, ValidationStage.PEM_PARSING,
+                    "the '-----END PRIVATE KEY-----' line is missing, the PEM looks truncated",
+                    () -> new SigningKeysFromPem(pem, valid.publicKeyPem()));
+        }
+    }
 }
