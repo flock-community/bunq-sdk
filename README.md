@@ -64,7 +64,8 @@ For detailed session management documentation for each language, see:
 Java:
 ```java
 Context context = Context.initContext(config);
-// Session expiry tracking and refresh planned for future implementation
+Instant expiryTime = context.sessionExpiryTime();
+Context refreshedContext = context.refreshSession();
 ```
 
 Kotlin:
@@ -77,14 +78,15 @@ val refreshedContext = context.refreshSession()
 TypeScript:
 ```typescript
 const context = await initContext(config);
-const expiryTime: Date | undefined = context.sessionExpiryTime;
-// Refresh functionality planned for future implementation
+const expiryTime: Date = context.sessionExpiryTime;
+const refreshedContext = await refreshSession(context);
 ```
 
 Python:
 ```python
 context = init_context(config)
-# Session expiry tracking and refresh planned for future implementation
+expiry_time = context.session_expiry_time
+refreshed_context = refresh_session(context)
 ```
 
 ## Contributing

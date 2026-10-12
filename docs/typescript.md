@@ -12,49 +12,34 @@ Every `Context` instance contains the session expiry information:
 
 ```typescript
 const context = await initContext(config);
-const expiryTime: Date | undefined = context.sessionExpiryTime;
+const expiryTime: Date = context.sessionExpiryTime;
 
 // Check if session will expire soon
-const willExpireSoon = expiryTime 
-  ? expiryTime.getTime() < Date.now() + (5 * 60 * 1000) // 5 minutes
-  : true;
+const willExpireSoon = expiryTime.getTime() < Date.now() + (5 * 60 * 1000); // 5 minutes
 ```
 
 ## Session Refresh
 
 ### Refresh an Existing Session
 
-> **Note**: Session refresh functionality is planned for future implementation. Currently, you need to create a new context when sessions expire.
-
-**Planned API:**
+Use `refreshSession(context)`. It creates a new session with the same device and installation and returns a new `Context`:
 
 ```typescript
-// This will be available in a future version
-export async function refreshSession(
-  context: Context, 
-  config: Config, 
-  signing: Signing
-): Promise<Context> {
-  // Implementation planned
-}
+import {refreshSession} from "./context";
+
+const refreshedContext = await refreshSession(context);
 ```
 
-### Current Workaround
-
-For now, when a session expires, create a new context:
+### Complete Example
 
 ```typescript
-async function maintainSession(
-  currentContext: Context, 
-  config: Config, 
-  signing: Signing
-): Promise<Context> {
+async function maintainSession(currentContext: Context): Promise<Context> {
   const expiryTime = currentContext.sessionExpiryTime;
-  
-  if (expiryTime && expiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    // Session expires in less than 5 minutes, create new context
-    console.log('Session expiring soon, creating new context...');
-    return await initContext(config);
+
+  if (expiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
+    // Session expires in less than 5 minutes, refresh it
+    console.log('Session expiring soon, refreshing...');
+    return await refreshSession(currentContext);
   } else {
     // Session is still valid
     return currentContext;
@@ -67,17 +52,15 @@ async function maintainSession(
 The `Context` type includes the following session-related properties:
 
 ```typescript
-type Context = {
-  apiKey: string;
-  serverName: string;
-  serverPublicKey: string;
-  deviceId: number;
-  sessionId: number;
-  sessionToken: string;
-  userId: number;
-  sessionExpiryTime?: Date;        // When the session expires
-  sessionTimeoutSeconds?: number;  // Session duration in seconds
-  // ... other properties
+interface Context {
+  readonly serverPublicKey: string;
+  readonly deviceId: number;
+  readonly sessionId: number;
+  readonly sessionToken: string;
+  readonly userId: number;
+  readonly sessionExpiryTime: Date;
+  readonly installationToken: string;
+  readonly config: Config;
 }
 ```
 
