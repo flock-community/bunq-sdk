@@ -1,10 +1,12 @@
 import arrow.core.NonEmptyList
-import community.flock.wirespec.compiler.core.emit.TypeScriptEmitter
-import community.flock.wirespec.compiler.core.emit.common.EmitShared
-import community.flock.wirespec.compiler.core.emit.common.Emitted
-import community.flock.wirespec.compiler.core.emit.common.Spacer
-import community.flock.wirespec.compiler.core.parse.Endpoint
-import community.flock.wirespec.compiler.core.parse.Module
+import community.flock.wirespec.compiler.core.emit.Emitted
+import community.flock.wirespec.compiler.core.emit.Spacer
+import community.flock.wirespec.compiler.core.emit.importReferences
+import community.flock.wirespec.compiler.core.emit.paramList
+import community.flock.wirespec.compiler.core.emit.spacer
+import community.flock.wirespec.emitters.typescript.TypeScriptEmitter
+import community.flock.wirespec.compiler.core.parse.ast.Endpoint
+import community.flock.wirespec.compiler.core.parse.ast.Module
 import community.flock.wirespec.plugin.Format
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 import community.flock.wirespec.compiler.utils.Logger
@@ -35,7 +37,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     preProcessor = OpenApiPreProcessor
 }
 
-class SdkTypeScriptEmitter(emitShared: EmitShared) : TypeScriptEmitter(emitShared) {
+class SdkTypeScriptEmitter : TypeScriptEmitter() {
     override fun emit(module: Module, logger: Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger) +
                 Emitted("Sdk", """

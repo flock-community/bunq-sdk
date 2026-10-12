@@ -36,6 +36,11 @@ Each SDK package uses the Wirespec Gradle plugin to:
 3. Generate code using a custom emitter class
 4. Include the generated code in the build
 
+## Requirements
+
+- Kotlin package: Kotlin 2.3+, Wirespec 0.21.x runtime, JVM 17+; consumers bring their own kotlinx-coroutines (the client functions are `suspend`)
+- Java package: not available in this release (being ported to Wirespec 0.21)
+
 ## Using the SDKs
 
 Each SDK provides a consistent API for interacting with the Bunq API. The generated code includes:
