@@ -11,11 +11,12 @@ import community.flock.wirespec.integration.jackson.v2.java.WirespecModuleJava;
 import community.flock.wirespec.java.Wirespec.RawRequest;
 import community.flock.wirespec.java.Wirespec.RawResponse;
 import community.flock.wirespec.java.Wirespec.Serialization;
+import community.flock.wirespec.java.Wirespec.Transportation;
+import com.bunq.sdk.generated.Client;
 import community.flock.wirespec.java.serde.DefaultParamSerialization;
 import community.flock.wirespec.java.serde.DefaultPathSerialization;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -25,20 +26,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 public class Wirespec {
-    public static final String baseUrl = "https://public-api.sandbox.bunq.com/v1/";
-
-    public static final ObjectMapper objectMapper;
+        public static final ObjectMapper objectMapper;
 
     static {
         objectMapper = new ObjectMapper()
@@ -55,7 +56,7 @@ public class Wirespec {
     public static CompletableFuture<RawResponse> send(Config config, RawRequest req) {
         // Build the URI
         String pathString = String.join("/", req.path());
-        URI baseUri = URI.create(baseUrl + pathString);
+        URI baseUri = URI.create(config.bunqServer().baseUrl() + pathString);
         URI uri;
 
         if (!req.queries().isEmpty()) {
@@ -158,88 +159,100 @@ public class Wirespec {
                 return json;
             }
 
-            ObjectNode json = null;
-            // Reduce the ObjectNodes to a single ObjectNode
+            ObjectNode json = objectMapper.createObjectNode();
+            // Reduce the ObjectNodes to a single ObjectNode; an empty response yields an empty object
             for (ObjectNode node : objectNodes) {
-                if (json == null) {
-                    json = node;
-                } else {
-                    json.setAll(node);
-                }
+                json.setAll(node);
             }
             return json;
         }
 
     }
 
-    public static <Req extends community.flock.wirespec.java.Wirespec.Request<?>, Res extends community.flock.wirespec.java.Wirespec.Response<?>> Function<Req,CompletableFuture<Res>> handler(Context context) {
-        return (request -> {
-            try {
-                // Get the declaring class of the request
-                Class<?> declaringClass = request.getClass().getDeclaringClass();
+    public static Client bunqClient(Context context) {
+        return new Client(serialization, transportation(context));
+    }
 
-                // Find the Handler class
-                Class<?> handlerClass = Arrays.stream(declaringClass.getDeclaredClasses())
-                        .filter(clazz -> clazz.getSimpleName().equals("Handler"))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Handler not found"));
+    /**
+     * Sends requests with the context's authentication headers.
+     * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
+     * and the request is retried with the new session token. Any other 403 is returned as is, as is the original
+     * response when the refresh itself fails. The refreshed context is kept inside this transportation.
+     */
+    public static Transportation transportation(Context context) {
+        return transportation(context, Context::refreshSession);
+    }
 
-                // Find the Handlers class
-                Class<?> handlersClass = Arrays.stream(handlerClass.getDeclaredClasses())
-                        .filter(clazz -> clazz.getSimpleName().equals("Handlers"))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Handler not found"));
+    static Transportation transportation(Context context, UnaryOperator<Context> refresh) {
+        var current = new AtomicReference<>(context);
+        var lock = new ReentrantLock();
 
-                //create instance of handlers class
-                Object handlersInstance = handlersClass.getDeclaredConstructor().newInstance();
+        return request -> {
+            Context used = current.get();
+            return sendWith(used, request).thenCompose(response -> {
+                if (!isSessionRejected(response)) {
+                    return CompletableFuture.completedFuture(response);
+                }
+                Context refreshed;
+                lock.lock();
+                try {
+                    // another request may have refreshed the session while this one waited
+                    if (!Objects.equals(current.get().sessionToken(), used.sessionToken())) {
+                        refreshed = current.get();
+                    } else {
+                        refreshed = refresh.apply(used);
+                        current.set(refreshed);
+                    }
+                } catch (RuntimeException e) {
+                    logger.log(System.Logger.Level.WARNING, "bunq session refresh failed: " + e.getMessage());
+                    return CompletableFuture.completedFuture(response);
+                } finally {
+                    lock.unlock();
+                }
+                return sendWith(refreshed, request);
+            });
+        };
+    }
 
-                // Get the client method from the Handler class
-                // From the Handlers interface, there is a class Handlers, inside a getClient Method
-                Method clientMethod = Arrays.stream(handlersClass.getDeclaredMethods())
-                        .filter(method -> method.getName().equals("getClient"))
-                        .findFirst()
-                        .orElseThrow(() -> new RuntimeException("client method not found"));
+    private static final System.Logger logger = System.getLogger(Wirespec.class.getName());
 
-                // Invoke the client method to get the client instance
-                Object client = clientMethod.invoke(handlersInstance, serialization);
+    private static CompletableFuture<RawResponse> sendWith(Context context, RawRequest request) {
+        Map<String, List<String>> headers = new HashMap<>(request.headers());
+        headers.putAll(toHeaders(context));
+        return send(context.config(), new RawRequest(request.method(), request.path(), request.queries(), headers, request.body()));
+    }
 
-                // Get the to method from the client
-                Method toMethod = client.getClass().getMethod("to", community.flock.wirespec.java.Wirespec.Request.class);
-                toMethod.setAccessible(true);
+    static Map<String, List<String>> toHeaders(Context context) {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("X-Bunq-Client-Authentication", List.of(context.sessionToken()));
+        var config = context.config();
+        putIfPresent(headers, "Cache-Control", config.cacheControl());
+        putIfPresent(headers, "X-Bunq-Language", config.language());
+        putIfPresent(headers, "X-Bunq-Region", config.region());
+        putIfPresent(headers, "X-Bunq-Client-Request-Id", config.clientRequestId());
+        putIfPresent(headers, "X-Bunq-GeoLocation", config.geolocation());
+        return headers;
+    }
 
-                // Invoke the to method to get the raw request
-                RawRequest rawRequest = (RawRequest) toMethod.invoke(client, request);
+    private static void putIfPresent(Map<String, List<String>> headers, String name, String value) {
+        if (value != null) {
+            headers.put(name, List.of(value));
+        }
+    }
 
-                // Add the authentication header
-                Map<String, List<String>> headers = new HashMap<>(rawRequest.headers());
-                headers.put("X-Bunq-Client-Authentication", java.util.List.of(context.sessionToken()));
-
-                // Create a new raw request with the updated headers
-                RawRequest reqToken = new RawRequest(
-                        rawRequest.method(),
-                        rawRequest.path(),
-                        rawRequest.queries(),
-                        headers,
-                        rawRequest.body()
-                );
-
-                // Send the request
-                return send(context.config(), reqToken).thenApply(raw -> {
-                            try {
-                                // Get the from method from the client
-                                Method fromMethod = client.getClass().getMethod("from", RawResponse.class);
-                                fromMethod.setAccessible(true);
-                                // Invoke the from method to get the response
-                                return (Res) fromMethod.invoke(client, raw);
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to handle request", e);
-                            }
-                        }
-                );
-
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to handle request", e);
+    private static boolean isSessionRejected(RawResponse response) {
+        if (response.statusCode() != 403 || response.body().isEmpty()) {
+            return false;
+        }
+        try {
+            for (JsonNode error : objectMapper.readTree(response.body().get()).get("Error")) {
+                if ("Insufficient authentication.".equals(error.path("error_description").asText(null))) {
+                    return true;
+                }
             }
-        });
+        } catch (IOException | RuntimeException e) {
+            return false;
+        }
+        return false;
     }
 }
