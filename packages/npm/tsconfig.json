@@ -5,8 +5,8 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "./lib",
+    "noEmit": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "test/**/*"],
-  "exclude": ["src/gen/generator"]
+  "include": ["src/**/*", "test/**/*"]
 }
