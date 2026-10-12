@@ -33,7 +33,7 @@ dependencies {
     api("community.flock.wirespec.integration:wirespec:${libs.versions.wirespec.get()}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
 }
 
@@ -99,7 +99,6 @@ publishing {
 class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmitter(packageName, emitShared) {
     override fun emit(module: Module, logger: Logger): NonEmptyList<Emitted> {
         return super.emit(module, logger)
-            .map { emitted -> emitted.copy(result = emitted.result.withExplicitPathTypes()) }
             .plus(
                 Emitted(
                     "${packageName.toDir()}/Sdk", """
@@ -128,6 +127,11 @@ class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmi
                 )
             )
         }
+
+    // Wirespec 0.19.7 emits `new Request(deserializePath(..), ..)` with an inferred type, which is ambiguous
+    // with the (Path, Method, Queries, RequestHeaders, Body) constructor for endpoints with four path parameters.
+    // TODO: remove when Wirespec fixes <upstream issue>
+    override fun emit(endpoint: Endpoint): String = super.emit(endpoint).withExplicitPathTypes()
 
     private fun String.withExplicitPathTypes() = replace(Regex("""serialization\.deserializePath\((.*?), Wirespec\.getType\((\w+)\.class, null\)\)""")) {
         "serialization.<${it.groupValues[2]}>deserializePath(${it.groupValues[1]}, Wirespec.getType(${it.groupValues[2]}.class, null))"

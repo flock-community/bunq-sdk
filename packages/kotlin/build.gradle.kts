@@ -33,7 +33,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.17")
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.3.20")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.1.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.3.20")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testRuntimeOnly("org.slf4j:slf4j-simple:2.0.17")
 }
