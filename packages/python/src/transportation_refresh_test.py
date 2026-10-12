@@ -81,6 +81,15 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(SESSION_REJECTED.encode(), response.body)
         self.assertEqual(1, self.refreshes)
 
+    async def test_cancelled_refresh_propagates(self):
+        self.start_server(SESSION_REJECTED)
+
+        async def cancelled_refresh(context: Context) -> Context:
+            raise asyncio.CancelledError()
+
+        with self.assertRaises(asyncio.CancelledError):
+            await transportation(self.context, cancelled_refresh).transport(self.request)
+
     async def test_other_403_does_not_refresh(self):
         self.start_server(NOT_ALLOWED)
         response = await transportation(self.context, self.counting_refresh()).transport(self.request)

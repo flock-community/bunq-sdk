@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -126,7 +126,7 @@ class _SetupTransportation(Wirespec.Transportation):
 
     async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
         if self.token is not None:
-            request.headers["X-Bunq-Client-Authentication"] = [self.token]
+            request = replace(request, headers={**request.headers, "X-Bunq-Client-Authentication": [self.token]})
         return await send(self.config, request)
 
 

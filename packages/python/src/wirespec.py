@@ -1,6 +1,6 @@
 import json
 import logging
-from asyncio import CancelledError, Lock
+from asyncio import Lock
 from dataclasses import replace
 from typing import Awaitable, Callable, Dict, List
 
@@ -67,8 +67,6 @@ def transportation(
                 if current.session_token == used.session_token:
                     try:
                         current = await refresh(used)
-                    except CancelledError:
-                        raise
                     except Exception as e:
                         logger.warning("bunq session refresh failed: %s", e)
                         return response

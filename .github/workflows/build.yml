@@ -76,6 +76,7 @@ jobs:
           python -m unittest ./signing_test.py
           python -m unittest ./signing_key_validation_test.py
           python -m unittest ./user_agent_test.py
+          python -m unittest ./send_test.py
           python -m unittest ./transportation_refresh_test.py
           python -m unittest ./session_refresh_test.py
 
