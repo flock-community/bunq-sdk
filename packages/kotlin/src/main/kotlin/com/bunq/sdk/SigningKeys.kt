@@ -65,63 +65,73 @@ sealed interface SigningKeys {
 }
 
 
+private const val PKCS8_FIX =
+    "openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in private_key.pem -out private_key_pkcs8.pem"
+
 internal fun validateAndLoadPrivateKey(privateKeyPem: String): RSAPrivateKey {
+    rejectUnsupportedPrivateKeyFormat(privateKeyPem)
+    val der = readPemBody(privateKeyPem, "PRIVATE KEY", "PKCS#8", KeyType.PRIVATE)
     try {
-        if (!privateKeyPem.contains("-----BEGIN PRIVATE KEY-----") ||
-            !privateKeyPem.contains("-----END PRIVATE KEY-----")
-        ) {
-            throw InvalidPemFormatException("Private key must be in PKCS#8 PEM format")
-        }
-
         ensureBouncyCastleProvider()
-        val keyFactory = KeyFactory.getInstance("RSA", "BC")
-        val pemReader = PemReader(StringReader(privateKeyPem))
-        val pemContent = pemReader.readPemObject()
-            ?: throw InvalidPemFormatException("Could not parse private key PEM content")
-
-        val keySpec = PKCS8EncodedKeySpec(pemContent.content)
-        val privateKey = keyFactory.generatePrivate(keySpec)
-
-        if (privateKey !is RSAPrivateKey) {
-            throw InvalidRsaKeyException("Private key must be an RSA key")
-        }
-
-        return privateKey
+        return KeyFactory.getInstance("RSA", "BC").generatePrivate(PKCS8EncodedKeySpec(der)) as RSAPrivateKey
     } catch (e: Exception) {
-        when (e) {
-            is ConfigValidationException -> throw e
-            else -> throw InvalidRsaKeyException("Failed to load private key: ${e.message}", e)
-        }
+        throw InvalidRsaKeyException(
+            "Private key is not a valid RSA key (RSA_VALIDATION): ${e.message}. " +
+                "Only RSA keys are supported; generate one with: openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048",
+            KeyType.PRIVATE, cause = e,
+        )
     }
 }
 
 internal fun validateAndLoadPublicKey(publicKeyPem: String): RSAPublicKey {
+    val der = readPemBody(publicKeyPem, "PUBLIC KEY", "X.509 SubjectPublicKeyInfo", KeyType.PUBLIC)
     try {
-        if (!publicKeyPem.contains("-----BEGIN PUBLIC KEY-----") ||
-            !publicKeyPem.contains("-----END PUBLIC KEY-----")
-        ) {
-            throw InvalidPemFormatException("Public key must be in X.509 PEM format")
-        }
-
         ensureBouncyCastleProvider()
-        val keyFactory = KeyFactory.getInstance("RSA", "BC")
-        val pemReader = PemReader(StringReader(publicKeyPem))
-        val pemContent = pemReader.readPemObject()
-            ?: throw InvalidPemFormatException("Could not parse public key PEM content")
-
-        val keySpec = X509EncodedKeySpec(pemContent.content)
-        val publicKey = keyFactory.generatePublic(keySpec)
-
-        if (publicKey !is RSAPublicKey) {
-            throw InvalidRsaKeyException("Public key must be an RSA key")
-        }
-
-        return publicKey
+        return KeyFactory.getInstance("RSA", "BC").generatePublic(X509EncodedKeySpec(der)) as RSAPublicKey
     } catch (e: Exception) {
-        when (e) {
-            is ConfigValidationException -> throw e
-            else -> throw InvalidRsaKeyException("Failed to load public key: ${e.message}", e)
-        }
+        throw InvalidRsaKeyException(
+            "Public key is not a valid RSA key (RSA_VALIDATION): ${e.message}. " +
+                "Only RSA keys are supported; derive it with: openssl rsa -in private_key_pkcs8.pem -pubout -out public_key.pem",
+            KeyType.PUBLIC, cause = e,
+        )
+    }
+}
+
+private fun rejectUnsupportedPrivateKeyFormat(pem: String) {
+    when {
+        pem.contains("ENCRYPTED PRIVATE KEY") || pem.contains("Proc-Type: 4,ENCRYPTED") ->
+            throw InvalidPemFormatException(
+                "Private key is encrypted (PEM_PARSING); encrypted keys are not supported. " +
+                    "Decrypt it first, e.g.: openssl pkcs8 -topk8 -nocrypt -in encrypted_key.pem -out private_key_pkcs8.pem",
+                KeyType.PRIVATE,
+            )
+
+        pem.contains("-----BEGIN RSA PRIVATE KEY-----") ->
+            throw InvalidPemFormatException(
+                "Private key is in PKCS#1 format (PEM_PARSING) but PKCS#8 ('-----BEGIN PRIVATE KEY-----') is required. " +
+                    "Convert it with: $PKCS8_FIX",
+                KeyType.PRIVATE,
+            )
+    }
+}
+
+private fun readPemBody(pem: String, label: String, format: String, keyType: KeyType): ByteArray {
+    val which = keyType.name.lowercase()
+    val begin = "-----BEGIN $label-----"
+    val end = "-----END $label-----"
+    if (!pem.contains(begin) || !pem.contains(end)) {
+        val problem = if (pem.contains(begin)) "the '$end' line is missing, the PEM looks truncated"
+        else "expected a $format PEM starting with '$begin'"
+        throw InvalidPemFormatException("Invalid $which key PEM (PEM_PARSING): $problem", keyType)
+    }
+    try {
+        return PemReader(StringReader(pem)).readPemObject().content
+    } catch (e: Exception) {
+        throw InvalidPemFormatException(
+            "Invalid $which key PEM (PEM_PARSING): the body is not valid base64 or is malformed (${e.message}). " +
+                "Re-export the key without modifying it.",
+            keyType, cause = e,
+        )
     }
 }
 
@@ -130,18 +140,24 @@ internal fun validateKeyCompatibility(privateKey: RSAPrivateKey, publicKey: RSAP
         // Verify that the private and public keys are a matching pair
         // by checking that they have the same modulus
         if (privateKey.modulus != publicKey.modulus) {
-            throw KeyMismatchException("Private and public keys do not form a valid key pair (modulus mismatch)")
+            throw KeyMismatchException(
+                "Private and public key do not match (COMPATIBILITY_CHECK): the moduli differ. " +
+                    "Derive the public key from the private key: openssl rsa -in private_key_pkcs8.pem -pubout -out public_key.pem"
+            )
         }
 
         // Additional check: verify that the public exponent matches the expected value for RSA
         if (publicKey.publicExponent.toLong() != 65537L) {
-            throw InvalidRsaKeyException("Public key has unexpected exponent. Expected 65537, got ${publicKey.publicExponent}")
+            throw InvalidRsaKeyException(
+                "Public key has unexpected exponent (COMPATIBILITY_CHECK). Expected 65537, got ${publicKey.publicExponent}",
+                KeyType.PUBLIC, ValidationStage.COMPATIBILITY_CHECK,
+            )
         }
 
     } catch (e: Exception) {
         when (e) {
             is ConfigValidationException -> throw e
-            else -> throw KeyMismatchException("Failed to validate key compatibility: ${e.message}")
+            else -> throw KeyMismatchException("Failed to validate key compatibility (COMPATIBILITY_CHECK): ${e.message}")
         }
     }
 }
