@@ -143,6 +143,13 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         return JsonObject(processed)
     }
 
+    /** `READ_User` -> `readUser`, `List_all_User_for_Thing` -> `listAllUserForThing`. */
+    internal fun camelCaseOperationId(operationId: String): String =
+        operationId.split("_").filter { it.isNotEmpty() }.mapIndexed { index, word ->
+            val normalised = if (word.all { !it.isLetter() || it.isUpperCase() }) word.lowercase() else word
+            if (index == 0) normalised.replaceFirstChar { it.lowercase() } else normalised.replaceFirstChar { it.uppercase() }
+        }.joinToString("")
+
     private fun processOperation(operation: JsonObject): JsonObject {
         val operationId = operation["operationId"]?.jsonPrimitive?.contentOrNull
         val result = operation.toMutableMap()
@@ -166,7 +173,17 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                 })
             }
         }
+        operationId?.let { result["operationId"] = JsonPrimitive(camelCaseOperationId(it)) }
         return JsonObject(result)
+    }
+
+    private fun requireUniqueOperationIds(paths: JsonObject) {
+        val collisions = paths.values.flatMap { item ->
+            item.jsonObject.filterKeys { it in operationKeys }.values.mapNotNull {
+                it.jsonObject["operationId"]?.jsonPrimitive?.contentOrNull
+            }
+        }.groupBy { it }.filterValues { it.size > 1 }.keys
+        check(collisions.isEmpty()) { "Operation ids collide after camelCase rewrite: $collisions" }
     }
 
     private fun processPathItem(pathItem: JsonObject): JsonObject =
@@ -190,7 +207,9 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
             })
         }
         openApi["paths"]?.jsonObject?.let { paths ->
-            processed["paths"] = JsonObject(paths.mapValues { (_, item) -> processPathItem(item.jsonObject) })
+            val processedPaths = JsonObject(paths.mapValues { (_, item) -> processPathItem(item.jsonObject) })
+            requireUniqueOperationIds(processedPaths)
+            processed["paths"] = processedPaths
         }
         return Json.encodeToString(JsonObject.serializer(), JsonObject(processed))
     }
