@@ -11,10 +11,13 @@ import community.flock.wirespec.integration.jackson.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.reflect.KType
 import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.javaType
 
+
+private val logger = KotlinLogging.logger {}
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -92,7 +95,9 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         .headers(*headers)
 
     // Send HTTP request
+    logger.debug { "${req.method} $uri" }
     val response = httpClient.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofString())
+    logger.debug { "${response.statusCode()} ${req.method} $uri" }
 
     // Construct Wirespec.RawResponse
     return Wirespec.RawResponse(

@@ -1,5 +1,6 @@
 package com.bunq.sdk
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.nio.charset.StandardCharsets
 import java.security.Security
@@ -8,6 +9,7 @@ import java.util.Base64
 
 
 object Signing{
+    private val logger = KotlinLogging.logger {}
     init {
         if (Security.getProvider("BC") == null) {
             Security.addProvider(BouncyCastleProvider())
@@ -45,7 +47,7 @@ object Signing{
 
         verifier.verify(decodedSignature)
     } catch (e: Exception) {
-        println("[ERROR] Signature verification failed: ${e.message}")
+        logger.error(e) { "Signature verification failed" }
         false
     }
 }
