@@ -3,15 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "vitest",
-    "compile": "tsc"
+    "compile": "tsc",
+    "build": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
     "vitest": "^3.0.9"
-  }
+  },
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib"
+  ]
 }

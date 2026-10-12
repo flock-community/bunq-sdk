@@ -2,6 +2,8 @@
 
 ## Overview
 
+`src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test` in `packages/npm`.
+
 The bunq TypeScript SDK provides session management through the `Context` type and related functions. Sessions automatically expire and need to be refreshed periodically to maintain API access.
 
 ## Session Expiry
