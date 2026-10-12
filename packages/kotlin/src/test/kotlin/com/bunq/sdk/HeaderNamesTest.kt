@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import java.net.InetSocketAddress
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNull
 
 class HeaderNamesTest {
@@ -53,6 +54,33 @@ class HeaderNamesTest {
             assertEquals(listOf<String?>("no-cache"), receivedCacheControls)
             assertNull(receivedLegacyUserAgents.single())
             assertNull(receivedLegacyCacheControls.single())
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    @Test
+    fun `installation request falls back to the service name as User-Agent`() {
+        val receivedUserAgents = mutableListOf<String?>()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
+            createContext("/") { exchange ->
+                receivedUserAgents += exchange.requestHeaders.getFirst("User-Agent")
+                exchange.sendResponseHeaders(400, -1)
+                exchange.close()
+            }
+            start()
+        }
+        try {
+            val config = Config(
+                bunqServer = BunqServer("http://127.0.0.1:${server.address.port}/", ""),
+                serviceName = "my-service",
+                apiKey = "test",
+                signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
+            )
+
+            assertFails { initContext(config) }
+
+            assertEquals(listOf<String?>("my-service"), receivedUserAgents)
         } finally {
             server.stop(0)
         }

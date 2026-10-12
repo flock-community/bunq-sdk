@@ -70,7 +70,7 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         baseUri
     }
 
-    val headers = req.headers
+    val headers = (req.headers + ("User-Agent" to listOf(config.userAgent ?: config.serviceName)))
         .mapValues { (_, values) -> values.filter { it.isNotBlank() } }
         .flatMap { (key, values) -> values.map { key to it } }
         .flatMap { listOf(it.first, it.second) }.toTypedArray()
@@ -104,7 +104,6 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
 
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
-    config.userAgent?.let { "User-Agent" to it },
     config.cacheControl?.let { "Cache-Control" to it },
     config.language?.let { "X-Bunq-Language" to it },
     config.region?.let { "X-Bunq-Region" to it },

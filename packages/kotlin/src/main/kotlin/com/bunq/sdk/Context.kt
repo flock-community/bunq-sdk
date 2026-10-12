@@ -133,7 +133,7 @@ private fun createSessionServer(
 
     val rawRequest = CREATE_SessionServer.toRequest(serialization, request)
     val authRequest = rawRequest.copy(
-        headers = rawRequest.headers + ("User-Agent" to listOf(config.serviceName)) + ("X-Bunq-Client-Authentication" to listOf(
+        headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(
             token
         ))
     )
