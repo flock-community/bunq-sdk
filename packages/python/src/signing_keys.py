@@ -189,19 +189,10 @@ def _not_rsa(reason: str, key_type: KeyType, hint: str, cause: Optional[Exceptio
         key_type, cause)
 
 
-def _parse_first_pem_block(lines: List[str]) -> Optional[Tuple[str, List[str], bytes]]:
-    begin = next((i for i, line in enumerate(lines) if _BEGIN_LINE.match(line)), None)
-    if begin is None:
-        return None
-    match = _BEGIN_LINE.match(lines[begin])
-    assert match is not None
-    end = next((i for i in range(begin + 1, len(lines)) if lines[i] == f"-----END {match.group(1)}-----"), None)
-    if end is None:
-        return None
-    body = lines[begin + 1:end]
+def _decode_pem_body(body: List[str]) -> Tuple[List[str], bytes]:
     headers = [line for line in body if ":" in line]
     base64_body = "".join(line for line in body if ":" not in line)
-    return match.group(1), headers, base64.b64decode(base64_body, validate=True)
+    return headers, base64.b64decode(base64_body, validate=True)
 
 
 def _read_pem_body(pem: str, label: str, key_type: KeyType) -> bytes:
@@ -213,20 +204,19 @@ def _read_pem_body(pem: str, label: str, key_type: KeyType) -> bytes:
     lines = [line.strip() for line in re.split(r"\r\n|\r|\n", pem) if line.strip()]
     if len(lines) < 2:
         raise invalid("the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines")
-    begin_match = next((m for m in map(_BEGIN_LINE.match, lines) if m), None)
-    if begin_match is not None:
-        begin_index = lines.index(begin_match.group(0))
-        if f"-----END {begin_match.group(1)}-----" not in lines[begin_index + 1:]:
-            raise invalid(f"the '-----END {label}-----' line is missing, the PEM looks truncated")
+    begin = next(((i, m.group(1)) for i, line in enumerate(lines) for m in [_BEGIN_LINE.match(line)] if m), None)
+    if begin is None:
+        raise invalid("no PEM block could be read; check that the BEGIN line is present and the line breaks are real newlines")
+    begin_index, block_type = begin
+    end_line = f"-----END {block_type}-----"
+    if end_line not in lines[begin_index + 1:]:
+        raise invalid(f"the '-----END {label}-----' line is missing, the PEM looks truncated")
 
     try:
-        block = _parse_first_pem_block(lines)
+        headers, content = _decode_pem_body(lines[begin_index + 1:lines.index(end_line, begin_index + 1)])
     except Exception as e:
         raise invalid(f"the body is not valid base64 or is malformed ({e}). Re-export the key without modifying it.", e)
-    if block is None:
-        raise invalid("no PEM block could be read; check that the BEGIN line is present and the line breaks are real newlines")
 
-    block_type, headers, content = block
     encrypted = block_type == "ENCRYPTED PRIVATE KEY" or any(
         h.startswith("Proc-Type:") and "ENCRYPTED" in h for h in headers)
     expects_private = key_type == KeyType.PRIVATE

@@ -208,31 +208,15 @@ function loadRsaKey(load: () => crypto.KeyObject, keyType: KeyType, hint: string
     return key;
 }
 
-interface PemBlock {
-    type: string;
-    headers: string[];
-    content: Buffer;
-}
-
 const BASE64 = /^[A-Za-z0-9+/]*={0,2}$/;
 
-function parseFirstPemBlock(lines: string[]): PemBlock | null {
-    const begin = lines.findIndex((line) => /^-----BEGIN .+-----$/.test(line));
-    if (begin < 0) {
-        return null;
-    }
-    const type = lines[begin].slice('-----BEGIN '.length, -'-----'.length);
-    const end = lines.findIndex((line, i) => i > begin && line === `-----END ${type}-----`);
-    if (end < 0) {
-        return null;
-    }
-    const body = lines.slice(begin + 1, end);
+function decodePemBody(body: string[]): { headers: string[]; content: Buffer } {
     const headers = body.filter((line) => line.includes(':'));
     const base64 = body.filter((line) => !line.includes(':')).join('');
     if (!BASE64.test(base64) || base64.length % 4 !== 0) {
         throw new Error('invalid base64');
     }
-    return { type, headers, content: Buffer.from(base64, 'base64') };
+    return { headers, content: Buffer.from(base64, 'base64') };
 }
 
 function readPemBody(pem: string, label: string, keyType: KeyType): Buffer {
@@ -246,24 +230,23 @@ function readPemBody(pem: string, label: string, keyType: KeyType): Buffer {
         throw invalid('the PEM has no line breaks; put the BEGIN line, the base64 body and the END line on separate lines');
     }
     const beginIndex = lines.findIndex((line) => /^-----BEGIN .+-----$/.test(line));
-    if (beginIndex >= 0) {
-        const endLine = `-----END ${lines[beginIndex].slice('-----BEGIN '.length)}`;
-        if (!lines.slice(beginIndex + 1).includes(endLine)) {
-            throw invalid(`the '-----END ${label}-----' line is missing, the PEM looks truncated`);
-        }
+    if (beginIndex < 0) {
+        throw invalid('no PEM block could be read; check that the BEGIN line is present and the line breaks are real newlines');
+    }
+    const type = lines[beginIndex].slice('-----BEGIN '.length, -'-----'.length);
+    const endIndex = lines.indexOf(`-----END ${type}-----`, beginIndex + 1);
+    if (endIndex < 0) {
+        throw invalid(`the '-----END ${label}-----' line is missing, the PEM looks truncated`);
     }
 
-    let block: PemBlock | null;
+    let block: { type: string; headers: string[]; content: Buffer };
     try {
-        block = parseFirstPemBlock(lines);
+        block = { type, ...decodePemBody(lines.slice(beginIndex + 1, endIndex)) };
     } catch (error) {
         throw invalid(
             `the body is not valid base64 or is malformed (${(error as Error).message}). Re-export the key without modifying it.`,
             error as Error,
         );
-    }
-    if (block === null) {
-        throw invalid('no PEM block could be read; check that the BEGIN line is present and the line breaks are real newlines');
     }
 
     const encrypted = block.type === 'ENCRYPTED PRIVATE KEY' ||
