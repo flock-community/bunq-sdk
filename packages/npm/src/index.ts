@@ -1,4 +1,6 @@
+import type {bunqClient} from "./transportation";
 export {bunqClient, transportation} from "./transportation";
+export type BunqClient = ReturnType<typeof bunqClient>;
 export {initContext, refreshSession} from "./context";
 export type {Context} from "./context";
 export {createConfig, InvalidConfigError} from "./config";

@@ -103,6 +103,8 @@ If you want to modify the SDKs:
 3. Run the build to regenerate the SDKs
 4. Test the changes to ensure they work as expected
 
+For the npm package, `src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test`.
+
 ## License
 
 This project is licensed under the terms of the LICENSE file included in the repository.

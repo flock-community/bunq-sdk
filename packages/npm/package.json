@@ -7,7 +7,7 @@
   "scripts": {
     "test": "vitest",
     "compile": "tsc",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node -e \"require('fs').rmSync('lib',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "prepack": "npm run build"
   },
   "devDependencies": {
