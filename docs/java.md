@@ -1,61 +1,109 @@
-# Java SDK - Session Management
+# Java SDK
 
-## Overview
+## Requirements
 
-The bunq Java SDK provides session management through the `Context` class. Sessions automatically expire and need to be refreshed periodically to maintain API access.
+- Java 17+ (the package is built with a Java 17 toolchain)
+- Jackson 2 (included as a dependency)
 
-## Session Expiry
+## Install
 
-### Check Session Expiry Time
+There is no versioned release yet. Publish the package to your local Maven repository and depend on it:
 
-```java
-import java.time.Instant;
-
-Context context = Context.initContext(config);
-Instant expiryTime = context.sessionExpiryTime();
-
-// Check if session will expire soon
-boolean willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60)); // 5 minutes
+```bash
+./gradlew :packages:java:publishToMavenLocal
 ```
 
-## Session Refresh
+```kotlin
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
 
-### Refresh an Existing Session
-
-Use the `refreshSession()` instance method. It creates a new session with the same device and installation and returns a new `Context`:
-
-```java
-Context refreshedContext = context.refreshSession();
+dependencies {
+    implementation("com.github.flock-community.bunq-sdk:java:0.0.1-SNAPSHOT")
+}
 ```
 
-### Complete Example
+## Creating a Context
 
 ```java
-import com.bunq.sdk.BunqSigningKeysGenerator;
 import com.bunq.sdk.BunqServer;
+import com.bunq.sdk.BunqSigningKeysGenerator;
 import com.bunq.sdk.Config;
 import com.bunq.sdk.Context;
-import java.time.Instant;
 
 Config config = new Config(
     BunqServer.BUNQ_SANDBOX_SERVER,
     "MyApp",
     "your-api-key",
     BunqSigningKeysGenerator.generateBunqSigningKeys(),
-    null, null, null, null, null, null
+    null, null, null, null, null, null // userAgent, cacheControl, language, region, clientRequestId, geolocation
 );
 
 Context context = Context.initContext(config);
+```
 
-// Later, refresh when the session is about to expire
-if (context.sessionExpiryTime().isBefore(Instant.now().plusSeconds(5 * 60))) {
-    context = context.refreshSession();
+`generateBunqSigningKeys()` creates a new key pair on every call. To keep the same keys across restarts, use `generateBunqSigningKeys(privateKeyFile, publicKeyFile)`, or use the constructor `new Config(server, serviceName, apiKey, privateKeyPem, publicKeyPem)` with stored PEM strings.
+
+## Creating the Client and Calling an Endpoint
+
+`Wirespec.bunqClient(context)` returns the client that Wirespec generates. Its methods return a `CompletableFuture` and are named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). Optional query parameters are `Optional` values: pass `Optional.empty()` for the ones you do not use.
+
+```java
+import com.bunq.sdk.Wirespec;
+import com.bunq.sdk.generated.Client;
+import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser;
+import com.bunq.sdk.generated.endpoint.ReadUser;
+import com.bunq.sdk.generated.model.UserPerson;
+import java.util.Optional;
+
+Client client = Wirespec.bunqClient(context);
+
+ReadUser.Response<?> user = client.readUser(context.userId()).get();
+if (user instanceof ReadUser.Response200 response) {
+    String legalName = response.body().UserPerson().flatMap(UserPerson::legal_name).orElse(null);
 }
+
+ListAllMonetaryAccountBankForUser.Response<?> accounts = client
+    .listAllMonetaryAccountBankForUser(context.userId(), Optional.empty(), Optional.empty(), Optional.empty())
+    .get();
+if (accounts instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
+    response.body().forEach(account -> System.out.println(account.display_name().orElse("")));
+}
+```
+
+## Session Refresh
+
+The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+
+1. creates a new session once and retries the request with the new token, signed again;
+2. shares that one refresh between concurrent calls (guarded by a lock), and uses the new token for later calls on the same client.
+
+If the refresh fails, the original 403 response is returned and a warning is logged. Other 403 responses are returned unchanged.
+
+Keep using the same `Wirespec.bunqClient(context)` instance so that calls share the refreshed session.
+
+### Manual Refresh
+
+`context.refreshSession()` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
+
+```java
+Context refreshedContext = context.refreshSession();
+Client refreshedClient = Wirespec.bunqClient(refreshedContext);
+```
+
+### Session Expiry Time
+
+```java
+import java.time.Instant;
+
+Instant expiryTime = context.sessionExpiryTime();
+boolean willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60));
 ```
 
 ## Context Properties
 
-The `Context` class includes the following session-related properties:
+`Context` is an immutable record, so it can be shared between threads. `refreshSession()` returns a new instance and leaves the original unchanged.
 
 ```java
 public record Context(
@@ -72,81 +120,12 @@ public record Context(
 
 ## Error Handling
 
-When working with sessions, handle potential errors:
+`Context.initContext` and `refreshSession()` throw an exception if session creation fails:
 
 ```java
 try {
     Context context = Context.initContext(config);
-    // Use context for API calls
 } catch (Exception error) {
     System.err.println("Session creation failed: " + error.getMessage());
-    // Handle error appropriately
 }
-```
-
-## Best Practices
-
-1. **Implement retry logic**: When API calls fail due to expired sessions, refresh the context and retry
-2. **Store contexts securely**: Session tokens should be stored securely if persistence is needed
-3. **Monitor for session errors**: Watch for authentication-related exceptions
-
-```java
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-
-public static <T> CompletableFuture<T> apiCallWithSessionRetry(
-    Function<Context, CompletableFuture<T>> apiCallFunction,
-    Context context,
-    Config config,
-    int maxRetries
-) {
-    /**
-     * Execute an API call with automatic session refresh on failure.
-     */
-    return apiCallFunction.apply(context)
-        .handle((result, throwable) -> {
-            if (throwable != null) {
-                String errorMessage = throwable.getMessage().toLowerCase();
-                if (maxRetries > 0 && (errorMessage.contains("session") || errorMessage.contains("unauthorized"))) {
-                    System.out.println("Session error, refreshing context and retrying...");
-                    Context newContext = context.refreshSession();
-                    return apiCallWithSessionRetry(apiCallFunction, newContext, config, maxRetries - 1);
-                } else {
-                    return CompletableFuture.<T>failedFuture(throwable);
-                }
-            } else {
-                return CompletableFuture.completedFuture(result);
-            }
-        })
-        .thenCompose(Function.identity());
-}
-
-// Usage example
-Function<Context, CompletableFuture<String>> getUserInfo = (context) -> {
-    // Implementation would make actual API call using context
-    return CompletableFuture.completedFuture("user info");
-};
-
-CompletableFuture<String> result = apiCallWithSessionRetry(
-    getUserInfo,
-    context,
-    config,
-    1 // max retries
-);
-```
-
-## Immutability
-
-The `Context` class is immutable, which means:
-
-1. **Thread-safe**: Can be safely shared across multiple threads
-2. **Predictable**: State cannot change after creation
-3. **Session refresh returns new instance**: `refreshSession()` returns a new `Context` instance
-
-```java
-// Context is immutable - this is safe
-Context sharedContext = Context.initContext(config);
-
-Context refreshedContext = sharedContext.refreshSession();
-// sharedContext remains unchanged, refreshedContext is a new instance
 ```

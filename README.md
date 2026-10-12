@@ -38,61 +38,93 @@ Each SDK package uses the Wirespec Gradle plugin to:
 
 ## Requirements
 
-- Kotlin package: Kotlin 2.3+, Wirespec 0.21.x runtime, JVM 17+; consumers bring their own kotlinx-coroutines (the client functions are `suspend`)
-- Java package: not available in this release (being ported to Wirespec 0.21)
+Wirespec 0.21.1 generates the client code in all four packages.
+
+- Kotlin: Kotlin 2.3+, JVM 17+, Wirespec 0.21.x runtime. Bring your own kotlinx-coroutines (the client functions are `suspend`).
+- Java: Java 17+.
+- TypeScript: Node.js with a global `fetch` (CI uses Node 20), TypeScript 5.
+- Python: Python 3.10+ (the generated code uses `match`/`case`).
 
 ## Using the SDKs
 
-Each SDK provides a consistent API for interacting with the Bunq API. The generated code includes:
+Each SDK has the same three steps: create a `Config`, call `initContext` to create a session, and create the client from the context. The client is the one Wirespec generates, with one method per bunq operation (camelCase in Kotlin, Java and TypeScript, snake_case in Python).
 
-- Model classes for all API objects
-- Endpoint definitions for all API endpoints
-- A `Context` class that manages authentication and session state
+The client refreshes the session by itself: when bunq answers 403 "Insufficient authentication.", it creates a new session once, retries the request, and shares that refresh between concurrent calls. If the refresh fails, the original 403 is returned.
 
-### Session Management
+For install steps, configuration and more examples per language, see:
 
-All SDKs provide session management capabilities to handle authentication and session expiry with the Bunq API:
-
-- **Session Creation**: Initialize a context with API credentials to establish a session
-- **Session Expiry Tracking**: Monitor when sessions will expire 
-- **Session Refresh**: Renew sessions before they expire to maintain API access
-
-For detailed session management documentation for each language, see:
-
-- [Java Session Management](docs/java.md)
-- [Kotlin Session Management](docs/kotlin.md)
-- [TypeScript/npm Session Management](docs/typescript.md)
-- [Python Session Management](docs/python.md)
+- [Java](docs/java.md)
+- [Kotlin](docs/kotlin.md)
+- [TypeScript/npm](docs/typescript.md)
+- [Python](docs/python.md)
 
 **Quick Examples:**
-
-Java:
-```java
-Context context = Context.initContext(config);
-Instant expiryTime = context.sessionExpiryTime();
-Context refreshedContext = context.refreshSession();
-```
 
 Kotlin:
 ```kotlin
 val context = initContext(config)
-val expiryTime: Instant = context.sessionExpiryTime
-val refreshedContext = context.refreshSession()
+val client = bunqClient(context)
+when (val res = client.readUser(context.userId)) {
+    is ReadUser.Response200 -> println(res.body.UserPerson?.legal_name)
+    else -> error("Cannot read user")
+}
+```
+
+Java:
+```java
+Context context = Context.initContext(config);
+Client client = Wirespec.bunqClient(context);
+ReadUser.Response<?> res = client.readUser(context.userId()).get();
 ```
 
 TypeScript:
 ```typescript
 const context = await initContext(config);
-const expiryTime: Date = context.sessionExpiryTime;
-const refreshedContext = await refreshSession(context);
+const client = bunqClient(context);
+const res = await client.readUser({itemId: context.userId});
 ```
 
 Python:
 ```python
-context = init_context(config)
-expiry_time = context.session_expiry_time
-refreshed_context = refresh_session(context)
+async def main():
+    ctx = await init_context(config)
+    client = bunq_client(ctx)
+    res = await client.read_user(itemId=ctx.user_id)
+
+asyncio.run(main())
 ```
+
+## Migrating from 0.x
+
+The packages moved from Wirespec 0.16.3 to 0.21.1 and use the generated client instead of our own `Sdk`/`handler` code.
+
+All languages:
+
+- The `Sdk` class, `handler(...)` and `handle(...)` are removed. Use `bunqClient(initContext(config))` (Kotlin), `Wirespec.bunqClient(Context.initContext(config))` (Java), `bunqClient(await initContext(config))` (TypeScript) or `bunq_client(await init_context(config))` (Python).
+- Operation and endpoint names are renamed from the operation ids to camelCase: `rEAD_User(...)` becomes `readUser(...)` and `READ_User.Response200` becomes `ReadUser.Response200` (Python methods: `read_user`).
+- Code that refreshed the session itself (checking expiry, or retrying after an error) is no longer needed. The client does it on 403 "Insufficient authentication.".
+
+Kotlin:
+
+- Path parameter `monetaryaccountID` is now `monetaryAccountID`; response header fields `XBunq...` are now `xBunq...`; `toRequest`/`fromResponse` are now `toRawRequest`/`fromRawResponse`.
+- Query parameters have no defaults: pass `null` for unused ones. Generated GET/DELETE requests carry `body: Unit`.
+- `objectMapper` is `internal`. `serialization` is the non-generic `Wirespec.Serialization`, and raw bodies are `ByteArray`.
+- Requires Kotlin 2.3+, JVM 17+ and the Wirespec 0.21.x runtime. The runtime uses Jackson 3 (`tools.jackson`). kotlinx-coroutines is not exposed.
+
+Java:
+
+- Requests used a hardcoded sandbox base URL; they now use `config.bunqServer().baseUrl()`.
+- The optional config headers (Cache-Control, language, region, client request id, geolocation) are now sent.
+
+TypeScript:
+
+- The package has an entry point (`main`/`types`/`exports` point to `lib/`), so it can be imported by name. `src/gen` is generated and no longer committed.
+
+Python:
+
+- `init_context` and `refresh_session` are coroutines; sync callers use `asyncio.run(...)`. HTTP goes through `httpx` instead of `requests`.
+- Requires Python 3.10+.
+- Query parameters are now forwarded (they were dropped before), and only requests with a body are signed.
 
 ## Contributing
 

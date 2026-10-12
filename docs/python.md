@@ -1,45 +1,29 @@
-# Python SDK - Session Management
+# Python SDK
 
-## Overview
+## Requirements
 
-The bunq Python SDK provides session management through the `Context` class. Sessions automatically expire and need to be refreshed periodically to maintain API access.
+- Python 3.10+ (the generated code uses `match`/`case`)
+- `httpx`, `cryptography` and `dacite` (see `packages/python/requirements.txt`)
 
-## Session Expiry
+The Python client is async-only: `init_context`, `refresh_session` and every client method are coroutines. Sync code can call them through `asyncio.run(...)`.
 
-### Check Session Expiry Time
+## Setup
 
-```python
-from datetime import datetime, timedelta
-from context import Context, init_context
-from config import Config
+The generated code in `packages/python/src/api` is not committed. Generate it, install the dependencies and put `packages/python/src` on your import path:
 
-context = init_context(config)
-expiry_time = context.session_expiry_time  # datetime object
-
-# Check if session will expire soon
-will_expire_soon = expiry_time < datetime.now() + timedelta(minutes=5)
+```bash
+./gradlew :packages:python:wirespec
+pip install -r packages/python/requirements.txt
+export PYTHONPATH=packages/python/src
 ```
 
-## Session Refresh
-
-### Refresh an Existing Session
-
-Use `refresh_session(context)`. It creates a new session with the same device and installation and returns a new `Context`:
+## Creating a Context
 
 ```python
-from context import refresh_session
-
-refreshed_context = refresh_session(context)
-```
-
-### Complete Example
-
-```python
-from datetime import datetime, timedelta
-from context import Context, init_context, refresh_session
-from config import create_config
 from bunq_server import BUNQ_SANDBOX_SERVER
 from bunq_signing_keys_generator import BunqSigningKeysGenerator
+from config import create_config
+from context import init_context
 
 private_key_pem, public_key_pem = BunqSigningKeysGenerator.generate_bunq_signing_keys_as_pem()
 config = create_config(
@@ -49,17 +33,82 @@ config = create_config(
     private_key_pem=private_key_pem,
     public_key_pem=public_key_pem,
 )
+```
 
-context = init_context(config)
+`generate_bunq_signing_keys_as_pem()` creates a new key pair on every call. To keep the same keys across restarts, store the PEM strings, or use `BunqSigningKeysGenerator.generate_bunq_signing_keys_with_files(private_key_file, public_key_file)`, which reuses existing files or writes new ones.
 
-# Later, refresh when the session is about to expire
-if context.session_expiry_time < datetime.now() + timedelta(minutes=5):
-    context = refresh_session(context)
+## Creating the Client and Calling an Endpoint
+
+`bunq_client(context)` returns the client that Wirespec generates. Its methods are `async` and named after the operation id in snake_case (`read_user`, `list_all_monetary_account_bank_for_user`). Pass `None` for query parameters you do not use. Match on the response class to read the typed body.
+
+```python
+import asyncio
+
+from api.endpoint.ListAllMonetaryAccountBankForUser import Response200 as ListAccountsResponse200
+from api.endpoint.ReadUser import Response200 as ReadUserResponse200
+from wirespec import bunq_client
+
+
+async def main():
+    ctx = await init_context(config)
+    client = bunq_client(ctx)
+
+    user = await client.read_user(itemId=ctx.user_id)
+    match user:
+        case ReadUserResponse200(body=body):
+            print(body.UserPerson.legal_name if body.UserPerson else None)
+        case _:
+            raise RuntimeError(user)
+
+    accounts = await client.list_all_monetary_account_bank_for_user(
+        userID=ctx.user_id, count=None, newer_id=None, older_id=None
+    )
+    match accounts:
+        case ListAccountsResponse200(body=body):
+            for account in body:
+                print(account.display_name)
+        case _:
+            raise RuntimeError(accounts)
+
+
+asyncio.run(main())
+```
+
+## Session Refresh
+
+The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
+
+1. creates a new session once and retries the request with the new token, signed again;
+2. shares that one refresh between concurrent calls (guarded by an `asyncio.Lock`), and uses the new token for later calls on the same client.
+
+If the refresh fails, the original 403 response is returned and a warning is logged. Other 403 responses are returned unchanged. An endpoint whose spec lists no 403 response raises `Cannot match response with status: 403` when it receives one.
+
+Keep using the same `bunq_client(ctx)` instance so that calls share the refreshed session.
+
+### Manual Refresh
+
+`refresh_session(context)` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
+
+```python
+from context import refresh_session
+
+
+async def refresh(ctx):
+    refreshed_ctx = await refresh_session(ctx)
+    return bunq_client(refreshed_ctx)
+```
+
+### Session Expiry Time
+
+```python
+from datetime import datetime, timedelta
+
+
+def will_expire_soon(ctx) -> bool:
+    return ctx.session_expiry_time < datetime.now() + timedelta(minutes=5)
 ```
 
 ## Context Properties
-
-The `Context` class includes the following session-related properties:
 
 ```python
 @dataclass
@@ -76,67 +125,13 @@ class Context:
 
 ## Error Handling
 
-When working with sessions, handle potential errors:
+`init_context` and `refresh_session` raise an exception if session creation fails:
 
 ```python
-try:
-    context = init_context(config)
-    # Use context for API calls
-except Exception as error:
-    print(f"Session creation failed: {error}")
-    # Handle error appropriately
-```
-
-## Best Practices
-
-1. **Implement retry logic**: When API calls fail due to expired sessions, refresh the context and retry
-2. **Store contexts securely**: Session tokens should be stored securely if persistence is needed
-3. **Monitor for session errors**: Watch for authentication-related exceptions
-
-```python
-import time
-from context import Context, refresh_session
-from config import Config
-from typing import Optional
-
-def api_call_with_session_retry(
-    api_call_func,
-    context: Context, 
-    config: Config,
-    max_retries: int = 1
-) -> tuple:
-    """
-    Execute an API call with automatic session refresh on failure.
-    Returns tuple of (result, updated_context).
-    """
-    current_context = context
-    last_exception: Exception | None = None
-    
-    for attempt in range(max_retries + 1):
-        try:
-            result = api_call_func(current_context)
-            return result, current_context
-        except Exception as e:
-            last_exception = e
-            if attempt < max_retries and ("session" in str(e).lower() or "unauthorized" in str(e).lower()):
-                print(f"Session error on attempt {attempt + 1}, refreshing context...")
-                current_context = refresh_session(current_context)
-                time.sleep(1)  # Brief delay before retry
-            else:
-                break
-    
-    assert last_exception is not None
-    raise last_exception
-
-# Usage example
-def get_user_info(context: Context):
-    """Example API call function."""
-    # Implementation would make actual API call using context
-    pass
-
-result, updated_context = api_call_with_session_retry(
-    get_user_info, 
-    context, 
-    config
-)
+async def create_context_or_none():
+    try:
+        return await init_context(config)
+    except Exception as error:
+        print(f"Session creation failed: {error}")
+        return None
 ```

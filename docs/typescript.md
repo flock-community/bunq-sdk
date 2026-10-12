@@ -1,57 +1,100 @@
-# TypeScript/npm SDK - Session Management
+# TypeScript/npm SDK
 
 ## Overview
 
 `src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test` in `packages/npm`.
 
-The bunq TypeScript SDK provides session management through the `Context` type and related functions. Sessions automatically expire and need to be refreshed periodically to maintain API access.
+The package exports `bunqClient`, `initContext`, `refreshSession`, `createConfig` and the generated models and endpoints from one entry point.
 
-## Session Expiry
+## Requirements
 
-### Check Session Expiry Time
+- Node.js with a global `fetch` (CI uses Node 20)
+- TypeScript 5 with `strict` enabled (the package is type-checked that way)
 
-Every `Context` instance contains the session expiry information:
+## Install
+
+There is no versioned release yet. Build and pack the package, then install the tarball in your project:
+
+```bash
+./gradlew :packages:npm:wirespec
+npm --prefix packages/npm install
+npm pack ./packages/npm
+npm install ./bunq-sdk-1.0.0.tgz
+```
+
+## Creating a Context
 
 ```typescript
-const context = await initContext(config);
-const expiryTime: Date = context.sessionExpiryTime;
+import {BUNQ_SANDBOX_SERVER, createConfig, initContext} from "bunq-sdk";
+import {generateKeyPairSync} from "node:crypto";
 
-// Check if session will expire soon
-const willExpireSoon = expiryTime.getTime() < Date.now() + (5 * 60 * 1000); // 5 minutes
+const {privateKey, publicKey} = generateKeyPairSync("rsa", {
+  modulusLength: 2048,
+  privateKeyEncoding: {type: "pkcs8", format: "pem"},
+  publicKeyEncoding: {type: "spki", format: "pem"},
+});
+
+const config = createConfig(BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", privateKey, publicKey);
+const context = await initContext(config);
+```
+
+Generate the key pair once and store it: a new pair means a new installation at bunq. `createConfig` takes an optional last argument `{userAgent, cacheControl, language, region, clientRequestId, geolocation}`.
+
+## Creating the Client and Calling an Endpoint
+
+`bunqClient(context)` returns the client that Wirespec generates. Its methods are `async` and named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). The result is a response object with a `status`; narrow on it to read the typed `body`.
+
+```typescript
+import {bunqClient} from "bunq-sdk";
+
+const client = bunqClient(context);
+
+const user = await client.readUser({itemId: context.userId});
+if (user.status === 200) {
+  console.log(user.body.UserPerson?.legal_name);
+}
+
+const accounts = await client.listAllMonetaryAccountBankForUser({
+  userID: context.userId,
+  count: undefined,
+  newer_id: undefined,
+  older_id: undefined,
+});
+if (accounts.status === 200) {
+  accounts.body.forEach(account => console.log(account.display_name));
+}
 ```
 
 ## Session Refresh
 
-### Refresh an Existing Session
+The client refreshes the session for you. When bunq answers with 403 "Insufficient authentication." (the response for an expired or deleted session), the client:
 
-Use `refreshSession(context)`. It creates a new session with the same device and installation and returns a new `Context`:
+1. creates a new session once and retries the request with the new token, signed again;
+2. shares that one refresh between concurrent calls, and uses the new token for later calls on the same client.
+
+If the refresh fails, the original 403 response is returned and a warning is logged with `console.warn`. Other 403 responses are returned unchanged.
+
+Keep using the same `bunqClient(context)` instance so that calls share the refreshed session.
+
+### Manual Refresh
+
+`refreshSession(context)` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```typescript
-import {refreshSession} from "./context";
+import {refreshSession} from "bunq-sdk";
 
 const refreshedContext = await refreshSession(context);
+const refreshedClient = bunqClient(refreshedContext);
 ```
 
-### Complete Example
+### Session Expiry Time
 
 ```typescript
-async function maintainSession(currentContext: Context): Promise<Context> {
-  const expiryTime = currentContext.sessionExpiryTime;
-
-  if (expiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    // Session expires in less than 5 minutes, refresh it
-    console.log('Session expiring soon, refreshing...');
-    return await refreshSession(currentContext);
-  } else {
-    // Session is still valid
-    return currentContext;
-  }
-}
+const expiryTime: Date = context.sessionExpiryTime;
+const willExpireSoon = expiryTime.getTime() < Date.now() + 5 * 60 * 1000;
 ```
 
 ## Context Properties
-
-The `Context` type includes the following session-related properties:
 
 ```typescript
 interface Context {
@@ -68,44 +111,12 @@ interface Context {
 
 ## Error Handling
 
-When working with sessions, handle potential errors:
+`initContext` and `refreshSession` reject if session creation fails:
 
 ```typescript
 try {
   const context = await initContext(config);
-  // Use context for API calls
 } catch (error) {
-  console.error('Session creation failed:', error.message);
-  // Handle error appropriately
-}
-```
-
-## Best Practices
-
-1. **Check expiry before API calls**: Always verify session validity before making API requests
-2. **Implement retry logic**: When API calls fail due to expired sessions, refresh and retry
-3. **Store contexts securely**: Session tokens should be stored securely if persistence is needed
-
-```typescript
-async function apiCallWithSessionCheck<T>(
-  apiCall: (context: Context) => Promise<T>,
-  context: Context
-): Promise<{ result: T; context: Context }> {
-  let currentContext = context;
-  
-  // Check if session needs refresh
-  if (currentContext.sessionExpiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    currentContext = await refreshSession(currentContext);
-  }
-  
-  try {
-    const result = await apiCall(currentContext);
-    return { result, context: currentContext };
-  } catch (error) {
-    // If API call fails, try refreshing session once
-    currentContext = await refreshSession(currentContext);
-    const result = await apiCall(currentContext);
-    return { result, context: currentContext };
-  }
+  console.error("Session creation failed:", (error as Error).message);
 }
 ```
