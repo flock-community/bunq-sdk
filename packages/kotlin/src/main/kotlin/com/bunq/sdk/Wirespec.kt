@@ -2,6 +2,7 @@
 
 package com.bunq.sdk
 
+import com.bunq.sdk.generated.Client
 import community.flock.wirespec.integration.jackson.v3.kotlin.WirespecModuleKotlin
 import community.flock.wirespec.kotlin.Wirespec
 import community.flock.wirespec.kotlin.Wirespec.ParamSerialization
@@ -9,8 +10,8 @@ import community.flock.wirespec.kotlin.Wirespec.PathSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultPathSerialization
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KType
-import kotlin.reflect.full.companionObjectInstance
 import kotlin.reflect.javaType
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.ObjectMapper
@@ -123,26 +124,30 @@ fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     .toMap()
     .mapValues { (_, value) -> listOf(value) }
 
-fun <Req : Wirespec.Request<*>, Res : Wirespec.Response<*>> handle(
-    context: Context,
-    request: Req
-): Res {
-    val declaringClass = request::class.java.declaringClass
-    val handler =
-        declaringClass.declaredClasses.toList().find { it.simpleName == "Handler" } ?: error("Handler not found")
-    val instance = handler.kotlin.companionObjectInstance as Wirespec.Client<Wirespec.Request<*>, Wirespec.Response<*>>
-    val client = instance.client(serialization)
-    val rawRequest = client.to(request as Wirespec.Request<*>)
-    val reqToken = rawRequest.copy(headers = rawRequest.headers + context.toHeaders())
-    val rawResponse = send(context.config, reqToken)
-    return client.from(rawResponse) as Res
+fun bunqClient(context: Context): Client = Client(serialization, transportation(context))
+
+fun bunqClient(config: Config): Client = bunqClient(initContext(config))
+
+/**
+ * Sends requests with the context's authentication headers.
+ * When bunq answers 401 the session is refreshed once and the request is retried with the new session token.
+ * The refreshed context is kept inside this transportation, so later requests use the new token.
+ */
+fun transportation(context: Context): Wirespec.Transportation {
+    val current = AtomicReference(context)
+
+    fun sendWith(used: Context, request: Wirespec.RawRequest) =
+        send(used.config, request.copy(headers = request.headers + used.toHeaders()))
+
+    return Wirespec.Transportation { request ->
+        val used = current.get()
+        val response = sendWith(used, request)
+        if (response.statusCode != 401) return@Transportation response
+
+        val refreshed = synchronized(current) {
+            current.get().takeIf { it.sessionToken != used.sessionToken }
+                ?: used.refreshSession().also(current::set)
+        }
+        sendWith(refreshed, request)
+    }
 }
-
-fun handler(context: Context): (Wirespec.Request<*>) -> Wirespec.Response<*> =
-    { req -> handle(context, req) }
-
-fun handler(config: Config): (Wirespec.Request<*>) -> Wirespec.Response<*> {
-    val context = initContext(config)
-    return { req -> handle(context, req) }
-}
-

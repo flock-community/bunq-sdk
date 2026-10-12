@@ -1,14 +1,5 @@
-import community.flock.wirespec.emitters.kotlin.KotlinEmitter
-import community.flock.wirespec.compiler.core.emit.EmitShared
-import arrow.core.NonEmptyList
-import community.flock.wirespec.compiler.core.emit.Emitted
-import community.flock.wirespec.compiler.core.emit.importReferences
-import community.flock.wirespec.compiler.core.emit.paramList
-import community.flock.wirespec.compiler.core.emit.spacer
-import community.flock.wirespec.compiler.core.emit.PackageName
-import community.flock.wirespec.compiler.core.parse.ast.Endpoint
-import community.flock.wirespec.compiler.core.parse.ast.Module
 import community.flock.wirespec.plugin.Format
+import community.flock.wirespec.plugin.Language
 import community.flock.wirespec.plugin.gradle.ConvertWirespecTask
 
 plugins {
@@ -67,10 +58,10 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     output = layout.buildDirectory.dir("generated/wirespec")
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
-    emitterClass = SdkKotlinEmitter::class.java
     format = Format.OpenAPIV3
+    languages = listOf(Language.Kotlin)
     strict = true
-    shared = true
+    shared = false
     preProcessor = OpenApiPreProcessor
 }
 
@@ -97,40 +88,4 @@ publishing {
     repositories {
         mavenLocal()
     }
-}
-
-
-class SdkKotlinEmitter(packageName: PackageName, emitShared: EmitShared) : KotlinEmitter(packageName, emitShared) {
-    override fun emit(module: Module, logger: community.flock.wirespec.compiler.utils.Logger): NonEmptyList<Emitted> {
-        return super.emit(module, logger) +
-            Emitted("${packageName.toDir()}/Sdk", """
-                |package ${packageName.value}
-                |
-                |import community.flock.wirespec.kotlin.Wirespec
-                |
-                |${module.emitEndpointRequest("\n") { (endpoint) -> "import ${packageName.value}.endpoint.${emit(endpoint.identifier)}" }}
-                |
-                |${module.statements.toList().flatMap { it.importReferences() }.distinctBy { it.value }.joinToString("\n") { "import ${packageName.value}.model.${it.value}" }}
-                |
-                |class Sdk(val handler: (Wirespec.Request<*>) -> Wirespec.Response<*> ){
-                |${module.emitEndpointRequest("\n") { (endpoint, request) -> emitFunction(endpoint, request) }.spacer(1)}
-                |}
-                |
-            """.trimMargin())
-    }
-
-    fun Endpoint.Request.emitSdkInterface(endpoint: Endpoint) =
-        this.paramList(endpoint).joinToString(", ") { "${emit(it.identifier)}: ${it.reference.emit()}" }
-
-    fun emitFunction(endpoint: Endpoint, request: Endpoint.Request) = """
-        |suspend fun ${emit(endpoint.identifier).firstToLower()}(${request.emitSdkInterface(endpoint)}) = 
-        |   ${emit(endpoint.identifier)}.Request${request.paramList(endpoint).takeIf { it.size > 0 }?.joinToString(", ", "(", ")") { emit(it.identifier) }.orEmpty()}
-        |     .let{req -> handler(req) as ${emit(endpoint.identifier)}.Response<*> }
-    """.trimMargin()
-
-    fun Module.emitEndpointRequest(separator: CharSequence, emit: (Pair<Endpoint, Endpoint.Request>) -> String) =
-        statements
-            .filterIsInstance<Endpoint>()
-            .flatMap { endpoint -> endpoint.requests.map { request -> Pair(endpoint, request) } }
-            .joinToString(separator) { endpointRequest -> emit(endpointRequest) }
 }
