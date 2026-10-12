@@ -39,7 +39,7 @@ Each SDK package uses the Wirespec Gradle plugin to:
 ## Requirements
 
 - Kotlin package: Kotlin 2.3+, Jackson 3 (`tools.jackson`), Wirespec 0.19.x runtime, JVM 17+
-- Java package: Jackson 2, JVM 17+
+- Java package: Jackson 2, Wirespec 0.19.x runtime, JVM 17+
 
 ## Using the SDKs
 
