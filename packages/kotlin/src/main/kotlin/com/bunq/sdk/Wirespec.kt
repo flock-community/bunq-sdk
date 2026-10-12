@@ -10,7 +10,7 @@ import community.flock.wirespec.kotlin.Wirespec.PathSerialization
 import community.flock.wirespec.kotlin.serde.DefaultParamSerialization
 import community.flock.wirespec.kotlin.serde.DefaultPathSerialization
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.reflect.KType
@@ -143,25 +143,31 @@ private fun Wirespec.RawResponse.isSessionRejected(): Boolean =
  */
 fun transportation(context: Context): Wirespec.Transportation = transportation(context) { it.refreshSession() }
 
+private class CurrentContext(@Volatile var value: Context)
+
 internal fun transportation(context: Context, refresh: (Context) -> Context): Wirespec.Transportation {
-    var current = context
+    val current = CurrentContext(context)
     val mutex = Mutex()
 
     fun sendWith(used: Context, request: Wirespec.RawRequest) =
         send(used.config, request.copy(headers = request.headers + used.toHeaders()))
 
     return Wirespec.Transportation { request ->
-        val used = current
+        val used = current.value
         val response = sendWith(used, request)
         if (!response.isSessionRejected()) return@Transportation response
 
         val refreshed = mutex.withLock {
             // another request may have refreshed the session while this one waited
-            current.takeIf { it.sessionToken != used.sessionToken }
-                ?: runCatching { refresh(used) }
-                    .onSuccess { current = it }
-                    .onFailure { logger.warn { "bunq session refresh failed: ${it.message}" } }
-                    .getOrNull()
+            current.value.takeIf { it.sessionToken != used.sessionToken }
+                ?: try {
+                    refresh(used).also { current.value = it }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    logger.warn { "bunq session refresh failed: ${e.message}" }
+                    null
+                }
         } ?: return@Transportation response
         sendWith(refreshed, request)
     }
