@@ -14,12 +14,14 @@ class HeaderNamesTest {
     fun `header names are sent hyphenated`() {
         val receivedUserAgents = mutableListOf<String?>()
         val receivedCacheControls = mutableListOf<String?>()
-        val receivedLegacyHeaders = mutableListOf<String?>()
+        val receivedLegacyUserAgents = mutableListOf<String?>()
+        val receivedLegacyCacheControls = mutableListOf<String?>()
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
             createContext("/") { exchange ->
                 receivedUserAgents += exchange.requestHeaders.getFirst("User-Agent")
                 receivedCacheControls += exchange.requestHeaders.getFirst("Cache-Control")
-                receivedLegacyHeaders += exchange.requestHeaders.getFirst("UserAgent") ?: exchange.requestHeaders.getFirst("CacheControl")
+                receivedLegacyUserAgents += exchange.requestHeaders.getFirst("UserAgent")
+                receivedLegacyCacheControls += exchange.requestHeaders.getFirst("CacheControl")
                 exchange.sendResponseHeaders(200, -1)
                 exchange.close()
             }
@@ -49,7 +51,8 @@ class HeaderNamesTest {
 
             assertEquals(listOf<String?>("my-agent"), receivedUserAgents)
             assertEquals(listOf<String?>("no-cache"), receivedCacheControls)
-            assertNull(receivedLegacyHeaders.single())
+            assertNull(receivedLegacyUserAgents.single())
+            assertNull(receivedLegacyCacheControls.single())
         } finally {
             server.stop(0)
         }
