@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
-    api("com.fasterxml.jackson.core:jackson-databind:2.15.0")
+    api("com.fasterxml.jackson.core:jackson-databind:${libs.versions.jackson.get()}")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${libs.versions.jackson.get()}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${libs.versions.jackson.get()}")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")
@@ -130,7 +130,7 @@ class SdkJavaEmitter(packageName: PackageName, emitShared: EmitShared) : JavaEmi
 
     // Wirespec 0.19.7 emits `new Request(deserializePath(..), ..)` with an inferred type, which is ambiguous
     // with the (Path, Method, Queries, RequestHeaders, Body) constructor for endpoints with four path parameters.
-    // TODO: remove when Wirespec fixes <upstream issue>
+    // Remove when upgrading to Wirespec 0.20+, whose IR-based Java emitter (flock-community/wirespec#695) emits the explicit type argument.
     override fun emit(endpoint: Endpoint): String = super.emit(endpoint).withExplicitPathTypes()
 
     private fun String.withExplicitPathTypes() = replace(Regex("""serialization\.deserializePath\((.*?), Wirespec\.getType\((\w+)\.class, null\)\)""")) {

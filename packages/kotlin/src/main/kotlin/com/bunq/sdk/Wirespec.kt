@@ -22,7 +22,7 @@ import tools.jackson.module.kotlin.kotlinModule
 
 private val logger = KotlinLogging.logger {}
 
-val objectMapper: ObjectMapper = JsonMapper.builder()
+internal val objectMapper: ObjectMapper = JsonMapper.builder()
     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     .addModule(kotlinModule {
         enable(KotlinFeature.KotlinPropertyNameAsImplicitName)
