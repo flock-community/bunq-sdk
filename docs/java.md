@@ -187,7 +187,7 @@ The `Context` class is immutable, which means:
 Context sharedContext = Context.initContext(config);
 
 // When refresh is implemented, it will work like this:
-Context refreshedContext = Context.refreshSession(sharedContext, config);
+Context refreshedContext = sharedContext.refreshSession();
 // sharedContext remains unchanged, refreshedContext is a new instance
 ```
 

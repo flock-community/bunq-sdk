@@ -11,7 +11,7 @@ The bunq TypeScript SDK provides session management through the `Context` type a
 Every `Context` instance contains the session expiry information:
 
 ```typescript
-const context = await initContext(config, signing);
+const context = await initContext(config);
 const expiryTime: Date | undefined = context.sessionExpiryTime;
 
 // Check if session will expire soon
@@ -54,7 +54,7 @@ async function maintainSession(
   if (expiryTime && expiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
     // Session expires in less than 5 minutes, create new context
     console.log('Session expiring soon, creating new context...');
-    return await initContext(config, signing);
+    return await initContext(config);
   } else {
     // Session is still valid
     return currentContext;
@@ -87,7 +87,7 @@ When working with sessions, handle potential errors:
 
 ```typescript
 try {
-  const context = await initContext(config, signing);
+  const context = await initContext(config);
   // Use context for API calls
 } catch (error) {
   console.error('Session creation failed:', error.message);
@@ -113,7 +113,7 @@ async function apiCallWithSessionCheck<T>(
   // Check if session needs refresh
   if (currentContext.sessionExpiryTime && 
       currentContext.sessionExpiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    currentContext = await initContext(config, signing);
+    currentContext = await initContext(config);
   }
   
   try {
@@ -121,7 +121,7 @@ async function apiCallWithSessionCheck<T>(
     return { result, context: currentContext };
   } catch (error) {
     // If API call fails, try refreshing session once
-    currentContext = await initContext(config, signing);
+    currentContext = await initContext(config);
     const result = await apiCall(currentContext);
     return { result, context: currentContext };
   }

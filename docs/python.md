@@ -14,10 +14,10 @@ The bunq Python SDK provides session management through the `Context` class. Ses
 
 ```python
 from datetime import datetime, timedelta
-from context import Context
+from context import Context, init_context
 from config import Config
 
-context = Context(config)
+context = init_context(config)
 
 # This will be available in a future version
 expiry_time = context.session_expiry_time  # datetime object
@@ -46,7 +46,7 @@ def refresh_session(context: Context) -> Context:
 For now, when a session expires, create a new context:
 
 ```python
-from context import Context
+from context import Context, init_context
 from config import Config
 
 def maintain_session(current_context: Context, config: Config) -> Context:
@@ -61,7 +61,7 @@ def maintain_session(current_context: Context, config: Config) -> Context:
     except Exception as e:
         if "session" in str(e).lower() or "unauthorized" in str(e).lower():
             print("Session expired, creating new context...")
-            return Context(config)
+            return init_context(config)
         else:
             raise e
 
@@ -72,7 +72,7 @@ config = Config(
     # ... other config
 )
 
-context = Context(config)
+context = init_context(config)
 
 # Later, when you suspect session might be expired
 context = maintain_session(context, config)
@@ -102,7 +102,7 @@ When working with sessions, handle potential errors:
 
 ```python
 try:
-    context = Context(config)
+    context = init_context(config)
     # Use context for API calls
 except Exception as error:
     print(f"Session creation failed: {error}")
@@ -140,7 +140,7 @@ def api_call_with_session_retry(
             last_exception = e
             if attempt < max_retries and ("session" in str(e).lower() or "unauthorized" in str(e).lower()):
                 print(f"Session error on attempt {attempt + 1}, creating new context...")
-                current_context = Context(config)
+                current_context = init_context(config)
                 time.sleep(1)  # Brief delay before retry
             else:
                 break

@@ -69,21 +69,21 @@ Context context = Context.initContext(config);
 
 Kotlin:
 ```kotlin
-val context = initContext(config, signing)
-val expiryTime: Instant? = context.sessionExpiryTime
-val refreshedContext = context.refreshSession(config)
+val context = initContext(config)
+val expiryTime: Instant = context.sessionExpiryTime
+val refreshedContext = context.refreshSession()
 ```
 
 TypeScript:
 ```typescript
-const context = await initContext(config, signing);
+const context = await initContext(config);
 const expiryTime: Date | undefined = context.sessionExpiryTime;
 // Refresh functionality planned for future implementation
 ```
 
 Python:
 ```python
-context = Context(config)
+context = init_context(config)
 # Session expiry tracking and refresh planned for future implementation
 ```
 
