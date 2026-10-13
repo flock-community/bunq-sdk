@@ -34,7 +34,7 @@ public class TransportationRefreshTest {
             String token = exchange.getRequestHeaders().getFirst("X-Bunq-Client-Authentication");
             seenTokens.add(token);
             boolean fresh = "fresh".equals(token);
-            byte[] body = (fresh ? "{}" : rejection).getBytes(StandardCharsets.UTF_8);
+            byte[] body = (fresh ? "{\"Response\":[]}" : rejection).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(fresh ? 200 : 403, body.length == 0 ? -1 : body.length);
             if (body.length > 0) {
                 exchange.getResponseBody().write(body);

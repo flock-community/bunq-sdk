@@ -90,6 +90,30 @@ public class ErrorResponseTest {
     }
 
     @Test
+    public void a200WithoutResponseThrowsWithTheStatusAndBody() {
+        var e = failureFrom(200, "{\"unexpected\":true}");
+
+        assertEquals(200, e.status());
+        assertEquals("{\"unexpected\":true}", e.body());
+    }
+
+    @Test
+    public void a400WithoutErrorThrowsWithTheStatusAndBody() {
+        var e = failureFrom(400, "{\"message\":\"Bad Request\"}");
+
+        assertEquals(400, e.status());
+        assertEquals("{\"message\":\"Bad Request\"}", e.body());
+    }
+
+    @Test
+    public void aNonObjectJson200Throws() {
+        var e = failureFrom(200, "[]");
+
+        assertEquals(200, e.status());
+        assertEquals("[]", e.body());
+    }
+
+    @Test
     public void theMessageTruncatesTheBodyButTheBodyFieldKeepsItWhole() {
         var e = new BunqApiException(502, "x".repeat(2000));
 

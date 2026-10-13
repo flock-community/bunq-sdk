@@ -111,18 +111,24 @@ public class Wirespec {
                 ));
     }
 
-    /** Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller. */
+    /** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
     static RawResponse requireTyped(RawResponse response) {
         var bytes = response.body().orElse(new byte[0]);
-        if (response.statusCode() == 200 || (response.statusCode() == 400 && isJson(bytes))) {
+        var envelope = switch (response.statusCode()) {
+            case 200 -> "Response";
+            case 400 -> "Error";
+            default -> null;
+        };
+        if (envelope != null && isObjectWith(bytes, envelope)) {
             return response;
         }
         throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8));
     }
 
-    private static boolean isJson(byte[] bytes) {
+    private static boolean isObjectWith(byte[] bytes, String field) {
         try {
-            return !objectMapper.readTree(bytes).isMissingNode();
+            var tree = objectMapper.readTree(bytes);
+            return tree.isObject() && tree.has(field);
         } catch (IOException e) {
             return false;
         }
