@@ -48,6 +48,7 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
     /** Error statuses from https://doc.bunq.com/basics/errors besides 400, which the spec already lists. */
     private val extraErrorStatuses = listOf("401", "403", "404", "405", "429", "466", "490", "491", "500")
 
+    private const val GENERIC_ERROR_RESPONSE = "GenericError"
     private const val GENERIC_ERROR_SCHEMA = "GenericError"
 
     private val operationKeys = listOf("get", "post", "put", "delete", "patch", "options", "head")
@@ -160,15 +161,17 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
      * A named schema is generated once and shared.
      */
     private fun nameGenericErrorSchema(components: JsonObject): JsonObject {
-        val response = components["responses"]?.jsonObject?.get("GenericError")?.jsonObject ?: return components
+        val response = components["responses"]?.jsonObject?.get(GENERIC_ERROR_RESPONSE)?.jsonObject ?: return components
         val mediaType = response["content"]?.jsonObject?.get("application/json")?.jsonObject ?: return components
         val inlineSchema = mediaType["schema"]?.takeUnless { it.isRef() } ?: return components
+        val schemas = components["schemas"]?.jsonObject.orEmpty()
+        check(GENERIC_ERROR_SCHEMA !in schemas) { "Schema $GENERIC_ERROR_SCHEMA already exists" }
         val namedResponse = JsonObject(response + ("content" to buildJsonObject {
             put("application/json", JsonObject(mediaType + ("schema" to schemaRef(GENERIC_ERROR_SCHEMA))))
         }))
         return JsonObject(components + mapOf(
-            "responses" to JsonObject(components["responses"]!!.jsonObject + ("GenericError" to namedResponse)),
-            "schemas" to JsonObject(components["schemas"]?.jsonObject.orEmpty() + (GENERIC_ERROR_SCHEMA to inlineSchema)),
+            "responses" to JsonObject(components["responses"]!!.jsonObject + (GENERIC_ERROR_RESPONSE to namedResponse)),
+            "schemas" to JsonObject(schemas + (GENERIC_ERROR_SCHEMA to inlineSchema)),
         ))
     }
 

@@ -53,4 +53,19 @@ class OpenApiPreProcessorTest {
             components["responses"]!!.jsonObject["GenericError"]!!.jsonObject["content"]!!.jsonObject["application/json"]!!.jsonObject["schema"]
         )
     }
+
+    @Test
+    fun `an operation without a 400 response gets no extra statuses`() {
+        val spec = """{"openapi":"3.0.0","paths":{"/a":{"get":{"operationId":"READ_A","responses":{"200":{"description":"ok"}}}}}}"""
+        val responses = Json.parseToJsonElement(OpenApiPreProcessor(spec)).jsonObject["paths"]!!.jsonObject["/a"]!!
+            .jsonObject["get"]!!.jsonObject["responses"]!!.jsonObject
+        assertEquals(setOf("200"), responses.keys)
+    }
+
+    @Test
+    fun `an existing GenericError schema is not overwritten`() {
+        val inline = """{"type":"object"}"""
+        val spec = """{"openapi":"3.0.0","components":{"schemas":{"GenericError":{}},"responses":{"GenericError":{"content":{"application/json":{"schema":$inline}}}}}}"""
+        assertFailsWith<IllegalStateException> { OpenApiPreProcessor(spec) }
+    }
 }
