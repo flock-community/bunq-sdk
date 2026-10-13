@@ -45,12 +45,6 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         "CREATE_RequestInquiry_for_User_MonetaryAccount" to "CreateRequestInquiry"
     )
 
-    /** Error statuses from https://doc.bunq.com/basics/errors besides 400, which the spec already lists. */
-    private val extraErrorStatuses = listOf("401", "403", "404", "405", "429", "466", "490", "491", "500")
-
-    private const val GENERIC_ERROR_RESPONSE = "GenericError"
-    private const val GENERIC_ERROR_SCHEMA = "GenericError"
-
     private val operationKeys = listOf("get", "post", "put", "delete", "patch", "options", "head")
 
     private fun schemaRef(name: String) = buildJsonObject { put("\$ref", "#/components/schemas/$name") }
@@ -156,25 +150,6 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
             if (index == 0) normalised.replaceFirstChar { it.lowercase() } else normalised.replaceFirstChar { it.uppercase() }
         }.joinToString("")
 
-    /**
-     * The error response declares its body inline, which Wirespec generates once per operation and status.
-     * A named schema is generated once and shared.
-     */
-    private fun nameGenericErrorSchema(components: JsonObject): JsonObject {
-        val response = components["responses"]?.jsonObject?.get(GENERIC_ERROR_RESPONSE)?.jsonObject ?: return components
-        val mediaType = response["content"]?.jsonObject?.get("application/json")?.jsonObject ?: return components
-        val inlineSchema = mediaType["schema"]?.takeUnless { it.isRef() } ?: return components
-        val schemas = components["schemas"]?.jsonObject.orEmpty()
-        check(GENERIC_ERROR_SCHEMA !in schemas) { "Schema $GENERIC_ERROR_SCHEMA already exists" }
-        val namedResponse = JsonObject(response + ("content" to buildJsonObject {
-            put("application/json", JsonObject(mediaType + ("schema" to schemaRef(GENERIC_ERROR_SCHEMA))))
-        }))
-        return JsonObject(components + mapOf(
-            "responses" to JsonObject(components["responses"]!!.jsonObject + (GENERIC_ERROR_RESPONSE to namedResponse)),
-            "schemas" to JsonObject(schemas + (GENERIC_ERROR_SCHEMA to inlineSchema)),
-        ))
-    }
-
     private fun processOperation(operation: JsonObject): JsonObject {
         val operationId = operation["operationId"]?.jsonPrimitive?.contentOrNull
         val result = operation.toMutableMap()
@@ -196,11 +171,6 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                         })
                     }
                 })
-            }
-        }
-        operation["responses"]?.jsonObject?.let { responses ->
-            responses["400"]?.let { errorResponse ->
-                result["responses"] = JsonObject(responses + extraErrorStatuses.filter { it !in responses }.associateWith { errorResponse })
             }
         }
         operationId?.let { result["operationId"] = JsonPrimitive(camelCaseOperationId(it)) }
@@ -232,9 +202,9 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         val processed = openApi.toMutableMap()
 
         openApi["components"]?.jsonObject?.let { components ->
-            processed["components"] = nameGenericErrorSchema(JsonObject(components.toMutableMap().also { result ->
+            processed["components"] = JsonObject(components.toMutableMap().also { result ->
                 components["schemas"]?.jsonObject?.let { result["schemas"] = processSchemas(it) }
-            }))
+            })
         }
         openApi["paths"]?.jsonObject?.let { paths ->
             val processedPaths = JsonObject(paths.mapValues { (_, item) -> processPathItem(item.jsonObject) })
