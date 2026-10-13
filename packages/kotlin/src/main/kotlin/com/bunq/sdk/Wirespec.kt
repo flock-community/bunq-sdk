@@ -44,17 +44,21 @@ val serialization: Wirespec.Serialization =
 
         override fun <T : Any> deserializeBody(raw: ByteArray, kType: KType): T {
             val tree = objectMapper.readTree(raw)
-            val response = tree.get("Response").asIterable()
+            val response = tree.get("Response") ?: run {
+                // error responses have no Response envelope: the whole document is the body
+                check(tree.has("Error")) { "Invalid bunq response: neither Response nor Error" }
+                return objectMapper.treeToValue(tree, objectMapper.constructType(kType.javaType))
+            }
 
             val json = when {
-                kType.classifier == List::class -> response
+                kType.classifier == List::class -> response.asIterable()
                     .filterIsInstance<ObjectNode>()
                     .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
                         acc.addAll(jsonNode.propertyNames().asSequence().map { jsonNode.get(it) }.toList())
                     }
 
                 else -> {
-                    response
+                    response.asIterable()
                         .filterIsInstance<ObjectNode>()
                         .fold(objectMapper.createObjectNode()) { acc, jsonNode ->
                             acc.apply { setAll(jsonNode.properties().associate { it.key to it.value }) }
@@ -115,6 +119,19 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     )
 }
 
+/** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
+internal fun Wirespec.RawResponse.requireTyped(): Wirespec.RawResponse {
+    val bytes = body ?: ByteArray(0)
+    val tree = runCatching { objectMapper.readTree(bytes) }.getOrNull()
+    val envelope = when (statusCode) {
+        200 -> "Response"
+        400 -> "Error"
+        else -> null
+    }
+    if (envelope != null && tree?.isObject == true && tree.has(envelope)) return this
+    throw BunqApiException(statusCode, String(bytes, Charsets.UTF_8))
+}
+
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
     config.cacheControl?.let { "Cache-Control" to it },
@@ -137,8 +154,8 @@ private fun Wirespec.RawResponse.isSessionRejected(): Boolean =
 /**
  * Sends requests with the context's authentication headers.
  * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
- * and the request is retried with the new session token. A plain 403 ("not allowed") is returned as is, as is
- * the original response when the refresh itself fails.
+ * and the request is retried with the new session token. A plain 403 ("not allowed"), and the original 403 when the
+ * refresh itself fails, are thrown as [BunqApiException] like every status other than 200 and 400.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  */
 fun transportation(context: Context): Wirespec.Transportation = transportation(context) { it.refreshSession() }
@@ -155,7 +172,7 @@ internal fun transportation(context: Context, refresh: (Context) -> Context): Wi
     return Wirespec.Transportation { request ->
         val used = current.value
         val response = sendWith(used, request)
-        if (!response.isSessionRejected()) return@Transportation response
+        if (!response.isSessionRejected()) return@Transportation response.requireTyped()
 
         val refreshed = mutex.withLock {
             // another request may have refreshed the session while this one waited
@@ -168,7 +185,7 @@ internal fun transportation(context: Context, refresh: (Context) -> Context): Wi
                     logger.warn { "bunq session refresh failed: ${e.message}" }
                     null
                 }
-        } ?: return@Transportation response
-        sendWith(refreshed, request)
+        } ?: return@Transportation response.requireTyped()
+        sendWith(refreshed, request).requireTyped()
     }
 }

@@ -13,10 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TransportationRefreshTest {
 
@@ -31,7 +34,7 @@ public class TransportationRefreshTest {
             String token = exchange.getRequestHeaders().getFirst("X-Bunq-Client-Authentication");
             seenTokens.add(token);
             boolean fresh = "fresh".equals(token);
-            byte[] body = (fresh ? "{}" : rejection).getBytes(StandardCharsets.UTF_8);
+            byte[] body = (fresh ? "{\"Response\":[]}" : rejection).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(fresh ? 200 : 403, body.length == 0 ? -1 : body.length);
             if (body.length > 0) {
                 exchange.getResponseBody().write(body);
@@ -48,6 +51,11 @@ public class TransportationRefreshTest {
         } finally {
             server.stop(0);
         }
+    }
+
+    private static BunqApiException failure(Transportation transport) {
+        var e = assertThrows(CompletionException.class, () -> transport.transport(REQUEST).join());
+        return assertInstanceOf(BunqApiException.class, e.getCause());
     }
 
     private static Context fresh(Context context) {
@@ -71,13 +79,16 @@ public class TransportationRefreshTest {
     }
 
     @Test
-    public void aFailingRefreshReturnsTheOriginal403() throws Exception {
+    public void aFailingRefreshThrowsTheOriginal403() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
             Transportation transport = Wirespec.transportation(context, c -> {
                 throw new IllegalStateException("429");
             });
 
-            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            var e = failure(transport);
+
+            assertEquals(403, e.status());
+            assertEquals(AUTHENTICATION_ERROR, e.body());
             assertEquals(List.of("stale"), tokens);
         });
     }
@@ -91,25 +102,40 @@ public class TransportationRefreshTest {
                 return fresh(c);
             });
 
-            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            assertEquals(403, failure(transport).status());
             assertEquals(0, refreshes.get());
         });
     }
 
     @Test
-    public void a403WithANonJsonOrEmptyBodyDoesNotRefresh() throws Exception {
-        for (String rejection : List.of("<html>forbidden</html>", "")) {
-            withServer(rejection, (context, tokens) -> {
-                var refreshes = new AtomicInteger();
-                Transportation transport = Wirespec.transportation(context, c -> {
-                    refreshes.incrementAndGet();
-                    return fresh(c);
-                });
-
-                assertEquals(403, transport.transport(REQUEST).join().statusCode());
-                assertEquals(0, refreshes.get());
+    public void a403WithAnEmptyBodyDoesNotRefresh() throws Exception {
+        withServer("", (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.transportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
             });
-        }
+
+            assertEquals(403, failure(transport).status());
+            assertEquals(0, refreshes.get());
+        });
+    }
+
+    @Test
+    public void a403WithAnHtmlBodyThrowsAndDoesNotRefresh() throws Exception {
+        withServer("<html>forbidden</html>", (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.transportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
+            });
+
+            var e = failure(transport);
+
+            assertEquals(403, e.status());
+            assertEquals("<html>forbidden</html>", e.body());
+            assertEquals(0, refreshes.get());
+        });
     }
 
     @Test

@@ -11,6 +11,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class TransportationRefreshTest {
 
@@ -24,7 +25,7 @@ class TransportationRefreshTest {
         server.createContext("/") { exchange ->
             val token = exchange.requestHeaders.getFirst("X-Bunq-Client-Authentication")
             seenTokens += token
-            val (status, body) = if (token == "fresh") 200 to "{}" else 403 to rejection
+            val (status, body) = if (token == "fresh") 200 to """{"Response":[]}""" else 403 to rejection
             val bytes = body.toByteArray()
             exchange.sendResponseHeaders(status, if (bytes.isEmpty()) -1 else bytes.size.toLong())
             if (bytes.isNotEmpty()) exchange.responseBody.write(bytes)
@@ -60,12 +61,13 @@ class TransportationRefreshTest {
     }
 
     @Test
-    fun `a failing refresh returns the original 403`() = withServer(authenticationError) { context, tokens ->
+    fun `a failing refresh throws the original 403`() = withServer(authenticationError) { context, tokens ->
         val transport = transportation(context) { error("429") }
 
-        val response = runBlocking { transport.transport(request) }
+        val e = assertFailsWith<BunqApiException> { runBlocking { transport.transport(request) } }
 
-        assertEquals(403, response.statusCode)
+        assertEquals(403, e.status)
+        assertEquals(authenticationError, e.body)
         assertEquals(listOf("stale"), tokens)
     }
 
@@ -74,21 +76,29 @@ class TransportationRefreshTest {
         val refreshes = AtomicInteger()
         val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
 
-        assertEquals(403, runBlocking { transport.transport(request) }.statusCode)
+        assertEquals(403, assertFailsWith<BunqApiException> { runBlocking { transport.transport(request) } }.status)
         assertEquals(0, refreshes.get())
     }
 
     @Test
-    fun `a 403 with a non-JSON or empty body does not refresh`() {
-        for (rejection in listOf("<html>forbidden</html>", "")) {
-            withServer(rejection) { context, _ ->
-                val refreshes = AtomicInteger()
-                val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
+    fun `a 403 with an empty body does not refresh`() = withServer("") { context, _ ->
+        val refreshes = AtomicInteger()
+        val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
 
-                assertEquals(403, runBlocking { transport.transport(request) }.statusCode)
-                assertEquals(0, refreshes.get())
-            }
-        }
+        assertEquals(403, assertFailsWith<BunqApiException> { runBlocking { transport.transport(request) } }.status)
+        assertEquals(0, refreshes.get())
+    }
+
+    @Test
+    fun `a 403 with an HTML body throws and does not refresh`() = withServer("<html>forbidden</html>") { context, _ ->
+        val refreshes = AtomicInteger()
+        val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
+
+        val e = assertFailsWith<BunqApiException> { runBlocking { transport.transport(request) } }
+
+        assertEquals(403, e.status)
+        assertEquals("<html>forbidden</html>", e.body)
+        assertEquals(0, refreshes.get())
     }
 
     @Test

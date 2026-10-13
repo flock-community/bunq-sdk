@@ -11,6 +11,7 @@ from bunq_signing_keys_generator import BunqSigningKeysGenerator
 from config import create_config
 from context import Context
 from datetime import datetime
+from transport import BunqApiError
 from wirespec import transportation
 
 SESSION_REJECTED = json.dumps({"Error": [{"error_description": "Insufficient authentication."}]})
@@ -28,7 +29,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
                 token = handler.headers.get('X-Bunq-Client-Authentication')
                 self.tokens_seen.append(token)
                 ok = token == 'fresh'
-                body = b'ok' if ok else rejected_body.encode()
+                body = b'{"Response":[]}' if ok else rejected_body.encode()
                 handler.send_response(200 if ok else 403)
                 handler.send_header('Content-Length', str(len(body)))
                 handler.end_headers()
@@ -73,12 +74,13 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(1, self.refreshes)
         self.assertEqual(['stale', 'fresh'], self.tokens_seen)
 
-    async def test_failed_refresh_returns_original_403(self):
+    async def test_failed_refresh_raises_original_403(self):
         self.start_server(SESSION_REJECTED)
-        response = await transportation(self.context, self.counting_refresh(fails=True)).transport(self.request)
+        with self.assertRaises(BunqApiError) as raised:
+            await transportation(self.context, self.counting_refresh(fails=True)).transport(self.request)
 
-        self.assertEqual(403, response.statusCode)
-        self.assertEqual(SESSION_REJECTED.encode(), response.body)
+        self.assertEqual(403, raised.exception.status)
+        self.assertEqual(SESSION_REJECTED, raised.exception.body)
         self.assertEqual(1, self.refreshes)
 
     async def test_cancelled_refresh_propagates(self):
@@ -92,19 +94,28 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_other_403_does_not_refresh(self):
         self.start_server(NOT_ALLOWED)
-        response = await transportation(self.context, self.counting_refresh()).transport(self.request)
+        with self.assertRaises(BunqApiError) as raised:
+            await transportation(self.context, self.counting_refresh()).transport(self.request)
 
-        self.assertEqual(403, response.statusCode)
+        self.assertEqual(403, raised.exception.status)
         self.assertEqual(0, self.refreshes)
 
-    async def test_non_json_or_empty_403_does_not_refresh(self):
-        for body in ['<html>forbidden</html>', '']:
-            with self.subTest(body=body):
-                self.start_server(body)
-                response = await transportation(self.context, self.counting_refresh()).transport(self.request)
+    async def test_empty_403_does_not_refresh(self):
+        self.start_server('')
+        with self.assertRaises(BunqApiError) as raised:
+            await transportation(self.context, self.counting_refresh()).transport(self.request)
 
-                self.assertEqual(403, response.statusCode)
-                self.assertEqual(0, self.refreshes)
+        self.assertEqual(403, raised.exception.status)
+        self.assertEqual(0, self.refreshes)
+
+    async def test_html_403_raises_and_does_not_refresh(self):
+        self.start_server('<html>forbidden</html>')
+        with self.assertRaises(BunqApiError) as raised:
+            await transportation(self.context, self.counting_refresh()).transport(self.request)
+
+        self.assertEqual(403, raised.exception.status)
+        self.assertEqual('<html>forbidden</html>', raised.exception.body)
+        self.assertEqual(0, self.refreshes)
 
     async def test_concurrent_rejections_share_one_refresh(self):
         self.start_server(SESSION_REJECTED)

@@ -27,7 +27,10 @@ class Serialization(Wirespec.Serialization):
     def deserializeBody(self, raw: bytes, type: Type[T]) -> Any:
         data = json.loads(raw)
         if "Response" not in data:
-            raise Exception("Invalid response")
+            if "Error" not in data:
+                raise Exception("Invalid bunq response: neither Response nor Error")
+            # error responses have no Response envelope: the whole document is the body
+            return from_dict(data_class=type, data=data)
 
         res_data = data["Response"]
         if get_origin(type) is list:
@@ -69,3 +72,29 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
         res_headers.setdefault(key.lower(), []).append(value)
 
     return Wirespec.RawResponse(res.status_code, res_headers, res.content)
+
+
+class BunqApiError(Exception):
+    """bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`."""
+
+    def __init__(self, status: int, body: str):
+        super().__init__(f"bunq answered {status}: {body[:500]}")
+        self.status = status
+        self.body = body
+
+
+def _is_object_with(body: bytes, key: str) -> bool:
+    try:
+        parsed = json.loads(body)
+    except ValueError:
+        return False
+    return isinstance(parsed, dict) and key in parsed
+
+
+def require_typed(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
+    """Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller."""
+    body = response.body or b""
+    envelope = {200: "Response", 400: "Error"}.get(response.statusCode)
+    if envelope and _is_object_with(body, envelope):
+        return response
+    raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'))
