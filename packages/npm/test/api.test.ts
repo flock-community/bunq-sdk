@@ -148,5 +148,5 @@ describe("dead session", () => {
 
         expect((await client.listAllMonetaryAccountBankForUser({userID: context.userId})).status).toBe(200);
         expect(refreshes).toBe(1);
-    });
+    }, 30_000); // about eight sequential sandbox calls; from CI runners this can exceed the 5 s default
 });
