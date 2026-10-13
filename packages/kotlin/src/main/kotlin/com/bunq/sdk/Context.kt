@@ -1,8 +1,8 @@
 package com.bunq.sdk
 
-import com.bunq.sdk.generated.endpoint.CREATE_DeviceServer
-import com.bunq.sdk.generated.endpoint.CREATE_Installation
-import com.bunq.sdk.generated.endpoint.CREATE_SessionServer
+import com.bunq.sdk.generated.endpoint.CreateDeviceServer
+import com.bunq.sdk.generated.endpoint.CreateInstallation
+import com.bunq.sdk.generated.endpoint.CreateSessionServer
 import com.bunq.sdk.generated.model.DeviceServer
 import com.bunq.sdk.generated.model.DeviceServerCreate
 import com.bunq.sdk.generated.model.Installation
@@ -15,6 +15,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
+
+private fun setupFailure(action: String, description: String?) = "Cannot $action (status 400): $description"
 
 data class Context(
     val serverPublicKey: String,
@@ -87,17 +89,17 @@ private fun createInstallation(config: Config): InstallationCreate {
     val body = Installation(
         client_public_key = config.signingKeys.publicKeyAsPem()
     )
-    val request = CREATE_Installation.Request(
+    val request = CreateInstallation.Request(
         body = body,
     )
 
-    val rawRequest = CREATE_Installation.toRequest(serialization, request)
-    val rawResponse = send(config, rawRequest)
-    val res = CREATE_Installation.fromResponse(serialization, rawResponse)
+    val rawRequest = CreateInstallation.toRawRequest(serialization, request)
+    val rawResponse = send(config, rawRequest).requireTyped()
+    val res = CreateInstallation.fromRawResponse(serialization, rawResponse)
 
     when (res) {
-        is CREATE_Installation.Response200 -> return res.body
-        is CREATE_Installation.Response400 -> error("Cannot create installation")
+        is CreateInstallation.Response200 -> return res.body
+        is CreateInstallation.Response400 -> error(setupFailure("create installation", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 
@@ -107,18 +109,18 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
         secret = config.apiKey,
         permitted_ips = listOf("*")
     )
-    val request = CREATE_DeviceServer.Request(
+    val request = CreateDeviceServer.Request(
         body = body,
     )
 
-    val rawRequest = CREATE_DeviceServer.toRequest(serialization, request)
+    val rawRequest = CreateDeviceServer.toRawRequest(serialization, request)
     val authRequest = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(token)))
-    val rawResponse = send(config, authRequest)
-    val res = CREATE_DeviceServer.fromResponse(serialization, rawResponse)
+    val rawResponse = send(config, authRequest).requireTyped()
+    val res = CreateDeviceServer.fromRawResponse(serialization, rawResponse)
 
     when (res) {
-        is CREATE_DeviceServer.Response200 -> return res.body
-        is CREATE_DeviceServer.Response400 -> error("Cannot create device server")
+        is CreateDeviceServer.Response200 -> return res.body
+        is CreateDeviceServer.Response400 -> error(setupFailure("create device server", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 
@@ -130,23 +132,23 @@ private fun createSessionServer(
     val body = SessionServer(
         secret = config.apiKey,
     )
-    val request = CREATE_SessionServer.Request(
+    val request = CreateSessionServer.Request(
         body = body,
     )
 
-    val rawRequest = CREATE_SessionServer.toRequest(serialization, request)
+    val rawRequest = CreateSessionServer.toRawRequest(serialization, request)
     val authRequest = rawRequest.copy(
         headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(
             token
         ))
     )
-    val rawResponse = send(config, authRequest)
+    val rawResponse = send(config, authRequest).requireTyped()
 
-    val res = CREATE_SessionServer.fromResponse(serialization, rawResponse)
+    val res = CreateSessionServer.fromRawResponse(serialization, rawResponse)
 
     when (res) {
-        is CREATE_SessionServer.Response200 -> return res.body
-        is CREATE_SessionServer.Response400 -> error("Cannot create session server")
+        is CreateSessionServer.Response200 -> return res.body
+        is CreateSessionServer.Response400 -> error(setupFailure("create session server", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 

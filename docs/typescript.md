@@ -1,55 +1,103 @@
-# TypeScript/npm SDK - Session Management
+# TypeScript/npm SDK
 
 ## Overview
 
-The bunq TypeScript SDK provides session management through the `Context` type and related functions. Sessions automatically expire and need to be refreshed periodically to maintain API access.
+The package exports `bunqClient`, `initContext`, `refreshSession`, `createConfig` and the generated models and endpoints from one entry point.
 
-## Session Expiry
+## Requirements
 
-### Check Session Expiry Time
+- Node.js 18+ (global `fetch`; CI uses Node 20)
+- TypeScript 5; the code on this page is type-checked with `strict` enabled
+- JDK 17+ to run the Gradle code generation (CI uses 21)
 
-Every `Context` instance contains the session expiry information:
+## Install
+
+The package is not published to npm. Build and pack the package, then install the tarball in your project:
+
+```bash
+./gradlew :packages:npm:wirespec
+npm --prefix packages/npm install
+npm pack ./packages/npm
+npm install /path/to/bunq-sdk/bunq-sdk-1.0.0.tgz   # run in your project
+```
+
+## Creating a Context
 
 ```typescript
-const context = await initContext(config);
-const expiryTime: Date = context.sessionExpiryTime;
+import {BUNQ_SANDBOX_SERVER, createConfig, initContext} from "bunq-sdk";
+import {generateKeyPairSync} from "node:crypto";
 
-// Check if session will expire soon
-const willExpireSoon = expiryTime.getTime() < Date.now() + (5 * 60 * 1000); // 5 minutes
+const {privateKey, publicKey} = generateKeyPairSync("rsa", {
+  modulusLength: 2048,
+  privateKeyEncoding: {type: "pkcs8", format: "pem"},
+  publicKeyEncoding: {type: "spki", format: "pem"},
+});
+
+const config = createConfig(BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", privateKey, publicKey);
 ```
+
+The package is CommonJS and has no top-level `await`: call `initContext` and the client from inside `async function main() { ... } main();`, as in the next section.
+
+Generate the key pair once and store it: a new pair means a new installation at bunq. `createConfig` takes an optional last argument `{userAgent, cacheControl, language, region, clientRequestId, geolocation}`.
+
+## Creating the Client and Calling an Endpoint
+
+`bunqClient(context)` returns the client that Wirespec generates. Its methods are `async` and named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). The result is a response object with a `status` of 200 or 400; narrow on it to read the typed `body`. Any other status rejects with `BunqApiError` (see Error Handling).
+
+```typescript
+import {bunqClient} from "bunq-sdk";
+
+async function main() {
+  const context = await initContext(config);
+  const client = bunqClient(context);
+
+  const user = await client.readUser({itemId: context.userId});
+  if (user.status === 200) {
+    console.log(user.body.UserPerson?.legal_name);
+  } else {
+    console.error(user.body.Error?.map(error => error.error_description));
+  }
+
+  const accounts = await client.listAllMonetaryAccountBankForUser({userID: context.userId});
+  if (accounts.status === 200) {
+    accounts.body.forEach(account => console.log(account.display_name));
+  } else {
+    console.error(accounts.body.Error?.map(error => error.error_description));
+  }
+}
+
+main();
+```
+
+The optional query parameters (`count`, `newer_id`, `older_id`) can be left out.
 
 ## Session Refresh
 
-### Refresh an Existing Session
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call rejects with `BunqApiError` with status 403), and the manual refresh.
 
-Use `refreshSession(context)`. It creates a new session with the same device and installation and returns a new `Context`:
+Concurrent calls share one in-flight refresh promise, and the refresh-failure warning is logged with `console.warn`. Keep using the same `bunqClient(context)` instance.
 
-```typescript
-import {refreshSession} from "./context";
+### Manual Refresh
 
-const refreshedContext = await refreshSession(context);
-```
-
-### Complete Example
+`refreshSession(context)` is still available. It creates a new session with the same device and installation and returns a new `Context`. An existing client does not pick it up; create a new client from the returned context:
 
 ```typescript
-async function maintainSession(currentContext: Context): Promise<Context> {
-  const expiryTime = currentContext.sessionExpiryTime;
+import {bunqClient, type Context, refreshSession} from "bunq-sdk";
 
-  if (expiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    // Session expires in less than 5 minutes, refresh it
-    console.log('Session expiring soon, refreshing...');
-    return await refreshSession(currentContext);
-  } else {
-    // Session is still valid
-    return currentContext;
-  }
+async function refresh(context: Context) {
+  const refreshedContext = await refreshSession(context);
+  return bunqClient(refreshedContext);
 }
 ```
 
-## Context Properties
+### Session Expiry Time
 
-The `Context` type includes the following session-related properties:
+```typescript
+const expiryTime: Date = context.sessionExpiryTime;
+const willExpireSoon = expiryTime.getTime() < Date.now() + 5 * 60 * 1000;
+```
+
+## Context Properties
 
 ```typescript
 interface Context {
@@ -66,44 +114,38 @@ interface Context {
 
 ## Error Handling
 
-When working with sessions, handle potential errors:
+See [Error Handling in the README](../README.md#error-handling) for when the error is thrown.
+
+A 400 is returned as a response with `status === 400`, whose `body` has `Error[]` with an `error_description` per entry. Every other outcome rejects with `BunqApiError` (exported from `bunq-sdk`), which has `status` and `body`, the full response body as a string; the message is `bunq answered <status>: <first 500 characters>`:
 
 ```typescript
-try {
-  const context = await initContext(config);
-  // Use context for API calls
-} catch (error) {
-  console.error('Session creation failed:', error.message);
-  // Handle error appropriately
+import {BunqApiError, type BunqClient} from "bunq-sdk";
+
+async function readLegalName(client: BunqClient, userId: number) {
+  try {
+    const res = await client.readUser({itemId: userId});
+    if (res.status === 200) {
+      return res.body.UserPerson?.legal_name;
+    }
+    throw new Error(`bunq answered 400: ${res.body.Error?.[0]?.error_description}`);
+  } catch (error) {
+    if (error instanceof BunqApiError && error.status === 404) {
+      return undefined;
+    }
+    throw error;
+  }
 }
 ```
 
-## Best Practices
-
-1. **Check expiry before API calls**: Always verify session validity before making API requests
-2. **Implement retry logic**: When API calls fail due to expired sessions, refresh and retry
-3. **Store contexts securely**: Session tokens should be stored securely if persistence is needed
+`initContext` and `refreshSession` reject if session creation fails. A typed 400 gives a message like `Session server creation failed (status 400): <error_description>` (the steps are "Installation failed", "Device server creation failed" and "Session server creation failed"); any other status gives a `BunqApiError`:
 
 ```typescript
-async function apiCallWithSessionCheck<T>(
-  apiCall: (context: Context) => Promise<T>,
-  context: Context
-): Promise<{ result: T; context: Context }> {
-  let currentContext = context;
-  
-  // Check if session needs refresh
-  if (currentContext.sessionExpiryTime.getTime() < Date.now() + (5 * 60 * 1000)) {
-    currentContext = await refreshSession(currentContext);
-  }
-  
+async function createContextOrUndefined() {
   try {
-    const result = await apiCall(currentContext);
-    return { result, context: currentContext };
+    return await initContext(config);
   } catch (error) {
-    // If API call fails, try refreshing session once
-    currentContext = await refreshSession(currentContext);
-    const result = await apiCall(currentContext);
-    return { result, context: currentContext };
+    console.error("Session creation failed:", (error as Error).message);
+    return undefined;
   }
 }
 ```

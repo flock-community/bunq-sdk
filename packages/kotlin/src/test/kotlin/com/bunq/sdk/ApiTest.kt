@@ -1,10 +1,11 @@
 package com.bunq.sdk
 
-import com.bunq.sdk.generated.Sdk
-import com.bunq.sdk.generated.endpoint.CREATE_RequestInquiry_for_User_MonetaryAccount
-import com.bunq.sdk.generated.endpoint.List_all_MonetaryAccountBank_for_User
-import com.bunq.sdk.generated.endpoint.READ_MonetaryAccountBank_for_User
-import com.bunq.sdk.generated.endpoint.READ_User
+import com.bunq.sdk.generated.Client
+import com.bunq.sdk.generated.endpoint.CreateRequestInquiryForUserMonetaryAccount
+import com.bunq.sdk.generated.endpoint.DeleteSession
+import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser
+import com.bunq.sdk.generated.endpoint.ReadMonetaryAccountBankForUser
+import com.bunq.sdk.generated.endpoint.ReadUser
 import com.bunq.sdk.generated.model.Amount
 import com.bunq.sdk.generated.model.CreateRequestInquiry
 import com.bunq.sdk.generated.model.MonetaryAccountBankRead
@@ -79,13 +80,12 @@ class ApiTest {
     @Test
     fun `testREADUser`(): Unit = runTest {
         val context = initContext(config)
-        val handler = handler(context)
-        val sdk = Sdk(handler)
+        val client = bunqClient(context)
 
-        val res = sdk.rEAD_User(context.userId)
+        val res = client.readUser(context.userId)
         val body = when (res) {
-            is READ_User.Response200 -> res.body
-            is READ_User.Response400 -> error("Cannot read user")
+            is ReadUser.Response200 -> res.body
+            is ReadUser.Response400 -> error("Cannot read user")
         }
         assertEquals("Donald Byrne", body.UserPerson?.legal_name)
     }
@@ -93,11 +93,11 @@ class ApiTest {
     @Test
     fun `testbankAccount`(): Unit = runTest {
         val context = initContext(config)
-        val sdk = Sdk(handler(context))
-        val res = sdk.list_all_MonetaryAccountBank_for_User(context.userId, null, null, null)
+        val client = bunqClient(context)
+        val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)
         val body = when (res) {
-            is List_all_MonetaryAccountBank_for_User.Response200 -> res.body
-            is List_all_MonetaryAccountBank_for_User.Response400 -> error("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.Response200 -> res.body
+            is ListAllMonetaryAccountBankForUser.Response400 -> error("Could not get bank accounts")
         }
         assertEquals(1989601, body.firstOrNull()?.id)
         assertEquals("EUR", body.firstOrNull()?.balance?.currency)
@@ -107,20 +107,20 @@ class ApiTest {
     @Test
     fun `testbankAccount1`(): Unit = runTest {
         val context = initContext(config)
-        val sdk = Sdk(handler(context))
-        val body = getBankAccount(sdk, context)
+        val client = bunqClient(context)
+        val body = getBankAccount(client, context)
         assertEquals(1989601, body.MonetaryAccountBank?.id)
         assertTrue { (body.MonetaryAccountBank?.balance?.value?.toBigDecimal() ?: BigDecimal.ZERO) > BigDecimal.ZERO }
     }
 
     private suspend fun getBankAccount(
-        sdk: Sdk,
+        client: Client,
         context: Context
     ): MonetaryAccountBankRead {
-        val res = sdk.rEAD_MonetaryAccountBank_for_User(context.userId, 1989601)
+        val res = client.readMonetaryAccountBankForUser(context.userId, 1989601)
         val body = when (res) {
-            is READ_MonetaryAccountBank_for_User.Response200 -> res.body
-            is READ_MonetaryAccountBank_for_User.Response400 -> fail("Could not get bank account")
+            is ReadMonetaryAccountBankForUser.Response200 -> res.body
+            is ReadMonetaryAccountBankForUser.Response400 -> fail("Could not get bank account")
         }
         return body
     }
@@ -129,15 +129,15 @@ class ApiTest {
     @Throws(Exception::class)
     fun testListAllMonetaryAccountBankForUser() = runTest {
         val context = initContext(config)
-        val sdk = Sdk(handler(context))
-        val res: List_all_MonetaryAccountBank_for_User.Response<*> =
-            sdk.list_all_MonetaryAccountBank_for_User(
+        val client = bunqClient(context)
+        val res: ListAllMonetaryAccountBankForUser.Response<*> =
+            client.listAllMonetaryAccountBankForUser(
                 userID = context.userId,
                 count = null,
                 newer_id = null,
                 older_id = null
             )
-        if (res is List_all_MonetaryAccountBank_for_User.Response200) {
+        if (res is ListAllMonetaryAccountBankForUser.Response200) {
             assertEquals("D. Byrne", res.body[0].display_name)
         } else {
             fail { "Cannot list monetary accounts" }
@@ -147,17 +147,17 @@ class ApiTest {
     @Test
     fun `refresh a session`() = runTest {
         val context = initContext(config)
-        val sdk = Sdk(handler(context))
+        val client = bunqClient(context)
 
-        val res = sdk.list_all_MonetaryAccountBank_for_User(
+        val res = client.listAllMonetaryAccountBankForUser(
             userID = context.userId,
             count = null,
             newer_id = null,
             older_id = null
         )
         val body = when (res) {
-            is List_all_MonetaryAccountBank_for_User.Response200 -> res.body
-            is List_all_MonetaryAccountBank_for_User.Response400 -> fail("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.Response200 -> res.body
+            is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
         }
         assertEquals(1, body.size)
         val monetaryAccountBankListing = body.firstOrNull()
@@ -166,17 +166,17 @@ class ApiTest {
         assertTrue { (body.firstOrNull()?.balance?.value?.toBigDecimal() ?: BigDecimal.ZERO) > BigDecimal.ZERO }
 
         val refreshSession = context.refreshSession()
-        val refreshedSdk = Sdk(handler(refreshSession))
+        val refreshedClient = bunqClient(refreshSession)
 
-        val res2 = refreshedSdk.list_all_MonetaryAccountBank_for_User(
+        val res2 = refreshedClient.listAllMonetaryAccountBankForUser(
             userID = context.userId,
             count = null,
             newer_id = null,
             older_id = null
         )
         val body2 = when (res2) {
-            is List_all_MonetaryAccountBank_for_User.Response200 -> res2.body
-            is List_all_MonetaryAccountBank_for_User.Response400 -> fail("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.Response200 -> res2.body
+            is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
         }
         val monetaryAccountBankListing2 = body2.firstOrNull()
         assertNotNull(monetaryAccountBankListing2)
@@ -185,15 +185,33 @@ class ApiTest {
 
     }
 
+    @Test
+    fun `a dead session is refreshed once and the call succeeds`() = runTest {
+        val context = initContext(config)
+        var refreshCount = 0
+        val client = Client(serialization, transportation(context) { refreshCount++; it.refreshSession() })
+
+        assertTrue(client.listAllMonetaryAccountBankForUser(context.userId, null, null, null) is ListAllMonetaryAccountBankForUser.Response200)
+        assertEquals(0, refreshCount)
+
+        val deleted = client.deleteSession(context.sessionId)
+        assertTrue(deleted is DeleteSession.Response200)
+
+        val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)
+        println("refreshes=$refreshCount, status after refresh=${(res as? ListAllMonetaryAccountBankForUser.Response200)?.status}")
+        assertTrue(res is ListAllMonetaryAccountBankForUser.Response200)
+        assertEquals(1, refreshCount)
+    }
+
     @Disabled("Slow test, deliberately there to validate create request inquiry works")
     @Test
     fun `request spending money`() = runTest {
         val context = initContext(config)
-        val sdk = Sdk(handler(context))
+        val client = bunqClient(context)
 
-        val bankAccount = getBankAccount(sdk, context)
+        val bankAccount = getBankAccount(client, context)
         println("Bank account: ${bankAccount.MonetaryAccountBank?.balance?.value}")
-        val response = sdk.cREATE_RequestInquiry_for_User_MonetaryAccount(
+        val response = client.createRequestInquiryForUserMonetaryAccount(
             context.userId,
             bankAccount.MonetaryAccountBank?.id!!,
             CreateRequestInquiry(
@@ -208,7 +226,7 @@ class ApiTest {
 
 
         when (response) {
-            is CREATE_RequestInquiry_for_User_MonetaryAccount.Response200 -> {
+            is CreateRequestInquiryForUserMonetaryAccount.Response200 -> {
                 println("Received requestInquiry okay. Waiting for 10 seconds to ensure balance is updated")
                 withContext(Dispatchers.Default) {
                     repeat(10) {
@@ -218,7 +236,7 @@ class ApiTest {
                     println()
                 }
                 println("Fetching bank account again")
-                val bankAccount1 = getBankAccount(sdk, context)
+                val bankAccount1 = getBankAccount(client, context)
                 println("Bank account after request inquiry: ${bankAccount1.MonetaryAccountBank?.balance?.value}")
 
                 assertTrue {
@@ -228,7 +246,7 @@ class ApiTest {
                 }
             }
 
-            is CREATE_RequestInquiry_for_User_MonetaryAccount.Response400 -> fail("ahh, failure")
+            is CreateRequestInquiryForUserMonetaryAccount.Response400 -> fail("ahh, failure")
         }
     }
 }

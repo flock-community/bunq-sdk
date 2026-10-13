@@ -1,8 +1,8 @@
 package com.bunq.sdk;
 
-import com.bunq.sdk.generated.Sdk;
-import com.bunq.sdk.generated.endpoint.List_all_MonetaryAccountBank_for_User;
-import com.bunq.sdk.generated.endpoint.READ_User;
+import com.bunq.sdk.generated.Client;
+import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser;
+import com.bunq.sdk.generated.endpoint.ReadUser;
 import com.bunq.sdk.generated.model.UserPerson;
 import org.junit.jupiter.api.Test;
 
@@ -67,23 +67,23 @@ public class SdkTest {
     );
 
     private static final Context context = Context.initContext(config);
-    private static final Sdk sdk = new Sdk(Wirespec.handler(context));
+    private static final Client client = Wirespec.bunqClient(context);
 
     @Test
     public void testREADUser() throws Exception {
-        READ_User.Response<?> res = sdk.rEAD_User(context.userId()).get();
-        if (res instanceof READ_User.Response200 response) {
-            assertEquals("Donald Byrne", response.getBody().UserPerson().flatMap(UserPerson::legal_name).orElseThrow());
-        } else if (res instanceof READ_User.Response400) {
+        ReadUser.Response<?> res = client.readUser(context.userId()).get();
+        if (res instanceof ReadUser.Response200 response) {
+            assertEquals("Donald Byrne", response.body().UserPerson().flatMap(UserPerson::legal_name).orElseThrow());
+        } else if (res instanceof ReadUser.Response400) {
             throw new RuntimeException("Cannot read user");
         }
     }
 
     @Test
     public void testListAllMonetaryAccountBankForUser() throws Exception {
-        List_all_MonetaryAccountBank_for_User.Response<?> res = sdk.list_all_MonetaryAccountBank_for_User(context.userId(), Optional.empty(), Optional.empty(), Optional.empty()).get();
-        if (res instanceof List_all_MonetaryAccountBank_for_User.Response200 response) {
-            assertEquals("D. Byrne", response.getBody().get(0).display_name().orElseThrow());
+        ListAllMonetaryAccountBankForUser.Response<?> res = client.listAllMonetaryAccountBankForUser(context.userId(), Optional.empty(), Optional.empty(), Optional.empty()).get();
+        if (res instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
+            assertEquals("D. Byrne", response.body().get(0).display_name().orElseThrow());
         } else {
             throw new RuntimeException("Cannot list monetary accounts");
         }
@@ -92,19 +92,19 @@ public class SdkTest {
     @Test
     public void testRefreshSession() throws Exception {
         // First API call with original context
-        List_all_MonetaryAccountBank_for_User.Response<?> res1 = sdk.list_all_MonetaryAccountBank_for_User(
+        ListAllMonetaryAccountBankForUser.Response<?> res1 = client.listAllMonetaryAccountBankForUser(
                 context.userId(), 
                 Optional.empty(), 
                 Optional.empty(), 
                 Optional.empty()
         ).get();
         
-        if (!(res1 instanceof List_all_MonetaryAccountBank_for_User.Response200 response1)) {
+        if (!(res1 instanceof ListAllMonetaryAccountBankForUser.Response200 response1)) {
             throw new RuntimeException("Could not get bank accounts with original session");
         }
         
-        assertEquals(1, response1.getBody().size());
-        var monetaryAccountBankListing1 = response1.getBody().get(0);
+        assertEquals(1, response1.body().size());
+        var monetaryAccountBankListing1 = response1.body().get(0);
         assertNotNull(monetaryAccountBankListing1);
         assertEquals(1989601L, monetaryAccountBankListing1.id().orElseThrow());
         assertTrue(monetaryAccountBankListing1.balance()
@@ -114,21 +114,21 @@ public class SdkTest {
 
         // Refresh the session
         Context refreshedContext = context.refreshSession();
-        Sdk refreshedSdk = new Sdk(Wirespec.handler(refreshedContext));
+        Client refreshedClient = Wirespec.bunqClient(refreshedContext);
 
         // Second API call with refreshed context
-        List_all_MonetaryAccountBank_for_User.Response<?> res2 = refreshedSdk.list_all_MonetaryAccountBank_for_User(
+        ListAllMonetaryAccountBankForUser.Response<?> res2 = refreshedClient.listAllMonetaryAccountBankForUser(
                 refreshedContext.userId(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty()
         ).get();
 
-        if (!(res2 instanceof List_all_MonetaryAccountBank_for_User.Response200 response2)) {
+        if (!(res2 instanceof ListAllMonetaryAccountBankForUser.Response200 response2)) {
             throw new RuntimeException("Could not get bank accounts with refreshed session");
         }
 
-        var monetaryAccountBankListing2 = response2.getBody().get(0);
+        var monetaryAccountBankListing2 = response2.body().get(0);
         assertNotNull(monetaryAccountBankListing2);
         
         // Verify both sessions return the same account data

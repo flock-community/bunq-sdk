@@ -1,7 +1,6 @@
 import {DeviceServer, Installation, SessionServer} from "./gen/model";
-import {CREATE_DeviceServer, CREATE_Installation, CREATE_SessionServer,} from "./gen/endpoint";
-import {rawHandler, serialization} from "./wirespec";
-import {Wirespec} from "./gen/Wirespec";
+import {client} from "./gen/Client";
+import {rawHandler, requireTyped, serialization} from "./wirespec";
 import {Config} from "./config";
 
 export interface Context {
@@ -16,17 +15,23 @@ export interface Context {
 }
 
 
+function setupFailure(what: string, body: {Error?: {error_description?: string}[]}): string {
+    return `${what} (status 400): ${body.Error?.[0]?.error_description}`;
+}
+
+function unauthenticatedClient(config: Config, token?: string) {
+    const headers: Record<string, string[]> = token ? {"X-Bunq-Client-Authentication": [token]} : {};
+    return client(serialization, {transport: async request => requireTyped(await rawHandler(config, {...request, headers: {...request.headers, ...headers}}))});
+}
+
 export async function initContext(config: Config): Promise<Context> {
     const createInstallation = async () => {
         const body: Installation = {client_public_key: config.signingKeys.publicKeyAsPem()}
-        const req = CREATE_Installation.request({body})
-        const rawReq = CREATE_Installation.client(serialization).to(req)
-        const rawRes = await rawHandler(config, rawReq)
-        const res = CREATE_Installation.client(serialization).from(rawRes)
+        const res = await unauthenticatedClient(config).createInstallation({body})
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Installation failed")
+            throw new Error(setupFailure("Installation failed", res.body))
         }
     }
 
@@ -36,21 +41,11 @@ export async function initContext(config: Config): Promise<Context> {
             secret: config.apiKey,
             permitted_ips: ["*"]
         }
-        const req = CREATE_DeviceServer.request({body})
-        const rawReq = CREATE_DeviceServer.client(serialization).to(req)
-        const authReq: Wirespec.RawRequest = {
-            ...rawReq,
-            headers: {
-                ...rawReq.headers,
-                "X-Bunq-Client-Authentication": token,
-            }
-        }
-        const rawRes = await rawHandler(config, authReq)
-        const res = CREATE_DeviceServer.client(serialization).from(rawRes)
+        const res = await unauthenticatedClient(config, token).createDeviceServer({body})
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Device server creation failed")
+            throw new Error(setupFailure("Device server creation failed", res.body))
         }
     }
 
@@ -58,21 +53,11 @@ export async function initContext(config: Config): Promise<Context> {
         const body: SessionServer = {
             secret: config.apiKey,
         }
-        const req = CREATE_SessionServer.request({body})
-        const rawReq = CREATE_SessionServer.client(serialization).to(req)
-        const authReq: Wirespec.RawRequest = {
-            ...rawReq,
-            headers: {
-                ...rawReq.headers,
-                "X-Bunq-Client-Authentication": token,
-            }
-        }
-        const rawRes = await rawHandler(config, authReq)
-        const res = CREATE_SessionServer.client(serialization).from(rawRes)
+        const res = await unauthenticatedClient(config, token).createSessionServer({body})
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Session server creation failed")
+            throw new Error(setupFailure("Session server creation failed", res.body))
         }
     }
 
@@ -168,21 +153,11 @@ export async function refreshSession(context: Context): Promise<Context> {
         const body: SessionServer = {
             secret: context.config.apiKey,
         }
-        const req = CREATE_SessionServer.request({body})
-        const rawReq = CREATE_SessionServer.client(serialization).to(req)
-        const authReq: Wirespec.RawRequest = {
-            ...rawReq,
-            headers: {
-                ...rawReq.headers,
-                "X-Bunq-Client-Authentication": token,
-            }
-        }
-        const rawRes = await rawHandler(context.config, authReq)
-        const res = CREATE_SessionServer.client(serialization).from(rawRes)
+        const res = await unauthenticatedClient(context.config, token).createSessionServer({body})
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Session server creation failed")
+            throw new Error(setupFailure("Session server creation failed", res.body))
         }
     }
 
