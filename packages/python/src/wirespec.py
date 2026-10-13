@@ -7,7 +7,7 @@ from typing import Awaitable, Callable, Dict, List
 from api.Client import Client
 from api.wirespec import Wirespec
 from context import Context, refresh_session
-from transport import Serialization, send
+from transport import Serialization, require_typed, send
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,8 @@ def transportation(
     """
     Sends requests with the context's authentication headers.
     A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
-    request with the new token. Other responses, and the original 403 when the refresh fails, are returned as is.
+    request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
+    are raised as BunqApiError.
     The refreshed context is kept inside this transportation, so later requests use the new token.
     """
     current = context
@@ -60,7 +61,7 @@ def transportation(
             used = current
             response = await send_with(used, request)
             if not _is_session_rejected(response):
-                return response
+                return require_typed(response)
 
             async with lock:
                 # another request may have refreshed the session while this one waited
@@ -69,9 +70,9 @@ def transportation(
                         current = await refresh(used)
                     except Exception as e:
                         logger.warning("bunq session refresh failed: %s", e)
-                        return response
+                        return require_typed(response)
                 fresh = current
-            return await send_with(fresh, request)
+            return require_typed(await send_with(fresh, request))
 
     return Transportation()
 

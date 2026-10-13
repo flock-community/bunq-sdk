@@ -71,15 +71,29 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
     for key, value in res.headers.multi_items():
         res_headers.setdefault(key.lower(), []).append(value)
 
-    return fail_on_non_json_error(Wirespec.RawResponse(res.status_code, res_headers, res.content))
+    return Wirespec.RawResponse(res.status_code, res_headers, res.content)
 
 
-def fail_on_non_json_error(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
-    """Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser."""
-    if response.statusCode >= 400 and response.body:
-        try:
-            json.loads(response.body)
-        except ValueError:
-            raise Exception(f"bunq answered {response.statusCode} with a non-JSON body: "
-                            f"{response.body[:200].decode('utf-8', 'replace')}")
-    return response
+class BunqApiError(Exception):
+    """bunq (or a proxy in front of it) answered with a status other than 200 or 400, or with a 400 that is not JSON."""
+
+    def __init__(self, status: int, body: str):
+        super().__init__(f"bunq answered {status}: {body[:500]}")
+        self.status = status
+        self.body = body
+
+
+def _is_json(body: bytes) -> bool:
+    try:
+        json.loads(body)
+        return True
+    except ValueError:
+        return False
+
+
+def require_typed(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
+    """Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller."""
+    body = response.body or b""
+    if response.statusCode == 200 or (response.statusCode == 400 and _is_json(body)):
+        return response
+    raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'))
