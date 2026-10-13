@@ -21,8 +21,11 @@ export const serialization: Wirespec.Serialization = {
     },
     deserializeBody<T>(raw: Uint8Array, type: string): T {
         const body: {Response?: Record<string, unknown>[]} = JSON.parse(utf8Decoder.decode(raw));
-        // error responses have no Response envelope and are typed as such by the generated client
         if (!body.Response) {
+            if (!("Error" in body)) {
+                throw new Error("Invalid bunq response: neither Response nor Error");
+            }
+            // error responses have no Response envelope and are typed as such by the generated client
             return body as T;
         }
         if (type.endsWith(arrayType)) {
@@ -61,5 +64,18 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
 
     const responseHeaders: Record<string, string[]> = {};
     res.headers.forEach((value, key) => responseHeaders[key] = [value]);
-    return {statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined};
+    return failOnNonJsonError({statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined});
+}
+
+/** Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser. */
+export function failOnNonJsonError(response: Wirespec.RawResponse): Wirespec.RawResponse {
+    if (response.statusCode >= 400 && response.body) {
+        const text = utf8Decoder.decode(response.body);
+        try {
+            JSON.parse(text);
+        } catch {
+            throw new Error(`bunq answered ${response.statusCode} with a non-JSON body: ${text.slice(0, 200)}`);
+        }
+    }
+    return response;
 }

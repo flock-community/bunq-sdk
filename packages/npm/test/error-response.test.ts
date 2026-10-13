@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest';
 import {ReadUser} from "../src/gen/endpoint/ReadUser";
-import {serialization} from "../src/wirespec";
+import {failOnNonJsonError, serialization} from "../src/wirespec";
 
 describe('error responses', () => {
     const readUser = (statusCode: number, body: string) =>
@@ -18,5 +18,15 @@ describe('error responses', () => {
 
         expect(response.status).toBe(403);
         expect(response.body).toEqual({Error: [{error_description: 'Insufficient authentication.'}]});
+    });
+
+    test('a body without Response or Error is rejected', () => {
+        expect(() => readUser(200, '{"unexpected":true}')).toThrow('neither Response nor Error');
+    });
+
+    test('a non-JSON error body names the status', () => {
+        const html = {statusCode: 500, headers: {}, body: new TextEncoder().encode('<html>Internal Server Error</html>')};
+
+        expect(() => failOnNonJsonError(html)).toThrow(/500.*<html>/);
     });
 });

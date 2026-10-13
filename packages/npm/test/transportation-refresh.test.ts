@@ -80,12 +80,21 @@ describe('transportation session refresh', () => {
         expect(refreshes).toBe(0);
     });
 
-    test.each(['<html>forbidden</html>', ''])('a 403 with body "%s" does not refresh', async rejection => {
-        const context = await contextRejectingWith(rejection);
+    test('a 403 with an empty body does not refresh', async () => {
+        const context = await contextRejectingWith('');
         let refreshes = 0;
         const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
 
         expect((await transport.transport(request)).statusCode).toBe(403);
+        expect(refreshes).toBe(0);
+    });
+
+    test('a 403 with an HTML body fails naming the status and does not refresh', async () => {
+        const context = await contextRejectingWith('<html>forbidden</html>');
+        let refreshes = 0;
+        const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
+
+        await expect(transport.transport(request)).rejects.toThrow(/403.*<html>forbidden<\/html>/);
         expect(refreshes).toBe(0);
     });
 
