@@ -75,7 +75,7 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
 
 
 class BunqApiError(Exception):
-    """bunq (or a proxy in front of it) answered with a status other than 200 or 400, or with a 400 that is not JSON."""
+    """bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`."""
 
     def __init__(self, status: int, body: str):
         super().__init__(f"bunq answered {status}: {body[:500]}")
@@ -83,17 +83,18 @@ class BunqApiError(Exception):
         self.body = body
 
 
-def _is_json(body: bytes) -> bool:
+def _is_object_with(body: bytes, key: str) -> bool:
     try:
-        json.loads(body)
-        return True
+        parsed = json.loads(body)
     except ValueError:
         return False
+    return isinstance(parsed, dict) and key in parsed
 
 
 def require_typed(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
-    """Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller."""
+    """Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller."""
     body = response.body or b""
-    if response.statusCode == 200 or (response.statusCode == 400 and _is_json(body)):
+    envelope = {200: "Response", 400: "Error"}.get(response.statusCode)
+    if envelope and _is_object_with(body, envelope):
         return response
     raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'))

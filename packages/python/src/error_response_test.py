@@ -52,7 +52,7 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual('Missing required field "currency".', response.body.Error[0].error_description)
 
     def test_body_without_response_or_error_is_rejected(self):
-        with self.assertRaises(Exception):
+        with self.assertRaisesRegex(Exception, "neither Response nor Error"):
             self.read_user(200, '{"unexpected":true}')
 
     async def test_status_other_than_200_and_400_raises_with_status_and_body(self):
@@ -76,6 +76,29 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
             await self.read_user_answering(400, '<html>Bad Request</html>')
 
         self.assertEqual(400, raised.exception.status)
+
+    async def test_200_without_response_raises_with_status_and_body(self):
+        body = '{"unexpected":true}'
+        with self.assertRaises(BunqApiError) as raised:
+            await self.read_user_answering(200, body)
+
+        self.assertEqual(200, raised.exception.status)
+        self.assertEqual(body, raised.exception.body)
+
+    async def test_400_without_error_raises_with_status_and_body(self):
+        body = '{"message":"Bad Request"}'
+        with self.assertRaises(BunqApiError) as raised:
+            await self.read_user_answering(400, body)
+
+        self.assertEqual(400, raised.exception.status)
+        self.assertEqual(body, raised.exception.body)
+
+    async def test_non_object_json_on_200_raises(self):
+        with self.assertRaises(BunqApiError) as raised:
+            await self.read_user_answering(200, '[]')
+
+        self.assertEqual(200, raised.exception.status)
+        self.assertEqual('[]', raised.exception.body)
 
     def test_message_truncates_the_body_but_the_body_field_keeps_it_whole(self):
         error = BunqApiError(502, 'x' * 2000)

@@ -29,7 +29,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
                 token = handler.headers.get('X-Bunq-Client-Authentication')
                 self.tokens_seen.append(token)
                 ok = token == 'fresh'
-                body = b'ok' if ok else rejected_body.encode()
+                body = b'{"Response":[]}' if ok else rejected_body.encode()
                 handler.send_response(200 if ok else 403)
                 handler.send_header('Content-Length', str(len(body)))
                 handler.end_headers()
