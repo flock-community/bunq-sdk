@@ -73,11 +73,28 @@ The client refreshes the session by itself. When bunq answers 403 "Insufficient 
 
 Keep using the same client instance so that calls share the refreshed session.
 
-If the refresh fails, a warning is logged and the transport returns the original 403. The generated client then throws, because `openapi.json` lists only the 200 and 400 responses for every operation and the generated response parser has no case for 403: `error("Cannot match response with status: 403")` in Kotlin, `IllegalStateException` in Java, `Error` in TypeScript and `Exception` in Python. Any other 403 (for example a missing permission) throws the same way.
+If the refresh fails, a warning is logged and the transport returns the original 403. The client does not throw: the call returns the typed 403 response (`Response403`, a `ResponseGenericError`; in TypeScript a response with `status === 403`) with the `GenericError` body. A 403 for another reason (for example a missing permission) is returned the same way. See [Error Handling](#error-handling).
 
 `Context.refreshSession()` (`refreshSession(context)` in TypeScript and Python) still creates a session by hand and returns a new `Context`. An existing client does not use it; create a new client from the returned context.
 
-**Quick Examples:**
+## Error Handling
+
+Every operation returns a typed response for these error statuses: 400, 401, 403, 404, 405, 429, 466, 490, 491 and 500. They all carry the same `GenericError` body, a list `Error[]` where each entry has an `error_description`. `openapi.json` lists only 200 and 400; the build adds the other statuses (see `OpenApiPreProcessor`).
+
+- Kotlin: the error responses are `X.Response400`, `X.Response401`, ... and all implement `X.ResponseGenericError`. A `when` with `is X.Response200` and `is X.ResponseGenericError` is exhaustive.
+- Java: the same classes; test with `instanceof X.ResponseGenericError`.
+- TypeScript: the response has a `status`; when it is not 200, `body` is a `GenericError`.
+- Python: the same classes; match `Response200` and the generic error class `ResponseGenericError`.
+
+Other cases:
+
+- A status that is not in the list (for example a gateway 502, 503 or 504) throws `Cannot match response with status: N` (Kotlin `IllegalStateException`, Java `IllegalStateException`, TypeScript `Error`, Python `Exception`).
+- A status of 400 or higher with a non-empty body that is not JSON (for example an HTML page from a proxy) throws `bunq answered N with a non-JSON body: ` followed by the first 200 characters of the body.
+- A JSON body with neither `Response` nor `Error` throws `Invalid bunq response: neither Response nor Error`.
+- Transport failures (no connection, timeout) throw the exception of the HTTP client.
+- `initContext` and `refreshSession` throw `Cannot <step> (status N): <error_description>`, where the step is "create installation", "create device server" or "create session server" (TypeScript: "Installation failed", "Device server creation failed", "Session server creation failed"; Python: the same wording as TypeScript).
+
+## Quick Examples
 
 Kotlin:
 ```kotlin
@@ -85,7 +102,7 @@ val context = initContext(config)
 val client = bunqClient(context)
 when (val res = client.readUser(context.userId)) {
     is ReadUser.Response200 -> println(res.body.UserPerson?.legal_name)
-    else -> error("Cannot read user")
+    is ReadUser.ResponseGenericError -> error("${res.status}: ${res.body.Error?.firstOrNull()?.error_description}")
 }
 ```
 
@@ -94,6 +111,11 @@ Java:
 Context context = Context.initContext(config);
 Client client = Wirespec.bunqClient(context);
 ReadUser.Response<?> res = client.readUser(context.userId()).get();
+if (res instanceof ReadUser.Response200 ok) {
+    System.out.println(ok.body().UserPerson().flatMap(UserPerson::legal_name).orElse(null));
+} else if (res instanceof ReadUser.ResponseGenericError e) {
+    throw new IllegalStateException(e.status() + ": " + e.body().Error().orElseThrow().get(0).error_description().orElse(null));
+}
 ```
 
 TypeScript:
@@ -101,6 +123,11 @@ TypeScript:
 const context = await initContext(config);
 const client = bunqClient(context);
 const res = await client.readUser({itemId: context.userId});
+if (res.status === 200) {
+  console.log(res.body.UserPerson?.legal_name);
+} else {
+  throw new Error(`${res.status}: ${res.body.Error?.[0]?.error_description}`);
+}
 ```
 
 Python:
@@ -109,6 +136,11 @@ async def main():
     ctx = await init_context(config)
     client = bunq_client(ctx)
     res = await client.read_user(itemId=ctx.user_id)
+    match res:
+        case ReadUserResponse200(body=body):
+            print(body.UserPerson.legal_name if body.UserPerson else None)
+        case ReadUserResponseGenericError(status=status, body=body):
+            raise RuntimeError(f"{status}: {body.Error[0].error_description if body.Error else None}")
 
 asyncio.run(main())
 ```
@@ -123,6 +155,11 @@ All languages:
 - Operation and endpoint names are renamed from the operation ids to camelCase: `rEAD_User(...)` (Kotlin) or `READ_User` (TypeScript) becomes `readUser(...)`, and `READ_User.Response200` becomes `ReadUser.Response200` (Python methods: `read_user`).
 - The path parameter `monetaryaccountID` (Kotlin, Java, Python) or `"monetary-accountID"` (TypeScript) is now `monetaryAccountID`.
 - Code that refreshed the session itself (checking expiry, or retrying after an error) is no longer needed. The client does it on 403 "Insufficient authentication.".
+- Every response type has 10 error subtypes (400, 401, 403, 404, 405, 429, 466, 490, 491, 500) instead of only 400. Code that handled only 200 and 400 must handle the rest: Kotlin `is X.ResponseGenericError` (a `when` with only `Response200` and `Response400` no longer compiles), Java `instanceof X.ResponseGenericError`, TypeScript `status !== 200`, Python `case _` or the `ResponseGenericError` class.
+- The per-operation error body types (`XxxNNNResponseBody`) are replaced by the shared `GenericError`.
+- A failed session refresh returns a typed `Response403` (TypeScript: status 403) instead of throwing.
+- Statuses outside the list above (502, 503, 504) still throw `Cannot match response with status: N`.
+- The jars are about 80% larger (Java 16 to 30 MB, Kotlin 23 to 41 MB).
 
 Kotlin:
 

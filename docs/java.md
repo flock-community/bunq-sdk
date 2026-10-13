@@ -62,6 +62,8 @@ Client client = Wirespec.bunqClient(context);
 ReadUser.Response<?> user = client.readUser(context.userId()).get();
 if (user instanceof ReadUser.Response200 response) {
     String legalName = response.body().UserPerson().flatMap(UserPerson::legal_name).orElse(null);
+} else if (user instanceof ReadUser.ResponseGenericError error) {
+    System.err.println(error.status() + ": " + error.body().Error());
 }
 
 ListAllMonetaryAccountBankForUser.Response<?> accounts = client
@@ -69,12 +71,14 @@ ListAllMonetaryAccountBankForUser.Response<?> accounts = client
     .get();
 if (accounts instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
     response.body().forEach(account -> System.out.println(account.display_name().orElse("")));
+} else if (accounts instanceof ListAllMonetaryAccountBankForUser.ResponseGenericError error) {
+    System.err.println(error.status() + ": " + error.body().Error());
 }
 ```
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns `Response403`), and the manual refresh.
 
 The shared refresh is guarded by a `ReentrantLock`, and the refresh-failure warning is logged through `System.Logger`. Keep using the same `Wirespec.bunqClient(context)` instance.
 
@@ -115,7 +119,23 @@ public record Context(
 
 ## Error Handling
 
-`Context.initContext` and `refreshSession()` throw an exception if session creation fails:
+See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
+
+Typed error responses are returned, not thrown. `ResponseGenericError` is the common type of all error statuses (`Response400`, `Response403`, ...) and its body is a `GenericError`:
+
+```java
+ReadUser.Response<?> user = client.readUser(999999999L).get();
+if (user instanceof ReadUser.Response404) {
+    System.out.println("No such user");
+} else if (user instanceof ReadUser.ResponseGenericError error) {
+    String description = error.body().Error().orElseThrow().get(0).error_description().orElse(null);
+    throw new IllegalStateException("bunq answered " + error.status() + ": " + description);
+}
+```
+
+A status outside the list (for example 502) throws `IllegalStateException("Cannot match response with status: 502")`, and a non-JSON error body throws `bunq answered 502 with a non-JSON body: ...`. Both arrive wrapped in the `ExecutionException` of `get()`.
+
+`Context.initContext` and `refreshSession()` throw an exception if session creation fails. The message is `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server"); `initContext` wraps it in a `RuntimeException` (cause chain: `ExecutionException`, then the `RuntimeException` with that message):
 
 ```java
 try {

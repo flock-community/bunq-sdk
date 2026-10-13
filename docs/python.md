@@ -47,8 +47,11 @@ config = create_config(
 ```python
 import asyncio
 
-from api.endpoint.ListAllMonetaryAccountBankForUser import Response200 as ListAccountsResponse200
-from api.endpoint.ReadUser import Response200 as ReadUserResponse200
+from api.endpoint.ListAllMonetaryAccountBankForUser import (
+    Response200 as ListAccountsResponse200,
+    ResponseGenericError as ListAccountsError,
+)
+from api.endpoint.ReadUser import Response200 as ReadUserResponse200, ResponseGenericError as ReadUserError
 from wirespec import bunq_client
 
 
@@ -60,8 +63,8 @@ async def main():
     match user:
         case ReadUserResponse200(body=body):
             print(body.UserPerson.legal_name if body.UserPerson else None)
-        case _:
-            raise RuntimeError(user)
+        case ReadUserError(status=status, body=error):
+            raise RuntimeError(f"bunq answered {status}: {error.Error}")
 
     accounts = await client.list_all_monetary_account_bank_for_user(
         userID=ctx.user_id, count=None, newer_id=None, older_id=None
@@ -70,8 +73,8 @@ async def main():
         case ListAccountsResponse200(body=body):
             for account in body:
                 print(account.display_name)
-        case _:
-            raise RuntimeError(accounts)
+        case ListAccountsError(status=status, body=error):
+            raise RuntimeError(f"bunq answered {status}: {error.Error}")
 
 
 asyncio.run(main())
@@ -79,7 +82,7 @@ asyncio.run(main())
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns `Response403`), and the manual refresh.
 
 The shared refresh is guarded by an `asyncio.Lock`, and the refresh-failure warning is logged through the `logging` module (logger name `wirespec`). Keep using the same `bunq_client(ctx)` instance.
 
@@ -123,7 +126,13 @@ class Context:
 
 ## Error Handling
 
-`init_context` and `refresh_session` raise an exception if session creation fails:
+See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
+
+Typed error responses are returned, not raised. `ResponseGenericError` is the common class of all error statuses (`Response400`, `Response403`, ...) and its body is a `GenericError`. The `case ReadUserError(...)` branches above match all of them; `case _:` also matches, but loses the type of `body`.
+
+A status outside the list (for example 502) raises `Exception("Cannot match response with status: 502")`, and a non-JSON error body raises `bunq answered 502 with a non-JSON body: ...`.
+
+`init_context` and `refresh_session` raise an exception if session creation fails, with a message like `Session server creation failed (status 400): <error_description>`:
 
 ```python
 async def create_context_or_none():

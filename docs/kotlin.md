@@ -59,7 +59,7 @@ suspend fun readLegalName(context: Context): String? {
     val client = bunqClient(context)
     return when (val res = client.readUser(context.userId)) {
         is ReadUser.Response200 -> res.body.UserPerson?.legal_name
-        is ReadUser.Response400 -> error("Cannot read user")
+        is ReadUser.ResponseGenericError -> error("${res.status}: ${res.body.Error?.firstOrNull()?.error_description}")
     }
 }
 
@@ -67,14 +67,14 @@ suspend fun listAccountNames(context: Context): List<String?> {
     val client = bunqClient(context)
     return when (val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
         is ListAllMonetaryAccountBankForUser.Response200 -> res.body.map { it.display_name }
-        else -> error("Cannot list monetary accounts")
+        is ListAllMonetaryAccountBankForUser.ResponseGenericError -> error("Cannot list monetary accounts: ${res.status}")
     }
 }
 ```
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns `Response403`), and the manual refresh.
 
 The shared refresh is guarded by a `Mutex`, and the refresh-failure warning is logged through kotlin-logging (see Logging). Keep using the same `bunqClient(context)` instance.
 
@@ -104,9 +104,26 @@ The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) o
 
 ## Error Handling
 
-`initContext` and `Context.refreshSession()` throw an exception if:
+See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
 
-- the bunq API returns an error during session creation
+Typed error responses are returned, not thrown. `ResponseGenericError` is the common type of all error statuses (`Response400`, `Response403`, ...) and its body is a `GenericError`:
+
+```kotlin
+suspend fun readUserOrNull(context: Context, userId: Long): UserRead? {
+    val client = bunqClient(context)
+    return when (val res = client.readUser(userId)) {
+        is ReadUser.Response200 -> res.body
+        is ReadUser.Response404 -> null
+        is ReadUser.ResponseGenericError -> error("bunq answered ${res.status}: ${res.body.Error?.map { it.error_description }}")
+    }
+}
+```
+
+A status outside the list (for example 502) throws `IllegalStateException("Cannot match response with status: 502")`, and a non-JSON error body throws `bunq answered 502 with a non-JSON body: ...`.
+
+`initContext` and `Context.refreshSession()` throw an `IllegalStateException` if:
+
+- the bunq API returns an error during session creation: `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server")
 - required session information is missing from the API response
 
 ```kotlin

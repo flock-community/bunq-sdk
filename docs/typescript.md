@@ -54,11 +54,15 @@ async function main() {
   const user = await client.readUser({itemId: context.userId});
   if (user.status === 200) {
     console.log(user.body.UserPerson?.legal_name);
+  } else {
+    console.error(user.status, user.body.Error?.map(error => error.error_description));
   }
 
   const accounts = await client.listAllMonetaryAccountBankForUser({userID: context.userId});
   if (accounts.status === 200) {
     accounts.body.forEach(account => console.log(account.display_name));
+  } else {
+    console.error(accounts.status, accounts.body.Error?.map(error => error.error_description));
   }
 }
 
@@ -69,7 +73,7 @@ The optional query parameters (`count`, `newer_id`, `older_id`) can be left out.
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails, and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns a response with `status === 403`), and the manual refresh.
 
 Concurrent calls share one in-flight refresh promise, and the refresh-failure warning is logged with `console.warn`. Keep using the same `bunqClient(context)` instance.
 
@@ -110,7 +114,23 @@ interface Context {
 
 ## Error Handling
 
-`initContext` and `refreshSession` reject if session creation fails:
+See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
+
+Typed error responses are returned, not thrown. When `status` is not 200, `body` is a `GenericError`:
+
+```typescript
+async function readLegalName(client: ReturnType<typeof bunqClient>, userId: number) {
+  const res = await client.readUser({itemId: userId});
+  if (res.status === 200) {
+    return res.body.UserPerson?.legal_name;
+  }
+  throw new Error(`bunq answered ${res.status}: ${res.body.Error?.[0]?.error_description}`);
+}
+```
+
+A status outside the list (for example 502) rejects with `Cannot match response with status: 502`, and a non-JSON error body rejects with `bunq answered 502 with a non-JSON body: ...`.
+
+`initContext` and `refreshSession` reject if session creation fails, with a message like `Session server creation failed (status 400): <error_description>`:
 
 ```typescript
 async function createContextOrUndefined() {
