@@ -2,7 +2,7 @@ import unittest
 
 from api.endpoint.ReadUser import Response400, Response403, ReadUser
 from api.wirespec import Wirespec
-from transport import Serialization
+from transport import Serialization, fail_on_non_json_error
 
 
 class ErrorResponseTest(unittest.TestCase):
@@ -21,6 +21,19 @@ class ErrorResponseTest(unittest.TestCase):
 
         self.assertIsInstance(response, Response403)
         self.assertEqual('Insufficient authentication.', response.body.Error[0].error_description)
+
+    def test_body_without_response_or_error_is_rejected(self):
+        with self.assertRaises(Exception):
+            self.read_user(200, '{"unexpected":true}')
+
+    def test_non_json_error_body_names_the_status(self):
+        html = Wirespec.RawResponse(500, {}, b'<html>Internal Server Error</html>')
+
+        with self.assertRaises(Exception) as raised:
+            fail_on_non_json_error(html)
+
+        self.assertIn('500', str(raised.exception))
+        self.assertIn('<html>', str(raised.exception))
 
 
 if __name__ == '__main__':

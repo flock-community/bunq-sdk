@@ -27,6 +27,8 @@ class Serialization(Wirespec.Serialization):
     def deserializeBody(self, raw: bytes, type: Type[T]) -> Any:
         data = json.loads(raw)
         if "Response" not in data:
+            if "Error" not in data:
+                raise Exception("Invalid bunq response: neither Response nor Error")
             # error responses have no Response envelope: the whole document is the body
             return from_dict(data_class=type, data=data)
 
@@ -69,4 +71,15 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
     for key, value in res.headers.multi_items():
         res_headers.setdefault(key.lower(), []).append(value)
 
-    return Wirespec.RawResponse(res.status_code, res_headers, res.content)
+    return fail_on_non_json_error(Wirespec.RawResponse(res.status_code, res_headers, res.content))
+
+
+def fail_on_non_json_error(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
+    """Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser."""
+    if response.statusCode >= 400 and response.body:
+        try:
+            json.loads(response.body)
+        except ValueError:
+            raise Exception(f"bunq answered {response.statusCode} with a non-JSON body: "
+                            f"{response.body[:200].decode('utf-8', 'replace')}")
+    return response

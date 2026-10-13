@@ -6,6 +6,7 @@ from api.Client import Client
 from api.endpoint.CreateInstallation import Response200 as InstallationResponse200
 from api.endpoint.CreateDeviceServer import Response200 as DeviceServerResponse200
 from api.endpoint.CreateSessionServer import Response200 as SessionServerResponse200
+from api.model.GenericError import GenericError
 from api.model.InstallationCreate import InstallationCreate
 from api.model.DeviceServerCreate import DeviceServerCreate
 from api.model.SessionServerCreate import SessionServerCreate
@@ -134,6 +135,11 @@ def _setup_client(config: Config, token: Optional[str] = None) -> Client:
     return Client(Serialization(), _SetupTransportation(config, token))
 
 
+def _setup_failure(what: str, status: int, error: GenericError) -> str:
+    description = error.Error[0].error_description if error.Error else None
+    return f"{what} (status {status}): {description}"
+
+
 async def _create_installation(config: Config) -> InstallationCreate:
     """Create installation with the bunq API"""
     res = await _setup_client(config).create_installation(
@@ -143,7 +149,7 @@ async def _create_installation(config: Config) -> InstallationCreate:
         case InstallationResponse200(body=installation):
             return installation
         case _:
-            raise Exception("Installation failed")
+            raise Exception(_setup_failure("Installation failed", res.status, res.body))
 
 
 async def _create_device_server(config: Config, token: str) -> DeviceServerCreate:
@@ -155,7 +161,7 @@ async def _create_device_server(config: Config, token: str) -> DeviceServerCreat
         case DeviceServerResponse200(body=device_server):
             return device_server
         case _:
-            raise Exception("Device server creation failed")
+            raise Exception(_setup_failure("Device server creation failed", res.status, res.body))
 
 
 async def _create_session_server(config: Config, token: str) -> SessionServerCreate:
@@ -166,7 +172,7 @@ async def _create_session_server(config: Config, token: str) -> SessionServerCre
         case SessionServerResponse200(body=server_session):
             return server_session
         case _:
-            raise Exception("Session server creation failed")
+            raise Exception(_setup_failure("Session server creation failed", res.status, res.body))
 
 
 def _get_user_id(session_server: SessionServerCreate) -> int:

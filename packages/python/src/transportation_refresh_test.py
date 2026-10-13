@@ -97,14 +97,21 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(403, response.statusCode)
         self.assertEqual(0, self.refreshes)
 
-    async def test_non_json_or_empty_403_does_not_refresh(self):
-        for body in ['<html>forbidden</html>', '']:
-            with self.subTest(body=body):
-                self.start_server(body)
-                response = await transportation(self.context, self.counting_refresh()).transport(self.request)
+    async def test_empty_403_does_not_refresh(self):
+        self.start_server('')
+        response = await transportation(self.context, self.counting_refresh()).transport(self.request)
 
-                self.assertEqual(403, response.statusCode)
-                self.assertEqual(0, self.refreshes)
+        self.assertEqual(403, response.statusCode)
+        self.assertEqual(0, self.refreshes)
+
+    async def test_html_403_fails_naming_the_status_and_does_not_refresh(self):
+        self.start_server('<html>forbidden</html>')
+        with self.assertRaises(Exception) as raised:
+            await transportation(self.context, self.counting_refresh()).transport(self.request)
+
+        self.assertIn('403', str(raised.exception))
+        self.assertIn('<html>forbidden</html>', str(raised.exception))
+        self.assertEqual(0, self.refreshes)
 
     async def test_concurrent_rejections_share_one_refresh(self):
         self.start_server(SESSION_REJECTED)
