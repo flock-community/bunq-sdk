@@ -7,21 +7,42 @@
 
 ## Install
 
-There is no versioned release yet. Publish the package to your local Maven repository and depend on it:
+Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships in the first release after #8. Replace `<release>` with that tag.
 
-```bash
-./gradlew :packages:java:publishToMavenLocal
-```
+Gradle (Kotlin DSL):
 
 ```kotlin
 repositories {
-    mavenLocal()
+    maven("https://jitpack.io")
     mavenCentral()
 }
 
 dependencies {
-    implementation("com.github.flock-community.bunq-sdk:java:0.0.1-SNAPSHOT")
+    implementation("com.github.flock-community.bunq-sdk:java:<release>")
 }
+```
+
+Maven:
+
+```xml
+<repositories>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+
+<dependency>
+  <groupId>com.github.flock-community.bunq-sdk</groupId>
+  <artifactId>java</artifactId>
+  <version>&lt;release&gt;</version>
+</dependency>
+```
+
+To build from source instead, publish the package to your local Maven repository, add `mavenLocal()` to `repositories` and depend on `com.github.flock-community.bunq-sdk:java:0.0.1-SNAPSHOT`:
+
+```bash
+./gradlew :packages:java:publishToMavenLocal
 ```
 
 ## Creating a Context
@@ -63,8 +84,8 @@ Client client = Wirespec.bunqClient(context);
 ReadUser.Response<?> user = client.readUser(context.userId()).get();
 if (user instanceof ReadUser.Response200 response) {
     String legalName = response.body().UserPerson().flatMap(UserPerson::legal_name).orElse(null);
-} else if (user instanceof ReadUser.ResponseGenericError error) {
-    System.err.println(error.status() + ": " + error.body().Error());
+} else if (user instanceof ReadUser.Response400 error) {
+    System.err.println(error.body().Error());
 }
 
 ListAllMonetaryAccountBankForUser.Response<?> accounts = client
@@ -72,14 +93,14 @@ ListAllMonetaryAccountBankForUser.Response<?> accounts = client
     .get();
 if (accounts instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
     response.body().forEach(account -> System.out.println(account.display_name().orElse("")));
-} else if (accounts instanceof ListAllMonetaryAccountBankForUser.ResponseGenericError error) {
-    System.err.println(error.status() + ": " + error.body().Error());
+} else if (accounts instanceof ListAllMonetaryAccountBankForUser.Response400 error) {
+    System.err.println(error.body().Error());
 }
 ```
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns `Response403`), and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call throws `BunqApiException` with status 403), and the manual refresh.
 
 The shared refresh is guarded by a `ReentrantLock`, and the refresh-failure warning is logged through `System.Logger`. Keep using the same `Wirespec.bunqClient(context)` instance.
 
@@ -120,23 +141,30 @@ public record Context(
 
 ## Error Handling
 
-See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
+See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-Typed error responses are returned, not thrown. `ResponseGenericError` is the common type of all error statuses (`Response400`, `Response403`, ...) and its body is a `GenericError`:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException` (unchecked, in `com.bunq.sdk`) with `status()` and `body()`, the full response body as a string; the message is `bunq answered <status>: <first 500 characters>`. The exception arrives wrapped, in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`, so check `getCause()`:
 
 ```java
-ReadUser.Response<?> user = client.readUser(999999999L).get();
-if (user instanceof ReadUser.Response404) {
-    System.out.println("No such user");
-} else if (user instanceof ReadUser.ResponseGenericError error) {
-    String description = error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description).orElse(null);
-    throw new IllegalStateException("bunq answered " + error.status() + ": " + description);
+import com.bunq.sdk.BunqApiException;
+import java.util.concurrent.CompletionException;
+
+try {
+    ReadUser.Response<?> user = client.readUser(999999999L).join();
+    if (user instanceof ReadUser.Response400 error) {
+        String description = error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description).orElse(null);
+        throw new IllegalStateException("bunq answered 400: " + description);
+    }
+} catch (CompletionException e) {
+    if (e.getCause() instanceof BunqApiException api && api.status() == 404) {
+        System.out.println("No such user");
+    } else {
+        throw e;
+    }
 }
 ```
 
-A status outside the list (for example 502) throws `IllegalStateException("Cannot match response with status: 502")`, and a non-JSON error body throws `bunq answered 502 with a non-JSON body: ...`. Both arrive wrapped in the `ExecutionException` of `get()`.
-
-`Context.initContext` and `refreshSession()` throw an exception if session creation fails. The message is `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server"); `initContext` wraps the setup error in a `RuntimeException` whose message is the cause's `toString()` (cause chain: `ExecutionException`, then the `RuntimeException` with the "Cannot create ..." message). `refreshSession()` wraps it in `RuntimeException("Failed to refresh session")` with the same cause chain:
+`Context.initContext` and `refreshSession()` throw an exception if session creation fails. A typed 400 gives the message `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server"); any other status gives a `BunqApiException`. `initContext` wraps either in a `RuntimeException` whose message is the cause's `toString()` (cause chain: `ExecutionException`, then the `RuntimeException` or `BunqApiException`). `refreshSession()` wraps it in `RuntimeException("Failed to refresh session")` with the same cause chain:
 
 ```java
 try {

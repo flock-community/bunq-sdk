@@ -8,22 +8,24 @@
 
 ## Install
 
-There is no versioned release yet. Publish the package to your local Maven repository and depend on it:
-
-```bash
-./gradlew :packages:kotlin:publishToMavenLocal
-```
+Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships in the first release after #8. Replace `<release>` with that tag.
 
 ```kotlin
 repositories {
-    mavenLocal()
+    maven("https://jitpack.io")
     mavenCentral()
 }
 
 dependencies {
-    implementation("com.github.flock-community.bunq-sdk:kotlin:0.0.1-SNAPSHOT")
+    implementation("com.github.flock-community.bunq-sdk:kotlin:<release>")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 }
+```
+
+To build from source instead, publish the package to your local Maven repository, add `mavenLocal()` to `repositories` and depend on `com.github.flock-community.bunq-sdk:kotlin:0.0.1-SNAPSHOT`:
+
+```bash
+./gradlew :packages:kotlin:publishToMavenLocal
 ```
 
 ## Creating a Context
@@ -59,7 +61,7 @@ suspend fun readLegalName(context: Context): String? {
     val client = bunqClient(context)
     return when (val res = client.readUser(context.userId)) {
         is ReadUser.Response200 -> res.body.UserPerson?.legal_name
-        is ReadUser.ResponseGenericError -> error("${res.status}: ${res.body.Error?.firstOrNull()?.error_description}")
+        is ReadUser.Response400 -> error("bunq answered 400: ${res.body.Error?.firstOrNull()?.error_description}")
     }
 }
 
@@ -67,14 +69,14 @@ suspend fun listAccountNames(context: Context): List<String?> {
     val client = bunqClient(context)
     return when (val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
         is ListAllMonetaryAccountBankForUser.Response200 -> res.body.map { it.display_name }
-        is ListAllMonetaryAccountBankForUser.ResponseGenericError -> error("Cannot list monetary accounts: ${res.status}")
+        is ListAllMonetaryAccountBankForUser.Response400 -> error("Cannot list monetary accounts: ${res.body.Error?.firstOrNull()?.error_description}")
     }
 }
 ```
 
 ## Session Refresh
 
-See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call returns `Response403`), and the manual refresh.
+See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call throws `BunqApiException` with status 403), and the manual refresh.
 
 The shared refresh is guarded by a `Mutex`, and the refresh-failure warning is logged through kotlin-logging (see Logging). Keep using the same `bunqClient(context)` instance.
 
@@ -104,27 +106,31 @@ The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) o
 
 ## Error Handling
 
-See [Error Handling in the README](../README.md#error-handling) for the error statuses and the cases that throw.
+See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-Typed error responses are returned, not thrown. `ResponseGenericError` is the common type of all error statuses (`Response400`, `Response403`, ...) and its body is a `GenericError`:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException(status, body)` (unchecked, in `com.bunq.sdk`); `body` is the full response body as a string and the message is `bunq answered <status>: <first 500 characters>`. A `when` over `Response200` and `Response400` is exhaustive:
 
 ```kotlin
+import com.bunq.sdk.BunqApiException
+
 suspend fun readUserOrNull(context: Context, userId: Long): UserRead? {
     val client = bunqClient(context)
-    return when (val res = client.readUser(userId)) {
-        is ReadUser.Response200 -> res.body
-        is ReadUser.Response404 -> null
-        is ReadUser.ResponseGenericError -> error("bunq answered ${res.status}: ${res.body.Error?.map { it.error_description }}")
+    return try {
+        when (val res = client.readUser(userId)) {
+            is ReadUser.Response200 -> res.body
+            is ReadUser.Response400 -> error("bunq answered 400: ${res.body.Error?.map { it.error_description }}")
+        }
+    } catch (e: BunqApiException) {
+        if (e.status == 404) null else throw e
     }
 }
 ```
 
-A status outside the list (for example 502) throws `IllegalStateException("Cannot match response with status: 502")`, and a non-JSON error body throws `bunq answered 502 with a non-JSON body: ...`.
+`initContext` and `Context.refreshSession()` throw if:
 
-`initContext` and `Context.refreshSession()` throw an `IllegalStateException` if:
-
-- the bunq API returns an error during session creation: `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server")
-- required session information is missing from the API response
+- bunq answers a setup request with a typed 400: `IllegalStateException("Cannot create session server (status 400): <error_description>")` (the step is "create installation", "create device server" or "create session server")
+- bunq answers with any other status: `BunqApiException`
+- required session information is missing from the API response (`IllegalStateException`)
 
 ```kotlin
 try {
