@@ -65,7 +65,6 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install mypy
-          pip install types-requests
       - name: mypy
         working-directory: packages/python
         run: |
@@ -76,6 +75,10 @@ jobs:
           python -m unittest ./sdk_test.py
           python -m unittest ./signing_test.py
           python -m unittest ./signing_key_validation_test.py
+          python -m unittest ./user_agent_test.py
+          python -m unittest ./send_test.py
+          python -m unittest ./transportation_refresh_test.py
+          python -m unittest ./session_refresh_test.py
 
   build-npm:
 
