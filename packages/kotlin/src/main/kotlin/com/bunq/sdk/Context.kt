@@ -97,7 +97,7 @@ private fun createInstallation(config: Config): InstallationCreate {
 
     when (res) {
         is CreateInstallation.Response200 -> return res.body
-        is CreateInstallation.Response400 -> error("Cannot create installation")
+        else -> error("Cannot create installation (status ${res.status})")
     }
 }
 
@@ -118,7 +118,7 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
 
     when (res) {
         is CreateDeviceServer.Response200 -> return res.body
-        is CreateDeviceServer.Response400 -> error("Cannot create device server")
+        else -> error("Cannot create device server (status ${res.status})")
     }
 }
 
@@ -146,7 +146,7 @@ private fun createSessionServer(
 
     when (res) {
         is CreateSessionServer.Response200 -> return res.body
-        is CreateSessionServer.Response400 -> error("Cannot create session server")
+        else -> error("Cannot create session server (status ${res.status})")
     }
 }
 

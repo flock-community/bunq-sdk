@@ -44,17 +44,18 @@ val serialization: Wirespec.Serialization =
 
         override fun <T : Any> deserializeBody(raw: ByteArray, kType: KType): T {
             val tree = objectMapper.readTree(raw)
-            val response = tree.get("Response").asIterable()
+            // error responses have no Response envelope: the whole document is the body
+            val response = tree.get("Response") ?: return objectMapper.treeToValue(tree, objectMapper.constructType(kType.javaType))
 
             val json = when {
-                kType.classifier == List::class -> response
+                kType.classifier == List::class -> response.asIterable()
                     .filterIsInstance<ObjectNode>()
                     .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
                         acc.addAll(jsonNode.propertyNames().asSequence().map { jsonNode.get(it) }.toList())
                     }
 
                 else -> {
-                    response
+                    response.asIterable()
                         .filterIsInstance<ObjectNode>()
                         .fold(objectMapper.createObjectNode()) { acc, jsonNode ->
                             acc.apply { setAll(jsonNode.properties().associate { it.key to it.value }) }

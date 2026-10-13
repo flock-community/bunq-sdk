@@ -39,7 +39,7 @@ suspend fun readLegalName(context: Context): String? {
     val sdk = Sdk(handler(context))
     return when (val res = sdk.rEAD_User(context.userId)) {
         is READ_User.Response200 -> res.body.UserPerson?.legal_name
-        is READ_User.Response400 -> error("Cannot read user")
+        else -> error("Cannot read user")
     }
 }
 ```
