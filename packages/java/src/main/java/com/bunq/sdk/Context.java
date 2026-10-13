@@ -7,8 +7,6 @@ import com.bunq.sdk.generated.model.BunqId;
 import com.bunq.sdk.generated.model.DeviceServer;
 import com.bunq.sdk.generated.model.DeviceServerCreate;
 import com.bunq.sdk.generated.model.DeviceServerCreateId;
-import com.bunq.sdk.generated.model.ErrorArray;
-import com.bunq.sdk.generated.model.GenericError;
 import com.bunq.sdk.generated.model.Installation;
 import com.bunq.sdk.generated.model.InstallationCreate;
 import com.bunq.sdk.generated.model.InstallationServerPublicKey;
@@ -127,9 +125,8 @@ public record Context(
         return () -> new IllegalStateException(message);
     }
 
-    private static String setupFailure(String action, int status, GenericError body) {
-        var description = body.Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description);
-        return "Cannot " + action + " (status " + status + "): " + description.orElse(null);
+    private static String setupFailure(String action, Optional<String> description) {
+        return "Cannot " + action + " (status 400): " + description.orElse(null);
     }
 
     private static CompletableFuture<InstallationCreate> createInstallation(Config config) {
@@ -138,12 +135,13 @@ public record Context(
         CreateInstallation.Request request = new CreateInstallation.Request(body);
 
         RawRequest rawRequest = CreateInstallation.toRawRequest(serialization, request);
-        return send(config, rawRequest).thenApply(rawResponse -> {
+        return send(config, rawRequest).thenApply(Wirespec::requireTyped).thenApply(rawResponse -> {
             Object response = CreateInstallation.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateInstallation.Response200) {
                 return ((CreateInstallation.Response200) response).body();
-            } else if (response instanceof CreateInstallation.ResponseGenericError error) {
-                throw new RuntimeException(setupFailure("create installation", error.status(), error.body()));
+            } else if (response instanceof CreateInstallation.Response400 error) {
+                throw new RuntimeException(setupFailure("create installation",
+                        error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(e -> e.error_description())));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }
@@ -163,12 +161,13 @@ public record Context(
                 Map.of("X-Bunq-Client-Authentication", List.of(token)),
                 rawRequest.body()
         );
-        return send(config, authRequest).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(Wirespec::requireTyped).thenApply(rawResponse -> {
             Object response = CreateDeviceServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateDeviceServer.Response200) {
                 return ((CreateDeviceServer.Response200) response).body();
-            } else if (response instanceof CreateDeviceServer.ResponseGenericError error) {
-                throw new RuntimeException(setupFailure("create device server", error.status(), error.body()));
+            } else if (response instanceof CreateDeviceServer.Response400 error) {
+                throw new RuntimeException(setupFailure("create device server",
+                        error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(e -> e.error_description())));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }
@@ -189,12 +188,13 @@ public record Context(
                 ),
                 rawRequest.body()
         );
-        return send(config, authRequest).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(Wirespec::requireTyped).thenApply(rawResponse -> {
             Object response = CreateSessionServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateSessionServer.Response200) {
                 return ((CreateSessionServer.Response200) response).body();
-            } else if (response instanceof CreateSessionServer.ResponseGenericError error) {
-                throw new RuntimeException(setupFailure("create session server", error.status(), error.body()));
+            } else if (response instanceof CreateSessionServer.Response400 error) {
+                throw new RuntimeException(setupFailure("create session server",
+                        error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(e -> e.error_description())));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }

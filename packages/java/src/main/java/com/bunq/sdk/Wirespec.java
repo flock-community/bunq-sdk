@@ -104,26 +104,28 @@ public class Wirespec {
                 .headers(headers);
 
         return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
-                .thenApply(response -> failOnNonJsonError(new RawResponse(
+                .thenApply(response -> new RawResponse(
                         response.statusCode(),
                         response.headers().map(),
                         Optional.ofNullable(response.body())
-                )));
+                ));
     }
 
-    /** Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser. */
-    static RawResponse failOnNonJsonError(RawResponse response) {
-        if (response.statusCode() < 400 || response.body().isEmpty() || response.body().get().length == 0) {
+    /** Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller. */
+    static RawResponse requireTyped(RawResponse response) {
+        var bytes = response.body().orElse(new byte[0]);
+        if (response.statusCode() == 200 || (response.statusCode() == 400 && isJson(bytes))) {
             return response;
         }
+        throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    private static boolean isJson(byte[] bytes) {
         try {
-            objectMapper.readTree(response.body().get());
+            return !objectMapper.readTree(bytes).isMissingNode();
         } catch (IOException e) {
-            var body = new String(response.body().get(), StandardCharsets.UTF_8);
-            throw new IllegalStateException("bunq answered " + response.statusCode() + " with a non-JSON body: "
-                    + body.substring(0, Math.min(body.length(), 200)));
+            return false;
         }
-        return response;
     }
 
     private static class BunqSerialization implements Serialization, DefaultParamSerialization, DefaultPathSerialization {
@@ -198,8 +200,8 @@ public class Wirespec {
     /**
      * Sends requests with the context's authentication headers.
      * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
-     * and the request is retried with the new session token. Any other 403 is returned as is, as is the original
-     * response when the refresh itself fails. The refreshed context is kept inside this transportation.
+     * and the request is retried with the new session token. Any other 403, and the original 403 when the
+     * refresh itself fails, is thrown as {@link BunqApiException} like every status other than 200 and 400. The refreshed context is kept inside this transportation.
      */
     public static Transportation transportation(Context context) {
         return transportation(context, Context::refreshSession);
@@ -232,7 +234,7 @@ public class Wirespec {
                     lock.unlock();
                 }
                 return sendWith(refreshed, request);
-            });
+            }).thenApply(Wirespec::requireTyped);
         };
     }
 

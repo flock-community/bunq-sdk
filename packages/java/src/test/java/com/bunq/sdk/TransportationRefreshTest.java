@@ -13,12 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TransportationRefreshTest {
 
@@ -52,6 +53,11 @@ public class TransportationRefreshTest {
         }
     }
 
+    private static BunqApiException failure(Transportation transport) {
+        var e = assertThrows(CompletionException.class, () -> transport.transport(REQUEST).join());
+        return assertInstanceOf(BunqApiException.class, e.getCause());
+    }
+
     private static Context fresh(Context context) {
         return new Context(context.serverPublicKey(), context.deviceId(), context.sessionId(), "fresh", context.userId(),
                 context.sessionExpiryTime(), context.installationToken(), context.config());
@@ -73,13 +79,16 @@ public class TransportationRefreshTest {
     }
 
     @Test
-    public void aFailingRefreshReturnsTheOriginal403() throws Exception {
+    public void aFailingRefreshThrowsTheOriginal403() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
             Transportation transport = Wirespec.transportation(context, c -> {
                 throw new IllegalStateException("429");
             });
 
-            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            var e = failure(transport);
+
+            assertEquals(403, e.status());
+            assertEquals(AUTHENTICATION_ERROR, e.body());
             assertEquals(List.of("stale"), tokens);
         });
     }
@@ -93,7 +102,7 @@ public class TransportationRefreshTest {
                 return fresh(c);
             });
 
-            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            assertEquals(403, failure(transport).status());
             assertEquals(0, refreshes.get());
         });
     }
@@ -107,13 +116,13 @@ public class TransportationRefreshTest {
                 return fresh(c);
             });
 
-            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            assertEquals(403, failure(transport).status());
             assertEquals(0, refreshes.get());
         });
     }
 
     @Test
-    public void a403WithAnHtmlBodyFailsNamingTheStatusAndDoesNotRefresh() throws Exception {
+    public void a403WithAnHtmlBodyThrowsAndDoesNotRefresh() throws Exception {
         withServer("<html>forbidden</html>", (context, tokens) -> {
             var refreshes = new AtomicInteger();
             Transportation transport = Wirespec.transportation(context, c -> {
@@ -121,9 +130,10 @@ public class TransportationRefreshTest {
                 return fresh(c);
             });
 
-            var e = assertThrows(java.util.concurrent.CompletionException.class, () -> transport.transport(REQUEST).join());
+            var e = failure(transport);
 
-            assertTrue(e.getMessage().contains("403") && e.getMessage().contains("<html>forbidden</html>"));
+            assertEquals(403, e.status());
+            assertEquals("<html>forbidden</html>", e.body());
             assertEquals(0, refreshes.get());
         });
     }
