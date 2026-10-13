@@ -134,6 +134,10 @@ public class Wirespec {
             try {
                 var tree = objectMapper.readTree(raw);
                 var response = tree.get("Response");
+                if (response == null) {
+                    // error responses have no Response envelope: the whole document is the body
+                    return objectMapper.convertValue(tree, objectMapper.constructType(type));
+                }
                 Object json = aggregateJsonNodes(type, response);
                 return objectMapper.convertValue(json, objectMapper.constructType(type));
             } catch (IOException e) {

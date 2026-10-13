@@ -42,6 +42,11 @@ java {
     }
 }
 
+tasks.withType<JavaCompile> {
+    options.isFork = true
+    options.forkOptions.memoryMaximumSize = "2g"
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
