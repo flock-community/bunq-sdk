@@ -7,6 +7,8 @@ import com.bunq.sdk.generated.model.BunqId;
 import com.bunq.sdk.generated.model.DeviceServer;
 import com.bunq.sdk.generated.model.DeviceServerCreate;
 import com.bunq.sdk.generated.model.DeviceServerCreateId;
+import com.bunq.sdk.generated.model.ErrorArray;
+import com.bunq.sdk.generated.model.GenericError;
 import com.bunq.sdk.generated.model.Installation;
 import com.bunq.sdk.generated.model.InstallationCreate;
 import com.bunq.sdk.generated.model.InstallationServerPublicKey;
@@ -125,6 +127,11 @@ public record Context(
         return () -> new IllegalStateException(message);
     }
 
+    private static String setupFailure(String action, int status, GenericError body) {
+        var description = body.Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description);
+        return "Cannot " + action + " (status " + status + "): " + description.orElse(null);
+    }
+
     private static CompletableFuture<InstallationCreate> createInstallation(Config config) {
         Installation body = new Installation(config.signingKeys().publicKeyPem());
 
@@ -135,8 +142,8 @@ public record Context(
             Object response = CreateInstallation.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateInstallation.Response200) {
                 return ((CreateInstallation.Response200) response).body();
-            } else if (response instanceof CreateInstallation.Response400) {
-                throw new RuntimeException("Cannot create installation");
+            } else if (response instanceof CreateInstallation.ResponseGenericError error) {
+                throw new RuntimeException(setupFailure("create installation", error.status(), error.body()));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }
@@ -160,8 +167,8 @@ public record Context(
             Object response = CreateDeviceServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateDeviceServer.Response200) {
                 return ((CreateDeviceServer.Response200) response).body();
-            } else if (response instanceof CreateDeviceServer.Response400) {
-                throw new RuntimeException("Cannot create device server");
+            } else if (response instanceof CreateDeviceServer.ResponseGenericError error) {
+                throw new RuntimeException(setupFailure("create device server", error.status(), error.body()));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }
@@ -186,8 +193,8 @@ public record Context(
             Object response = CreateSessionServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateSessionServer.Response200) {
                 return ((CreateSessionServer.Response200) response).body();
-            } else if (response instanceof CreateSessionServer.Response400) {
-                throw new RuntimeException("Cannot create session server");
+            } else if (response instanceof CreateSessionServer.ResponseGenericError error) {
+                throw new RuntimeException(setupFailure("create session server", error.status(), error.body()));
             } else {
                 throw new RuntimeException("Unexpected response type: " + response.getClass().getName());
             }

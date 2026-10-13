@@ -17,6 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TransportationRefreshTest {
 
@@ -97,19 +99,33 @@ public class TransportationRefreshTest {
     }
 
     @Test
-    public void a403WithANonJsonOrEmptyBodyDoesNotRefresh() throws Exception {
-        for (String rejection : List.of("<html>forbidden</html>", "")) {
-            withServer(rejection, (context, tokens) -> {
-                var refreshes = new AtomicInteger();
-                Transportation transport = Wirespec.transportation(context, c -> {
-                    refreshes.incrementAndGet();
-                    return fresh(c);
-                });
-
-                assertEquals(403, transport.transport(REQUEST).join().statusCode());
-                assertEquals(0, refreshes.get());
+    public void a403WithAnEmptyBodyDoesNotRefresh() throws Exception {
+        withServer("", (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.transportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
             });
-        }
+
+            assertEquals(403, transport.transport(REQUEST).join().statusCode());
+            assertEquals(0, refreshes.get());
+        });
+    }
+
+    @Test
+    public void a403WithAnHtmlBodyFailsNamingTheStatusAndDoesNotRefresh() throws Exception {
+        withServer("<html>forbidden</html>", (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.transportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
+            });
+
+            var e = assertThrows(java.util.concurrent.CompletionException.class, () -> transport.transport(REQUEST).join());
+
+            assertTrue(e.getMessage().contains("403") && e.getMessage().contains("<html>forbidden</html>"));
+            assertEquals(0, refreshes.get());
+        });
     }
 
     @Test

@@ -104,11 +104,26 @@ public class Wirespec {
                 .headers(headers);
 
         return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
-                .thenApply(response -> new RawResponse(
+                .thenApply(response -> failOnNonJsonError(new RawResponse(
                         response.statusCode(),
                         response.headers().map(),
                         Optional.ofNullable(response.body())
-                ));
+                )));
+    }
+
+    /** Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser. */
+    static RawResponse failOnNonJsonError(RawResponse response) {
+        if (response.statusCode() < 400 || response.body().isEmpty() || response.body().get().length == 0) {
+            return response;
+        }
+        try {
+            objectMapper.readTree(response.body().get());
+        } catch (IOException e) {
+            var body = new String(response.body().get(), StandardCharsets.UTF_8);
+            throw new IllegalStateException("bunq answered " + response.statusCode() + " with a non-JSON body: "
+                    + body.substring(0, Math.min(body.length(), 200)));
+        }
+        return response;
     }
 
     private static class BunqSerialization implements Serialization, DefaultParamSerialization, DefaultPathSerialization {
@@ -135,6 +150,9 @@ public class Wirespec {
                 var tree = objectMapper.readTree(raw);
                 var response = tree.get("Response");
                 if (response == null) {
+                    if (!tree.has("Error")) {
+                        throw new IllegalStateException("Invalid bunq response: neither Response nor Error");
+                    }
                     // error responses have no Response envelope: the whole document is the body
                     return objectMapper.convertValue(tree, objectMapper.constructType(type));
                 }

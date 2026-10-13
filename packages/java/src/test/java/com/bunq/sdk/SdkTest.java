@@ -74,8 +74,8 @@ public class SdkTest {
         ReadUser.Response<?> res = client.readUser(context.userId()).get();
         if (res instanceof ReadUser.Response200 response) {
             assertEquals("Donald Byrne", response.body().UserPerson().flatMap(UserPerson::legal_name).orElseThrow());
-        } else if (res instanceof ReadUser.Response400) {
-            throw new RuntimeException("Cannot read user");
+        } else {
+            throw new RuntimeException("Cannot read user (status " + res.status() + ")");
         }
     }
 

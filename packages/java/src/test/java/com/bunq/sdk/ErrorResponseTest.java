@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ErrorResponseTest {
 
@@ -34,5 +36,19 @@ public class ErrorResponseTest {
 
         assertEquals("Insufficient authentication.",
                 response.body().Error().orElseThrow().get(0).error_description().orElseThrow());
+    }
+
+    @Test
+    public void aBodyWithoutResponseOrErrorIsRejected() {
+        assertThrows(IllegalStateException.class, () -> readUser(200, "{\"unexpected\":true}"));
+    }
+
+    @Test
+    public void aNonJsonErrorBodyNamesTheStatus() {
+        var html = new RawResponse(500, Map.of(), Optional.of("<html>Internal Server Error</html>".getBytes(StandardCharsets.UTF_8)));
+
+        var e = assertThrows(IllegalStateException.class, () -> Wirespec.failOnNonJsonError(html));
+
+        assertTrue(e.getMessage().contains("500") && e.getMessage().contains("<html>"));
     }
 }
