@@ -27,7 +27,8 @@ class Serialization(Wirespec.Serialization):
     def deserializeBody(self, raw: bytes, type: Type[T]) -> Any:
         data = json.loads(raw)
         if "Response" not in data:
-            raise Exception("Invalid response")
+            # error responses have no Response envelope: the whole document is the body
+            return from_dict(data_class=type, data=data)
 
         res_data = data["Response"]
         if get_origin(type) is list:

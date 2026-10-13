@@ -79,6 +79,7 @@ jobs:
           python -m unittest ./send_test.py
           python -m unittest ./transportation_refresh_test.py
           python -m unittest ./session_refresh_test.py
+          python -m unittest ./error_response_test.py
 
   build-npm:
 
