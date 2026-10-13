@@ -11,6 +11,8 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class TransportationRefreshTest {
 
@@ -79,16 +81,23 @@ class TransportationRefreshTest {
     }
 
     @Test
-    fun `a 403 with a non-JSON or empty body does not refresh`() {
-        for (rejection in listOf("<html>forbidden</html>", "")) {
-            withServer(rejection) { context, _ ->
-                val refreshes = AtomicInteger()
-                val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
+    fun `a 403 with an empty body does not refresh`() = withServer("") { context, _ ->
+        val refreshes = AtomicInteger()
+        val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
 
-                assertEquals(403, runBlocking { transport.transport(request) }.statusCode)
-                assertEquals(0, refreshes.get())
-            }
-        }
+        assertEquals(403, runBlocking { transport.transport(request) }.statusCode)
+        assertEquals(0, refreshes.get())
+    }
+
+    @Test
+    fun `a 403 with an HTML body fails naming the status and does not refresh`() = withServer("<html>forbidden</html>") { context, _ ->
+        val refreshes = AtomicInteger()
+        val transport = transportation(context) { refreshes.incrementAndGet(); it.fresh() }
+
+        val e = assertFailsWith<IllegalStateException> { runBlocking { transport.transport(request) } }
+
+        assertTrue("403" in e.message!! && "<html>forbidden</html>" in e.message!!)
+        assertEquals(0, refreshes.get())
     }
 
     @Test

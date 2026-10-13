@@ -4,7 +4,9 @@ import com.bunq.sdk.generated.endpoint.ReadUser
 import community.flock.wirespec.kotlin.Wirespec
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class ErrorResponseTest {
 
@@ -25,5 +27,19 @@ class ErrorResponseTest {
 
         assertIs<ReadUser.Response403>(response)
         assertEquals("Insufficient authentication.", response.body.Error?.single()?.error_description)
+    }
+
+    @Test
+    fun `a body without Response or Error is rejected`() {
+        assertFailsWith<IllegalStateException> { readUser(200, """{"unexpected":true}""") }
+    }
+
+    @Test
+    fun `a non-JSON error body names the status`() {
+        val html = Wirespec.RawResponse(500, emptyMap(), "<html>Internal Server Error</html>".toByteArray())
+
+        val e = assertFailsWith<IllegalStateException> { html.failOnNonJsonError() }
+
+        assertTrue("500" in e.message!! && "<html>" in e.message!!)
     }
 }

@@ -44,8 +44,11 @@ val serialization: Wirespec.Serialization =
 
         override fun <T : Any> deserializeBody(raw: ByteArray, kType: KType): T {
             val tree = objectMapper.readTree(raw)
-            // error responses have no Response envelope: the whole document is the body
-            val response = tree.get("Response") ?: return objectMapper.treeToValue(tree, objectMapper.constructType(kType.javaType))
+            val response = tree.get("Response") ?: run {
+                // error responses have no Response envelope: the whole document is the body
+                check(tree.has("Error")) { "Invalid bunq response: neither Response nor Error" }
+                return objectMapper.treeToValue(tree, objectMapper.constructType(kType.javaType))
+            }
 
             val json = when {
                 kType.classifier == List::class -> response.asIterable()
@@ -113,7 +116,17 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
         statusCode = response.statusCode(),
         headers = response.headers().map(),
         body = response.body()
-    )
+    ).failOnNonJsonError()
+}
+
+/** Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser. */
+internal fun Wirespec.RawResponse.failOnNonJsonError(): Wirespec.RawResponse {
+    val bytes = body
+    if (statusCode < 400 || bytes == null || bytes.isEmpty()) return this
+    if (runCatching { objectMapper.readTree(bytes) }.isFailure) {
+        error("bunq answered $statusCode with a non-JSON body: ${String(bytes, Charsets.UTF_8).take(200)}")
+    }
+    return this
 }
 
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(

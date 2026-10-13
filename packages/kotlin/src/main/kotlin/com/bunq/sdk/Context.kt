@@ -5,6 +5,7 @@ import com.bunq.sdk.generated.endpoint.CreateInstallation
 import com.bunq.sdk.generated.endpoint.CreateSessionServer
 import com.bunq.sdk.generated.model.DeviceServer
 import com.bunq.sdk.generated.model.DeviceServerCreate
+import com.bunq.sdk.generated.model.GenericError
 import com.bunq.sdk.generated.model.Installation
 import com.bunq.sdk.generated.model.InstallationCreate
 import com.bunq.sdk.generated.model.SessionServer
@@ -15,6 +16,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
+
+private fun setupFailure(action: String, status: Int, body: GenericError) =
+    "Cannot $action (status $status): ${body.Error?.firstOrNull()?.error_description}"
 
 data class Context(
     val serverPublicKey: String,
@@ -97,7 +101,7 @@ private fun createInstallation(config: Config): InstallationCreate {
 
     when (res) {
         is CreateInstallation.Response200 -> return res.body
-        else -> error("Cannot create installation (status ${res.status})")
+        is CreateInstallation.ResponseGenericError -> error(setupFailure("create installation", res.status, res.body))
     }
 }
 
@@ -118,7 +122,7 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
 
     when (res) {
         is CreateDeviceServer.Response200 -> return res.body
-        else -> error("Cannot create device server (status ${res.status})")
+        is CreateDeviceServer.ResponseGenericError -> error(setupFailure("create device server", res.status, res.body))
     }
 }
 
@@ -146,7 +150,7 @@ private fun createSessionServer(
 
     when (res) {
         is CreateSessionServer.Response200 -> return res.body
-        else -> error("Cannot create session server (status ${res.status})")
+        is CreateSessionServer.ResponseGenericError -> error(setupFailure("create session server", res.status, res.body))
     }
 }
 

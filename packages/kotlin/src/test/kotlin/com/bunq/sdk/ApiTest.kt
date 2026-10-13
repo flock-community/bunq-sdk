@@ -85,7 +85,7 @@ class ApiTest {
         val res = client.readUser(context.userId)
         val body = when (res) {
             is ReadUser.Response200 -> res.body
-            else -> error("Cannot read user")
+            is ReadUser.ResponseGenericError -> error("Cannot read user: ${res.body.Error?.firstOrNull()?.error_description} (status ${res.status})")
         }
         assertEquals("Donald Byrne", body.UserPerson?.legal_name)
     }
@@ -97,7 +97,7 @@ class ApiTest {
         val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)
         val body = when (res) {
             is ListAllMonetaryAccountBankForUser.Response200 -> res.body
-            else -> error("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.ResponseGenericError -> error("Could not get bank accounts: ${res.body.Error?.firstOrNull()?.error_description} (status ${res.status})")
         }
         assertEquals(1989601, body.firstOrNull()?.id)
         assertEquals("EUR", body.firstOrNull()?.balance?.currency)
@@ -120,7 +120,7 @@ class ApiTest {
         val res = client.readMonetaryAccountBankForUser(context.userId, 1989601)
         val body = when (res) {
             is ReadMonetaryAccountBankForUser.Response200 -> res.body
-            else -> fail("Could not get bank account")
+            is ReadMonetaryAccountBankForUser.ResponseGenericError -> fail("Could not get bank account: ${res.body.Error?.firstOrNull()?.error_description} (status ${res.status})")
         }
         return body
     }
@@ -157,7 +157,7 @@ class ApiTest {
         )
         val body = when (res) {
             is ListAllMonetaryAccountBankForUser.Response200 -> res.body
-            else -> fail("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.ResponseGenericError -> fail("Could not get bank accounts: ${res.body.Error?.firstOrNull()?.error_description} (status ${res.status})")
         }
         assertEquals(1, body.size)
         val monetaryAccountBankListing = body.firstOrNull()
@@ -176,7 +176,7 @@ class ApiTest {
         )
         val body2 = when (res2) {
             is ListAllMonetaryAccountBankForUser.Response200 -> res2.body
-            else -> fail("Could not get bank accounts")
+            is ListAllMonetaryAccountBankForUser.ResponseGenericError -> fail("Could not get bank accounts: ${res2.body.Error?.firstOrNull()?.error_description} (status ${res2.status})")
         }
         val monetaryAccountBankListing2 = body2.firstOrNull()
         assertNotNull(monetaryAccountBankListing2)
@@ -246,7 +246,7 @@ class ApiTest {
                 }
             }
 
-            else -> fail("ahh, failure")
+            is CreateRequestInquiryForUserMonetaryAccount.ResponseGenericError -> fail("ahh, failure: ${response.body.Error?.firstOrNull()?.error_description} (status ${response.status})")
         }
     }
 }
