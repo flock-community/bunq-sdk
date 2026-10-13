@@ -83,6 +83,34 @@ class ErrorResponseTest {
     }
 
     @Test
+    fun `a 200 without Response throws with the status and body`() {
+        val body = """{"unexpected":true}"""
+
+        val e = assertFailsWith<BunqApiException> { answering(200, body) { runBlocking { it.readUser(1) } } }
+
+        assertEquals(200, e.status)
+        assertEquals(body, e.body)
+    }
+
+    @Test
+    fun `a 400 without Error throws with the status and body`() {
+        val body = """{"message":"Bad Request"}"""
+
+        val e = assertFailsWith<BunqApiException> { answering(400, body) { runBlocking { it.readUser(1) } } }
+
+        assertEquals(400, e.status)
+        assertEquals(body, e.body)
+    }
+
+    @Test
+    fun `a non-object JSON 200 throws`() {
+        val e = assertFailsWith<BunqApiException> { answering(200, "[]") { runBlocking { it.readUser(1) } } }
+
+        assertEquals(200, e.status)
+        assertEquals("[]", e.body)
+    }
+
+    @Test
     fun `the message truncates the body but the body field keeps it whole`() {
         val e = BunqApiException(502, "x".repeat(2000))
 

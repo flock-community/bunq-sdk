@@ -25,7 +25,7 @@ class TransportationRefreshTest {
         server.createContext("/") { exchange ->
             val token = exchange.requestHeaders.getFirst("X-Bunq-Client-Authentication")
             seenTokens += token
-            val (status, body) = if (token == "fresh") 200 to "{}" else 403 to rejection
+            val (status, body) = if (token == "fresh") 200 to """{"Response":[]}""" else 403 to rejection
             val bytes = body.toByteArray()
             exchange.sendResponseHeaders(status, if (bytes.isEmpty()) -1 else bytes.size.toLong())
             if (bytes.isNotEmpty()) exchange.responseBody.write(bytes)

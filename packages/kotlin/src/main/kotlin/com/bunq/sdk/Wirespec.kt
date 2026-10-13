@@ -119,11 +119,16 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     )
 }
 
-/** Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller. */
+/** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
 internal fun Wirespec.RawResponse.requireTyped(): Wirespec.RawResponse {
     val bytes = body ?: ByteArray(0)
-    val isJson = runCatching { objectMapper.readTree(bytes) }.getOrNull()?.isMissingNode == false
-    if (statusCode == 200 || (statusCode == 400 && isJson)) return this
+    val tree = runCatching { objectMapper.readTree(bytes) }.getOrNull()
+    val envelope = when (statusCode) {
+        200 -> "Response"
+        400 -> "Error"
+        else -> null
+    }
+    if (envelope != null && tree?.isObject == true && tree.has(envelope)) return this
     throw BunqApiException(statusCode, String(bytes, Charsets.UTF_8))
 }
 
