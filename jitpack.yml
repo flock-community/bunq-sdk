@@ -1,0 +1,5 @@
+jdk:
+  - openjdk17
+install:
+  - ./gradlew -Pgroup=com.github.flock-community -Pversion=$VERSION -xtest :packages:kotlin:publishToMavenLocal
+  - ./gradlew -Pgroup=com.github.flock-community -Pversion=$VERSION -xtest :packages:java:publishToMavenLocal

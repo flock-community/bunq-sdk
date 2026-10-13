@@ -8,7 +8,7 @@
 
 ## Install
 
-Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships in the first release after #8. Replace `<release>` with that tag.
+Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships from 0.1.0.
 
 ```kotlin
 repositories {
@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.flock-community.bunq-sdk:kotlin:<release>")
+    implementation("com.github.flock-community.bunq-sdk:kotlin:0.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 }
 ```
