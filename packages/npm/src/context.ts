@@ -1,6 +1,6 @@
 import {DeviceServer, Installation, SessionServer} from "./gen/model";
 import {client} from "./gen/Client";
-import {rawHandler, serialization} from "./wirespec";
+import {rawHandler, requireTyped, serialization} from "./wirespec";
 import {Config} from "./config";
 
 export interface Context {
@@ -15,9 +15,13 @@ export interface Context {
 }
 
 
+function setupFailure(what: string, body: {Error?: {error_description?: string}[]}): string {
+    return `${what} (status 400): ${body.Error?.[0]?.error_description}`;
+}
+
 function unauthenticatedClient(config: Config, token?: string) {
     const headers: Record<string, string[]> = token ? {"X-Bunq-Client-Authentication": [token]} : {};
-    return client(serialization, {transport: request => rawHandler(config, {...request, headers: {...request.headers, ...headers}})});
+    return client(serialization, {transport: async request => requireTyped(await rawHandler(config, {...request, headers: {...request.headers, ...headers}}))});
 }
 
 export async function initContext(config: Config): Promise<Context> {
@@ -27,7 +31,7 @@ export async function initContext(config: Config): Promise<Context> {
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Installation failed")
+            throw new Error(setupFailure("Installation failed", res.body))
         }
     }
 
@@ -41,7 +45,7 @@ export async function initContext(config: Config): Promise<Context> {
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Device server creation failed")
+            throw new Error(setupFailure("Device server creation failed", res.body))
         }
     }
 
@@ -53,7 +57,7 @@ export async function initContext(config: Config): Promise<Context> {
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Session server creation failed")
+            throw new Error(setupFailure("Session server creation failed", res.body))
         }
     }
 
@@ -153,7 +157,7 @@ export async function refreshSession(context: Context): Promise<Context> {
         if (res.status === 200) {
             return res.body
         } else {
-            throw new Error("Session server creation failed")
+            throw new Error(setupFailure("Session server creation failed", res.body))
         }
     }
 

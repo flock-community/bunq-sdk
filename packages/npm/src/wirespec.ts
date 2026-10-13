@@ -21,8 +21,11 @@ export const serialization: Wirespec.Serialization = {
     },
     deserializeBody<T>(raw: Uint8Array, type: string): T {
         const body: {Response?: Record<string, unknown>[]} = JSON.parse(utf8Decoder.decode(raw));
-        // error responses have no Response envelope and are typed as such by the generated client
         if (!body.Response) {
+            if (!("Error" in body)) {
+                throw new Error("Invalid bunq response: neither Response nor Error");
+            }
+            // error responses have no Response envelope and are typed as such by the generated client
             return body as T;
         }
         if (type.endsWith(arrayType)) {
@@ -62,4 +65,29 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
     const responseHeaders: Record<string, string[]> = {};
     res.headers.forEach((value, key) => responseHeaders[key] = [value]);
     return {statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined};
+}
+
+/** bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`. */
+export class BunqApiError extends Error {
+    constructor(readonly status: number, readonly body: string) {
+        super(`bunq answered ${status}: ${body.slice(0, 500)}`);
+        this.name = "BunqApiError";
+    }
+}
+
+function isObjectWith(text: string, key: string): boolean {
+    try {
+        const parsed = JSON.parse(text);
+        return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) && key in parsed;
+    } catch {
+        return false;
+    }
+}
+
+/** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
+export function requireTyped(response: Wirespec.RawResponse): Wirespec.RawResponse {
+    const text = response.body ? utf8Decoder.decode(response.body) : "";
+    const envelope = {200: "Response", 400: "Error"}[response.statusCode];
+    if (envelope && isObjectWith(text, envelope)) return response;
+    throw new BunqApiError(response.statusCode, text);
 }

@@ -6,6 +6,7 @@ import {createConfig} from "../src/config";
 import {Context} from "../src/context";
 import {transportation} from "../src/transportation";
 import {Wirespec} from "../src/gen/Wirespec";
+import {BunqApiError} from "../src/wirespec";
 
 const authenticationError = '{"Error":[{"error_description":"Insufficient authentication."}]}';
 const request: Wirespec.RawRequest = {method: 'GET', path: ['ping'], queries: {}, headers: {}, body: undefined};
@@ -23,7 +24,7 @@ describe('transportation session refresh', () => {
             const token = req.headers['x-bunq-client-authentication'] as string | undefined;
             seenTokens.push(token);
             res.statusCode = token === 'fresh' ? 200 : 403;
-            res.end(token === 'fresh' ? '{}' : rejection);
+            res.end(token === 'fresh' ? '{"Response":[]}' : rejection);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
         const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
@@ -53,21 +54,19 @@ describe('transportation session refresh', () => {
         expect(seenTokens).toEqual(['stale', 'fresh']);
     });
 
-    test('a failing refresh returns the original 403', async () => {
+    test('a failing refresh throws the original 403', async () => {
         const context = await contextRejectingWith(authenticationError);
         const transport = transportation(context, async () => { throw new Error('429'); });
 
-        const response = await transport.transport(request);
-
-        expect(response.statusCode).toBe(403);
+        await expect(transport.transport(request)).rejects.toMatchObject({status: 403, body: authenticationError});
         expect(seenTokens).toEqual(['stale']);
     });
 
-    test('a refresh that throws synchronously returns the original 403', async () => {
+    test('a refresh that throws synchronously throws the original 403', async () => {
         const context = await contextRejectingWith(authenticationError);
         const transport = transportation(context, () => { throw new Error('boom'); });
 
-        expect((await transport.transport(request)).statusCode).toBe(403);
+        await expect(transport.transport(request)).rejects.toMatchObject({status: 403});
         expect(seenTokens).toEqual(['stale']);
     });
 
@@ -76,16 +75,25 @@ describe('transportation session refresh', () => {
         let refreshes = 0;
         const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
 
-        expect((await transport.transport(request)).statusCode).toBe(403);
+        await expect(transport.transport(request)).rejects.toBeInstanceOf(BunqApiError);
         expect(refreshes).toBe(0);
     });
 
-    test.each(['<html>forbidden</html>', ''])('a 403 with body "%s" does not refresh', async rejection => {
-        const context = await contextRejectingWith(rejection);
+    test('a 403 with an empty body does not refresh', async () => {
+        const context = await contextRejectingWith('');
         let refreshes = 0;
         const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
 
-        expect((await transport.transport(request)).statusCode).toBe(403);
+        await expect(transport.transport(request)).rejects.toBeInstanceOf(BunqApiError);
+        expect(refreshes).toBe(0);
+    });
+
+    test('a 403 with an HTML body throws and does not refresh', async () => {
+        const context = await contextRejectingWith('<html>forbidden</html>');
+        let refreshes = 0;
+        const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
+
+        await expect(transport.transport(request)).rejects.toMatchObject({status: 403, body: '<html>forbidden</html>'});
         expect(refreshes).toBe(0);
     });
 

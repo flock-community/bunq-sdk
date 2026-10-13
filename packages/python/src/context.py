@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from api.Client import Client
 from api.endpoint.CreateInstallation import Response200 as InstallationResponse200
@@ -16,7 +16,7 @@ from api.model.Installation import Installation
 from api.model.SessionServer import SessionServer
 
 from config import Config
-from transport import send, Serialization
+from transport import require_typed, send, Serialization
 
 
 @dataclass
@@ -127,11 +127,16 @@ class _SetupTransportation(Wirespec.Transportation):
     async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
         if self.token is not None:
             request = replace(request, headers={**request.headers, "X-Bunq-Client-Authentication": [self.token]})
-        return await send(self.config, request)
+        return require_typed(await send(self.config, request))
 
 
 def _setup_client(config: Config, token: Optional[str] = None) -> Client:
     return Client(Serialization(), _SetupTransportation(config, token))
+
+
+def _setup_failure(what: str, error: Any) -> str:
+    description = error.Error[0].error_description if error.Error else None
+    return f"{what} (status 400): {description}"
 
 
 async def _create_installation(config: Config) -> InstallationCreate:
@@ -143,7 +148,7 @@ async def _create_installation(config: Config) -> InstallationCreate:
         case InstallationResponse200(body=installation):
             return installation
         case _:
-            raise Exception("Installation failed")
+            raise Exception(_setup_failure("Installation failed", res.body))
 
 
 async def _create_device_server(config: Config, token: str) -> DeviceServerCreate:
@@ -155,7 +160,7 @@ async def _create_device_server(config: Config, token: str) -> DeviceServerCreat
         case DeviceServerResponse200(body=device_server):
             return device_server
         case _:
-            raise Exception("Device server creation failed")
+            raise Exception(_setup_failure("Device server creation failed", res.body))
 
 
 async def _create_session_server(config: Config, token: str) -> SessionServerCreate:
@@ -166,7 +171,7 @@ async def _create_session_server(config: Config, token: str) -> SessionServerCre
         case SessionServerResponse200(body=server_session):
             return server_session
         case _:
-            raise Exception("Session server creation failed")
+            raise Exception(_setup_failure("Session server creation failed", res.body))
 
 
 def _get_user_id(session_server: SessionServerCreate) -> int:

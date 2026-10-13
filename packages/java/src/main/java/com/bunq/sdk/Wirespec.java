@@ -111,6 +111,29 @@ public class Wirespec {
                 ));
     }
 
+    /** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
+    static RawResponse requireTyped(RawResponse response) {
+        var bytes = response.body().orElse(new byte[0]);
+        var envelope = switch (response.statusCode()) {
+            case 200 -> "Response";
+            case 400 -> "Error";
+            default -> null;
+        };
+        if (envelope != null && isObjectWith(bytes, envelope)) {
+            return response;
+        }
+        throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    private static boolean isObjectWith(byte[] bytes, String field) {
+        try {
+            var tree = objectMapper.readTree(bytes);
+            return tree.isObject() && tree.has(field);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     private static class BunqSerialization implements Serialization, DefaultParamSerialization, DefaultPathSerialization {
         @Override
         public <T> byte[] serializeBody(T t, Type type) {
@@ -134,6 +157,13 @@ public class Wirespec {
             try {
                 var tree = objectMapper.readTree(raw);
                 var response = tree.get("Response");
+                if (response == null) {
+                    if (!tree.has("Error")) {
+                        throw new IllegalStateException("Invalid bunq response: neither Response nor Error");
+                    }
+                    // error responses have no Response envelope: the whole document is the body
+                    return objectMapper.convertValue(tree, objectMapper.constructType(type));
+                }
                 Object json = aggregateJsonNodes(type, response);
                 return objectMapper.convertValue(json, objectMapper.constructType(type));
             } catch (IOException e) {
@@ -176,8 +206,8 @@ public class Wirespec {
     /**
      * Sends requests with the context's authentication headers.
      * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
-     * and the request is retried with the new session token. Any other 403 is returned as is, as is the original
-     * response when the refresh itself fails. The refreshed context is kept inside this transportation.
+     * and the request is retried with the new session token. Any other 403, and the original 403 when the
+     * refresh itself fails, is thrown as {@link BunqApiException} like every status other than 200 and 400. The refreshed context is kept inside this transportation.
      */
     public static Transportation transportation(Context context) {
         return transportation(context, Context::refreshSession);
@@ -210,7 +240,7 @@ public class Wirespec {
                     lock.unlock();
                 }
                 return sendWith(refreshed, request);
-            });
+            }).thenApply(Wirespec::requireTyped);
         };
     }
 
