@@ -8,6 +8,7 @@ export type {Config} from "./config";
 export {BUNQ_PUBLIC_SERVER, BUNQ_SANDBOX_SERVER} from "./bunq-server";
 export type {BunqServer} from "./bunq-server";
 export * from "./signing-keys";
+export {BunqApiError} from "./wirespec";
 export {Wirespec} from "./gen/Wirespec";
 export * from "./gen/model";
 export * from "./gen/endpoint";

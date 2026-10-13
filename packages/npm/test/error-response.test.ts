@@ -1,32 +1,76 @@
-import {describe, expect, test} from 'vitest';
+import {afterEach, describe, expect, test} from 'vitest';
+import {createServer, Server} from 'node:http';
+import {AddressInfo} from 'node:net';
+import {generateKeyPairSync} from 'node:crypto';
+import {createConfig} from "../src/config";
+import {Context} from "../src/context";
+import {bunqClient} from "../src/transportation";
 import {ReadUser} from "../src/gen/endpoint/ReadUser";
-import {failOnNonJsonError, serialization} from "../src/wirespec";
+import {BunqApiError, serialization} from "../src/wirespec";
 
 describe('error responses', () => {
-    const readUser = (statusCode: number, body: string) =>
-        ReadUser.fromRawResponse(serialization, {statusCode, headers: {}, body: new TextEncoder().encode(body)});
+    let server: Server;
 
-    test('a 400 error body without Response envelope is deserialized', () => {
-        const response = readUser(400, '{"Error":[{"error_description":"Missing required field \\"currency\\"."}]}');
+    afterEach(() => new Promise(resolve => server.close(resolve)));
+
+    async function readUserAnswering(status: number, body: string) {
+        server = createServer((req, res) => {
+            res.statusCode = status;
+            res.end(body);
+        });
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+        const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
+        const {privateKey, publicKey} = generateKeyPairSync('rsa', {
+            modulusLength: 2048,
+            privateKeyEncoding: {type: 'pkcs8', format: 'pem'},
+            publicKeyEncoding: {type: 'spki', format: 'pem'},
+        });
+        const context: Context = {
+            serverPublicKey: '', deviceId: 1, sessionId: 1, sessionToken: 'token', userId: 1,
+            sessionExpiryTime: new Date(), installationToken: 'installation',
+            config: createConfig({baseUrl, pinnedKey: ''}, 'test', 'key', privateKey, publicKey),
+        };
+        return bunqClient(context).readUser({itemId: 1});
+    }
+
+    test('a 400 error body without Response envelope is a typed Response400', async () => {
+        const response = await readUserAnswering(400, '{"Error":[{"error_description":"Missing required field \\"currency\\"."}]}');
 
         expect(response.status).toBe(400);
         expect(response.body).toEqual({Error: [{error_description: 'Missing required field "currency".'}]});
     });
 
-    test('a status other than 200 and 400 is a typed response', () => {
-        const response = readUser(403, '{"Error":[{"error_description":"Insufficient authentication."}]}');
-
-        expect(response.status).toBe(403);
-        expect(response.body).toEqual({Error: [{error_description: 'Insufficient authentication.'}]});
-    });
-
     test('a body without Response or Error is rejected', () => {
-        expect(() => readUser(200, '{"unexpected":true}')).toThrow('neither Response nor Error');
+        const raw = {statusCode: 200, headers: {}, body: new TextEncoder().encode('{"unexpected":true}')};
+
+        expect(() => ReadUser.fromRawResponse(serialization, raw)).toThrow('neither Response nor Error');
     });
 
-    test('a non-JSON error body names the status', () => {
-        const html = {statusCode: 500, headers: {}, body: new TextEncoder().encode('<html>Internal Server Error</html>')};
+    test.each([403, 404, 500])('a %i throws with the status and body', async status => {
+        const body = `{"Error":[{"error_description":"nope ${status}"}]}`;
 
-        expect(() => failOnNonJsonError(html)).toThrow(/500.*<html>/);
+        await expect(readUserAnswering(status, body)).rejects.toMatchObject({status, body});
+    });
+
+    test('an HTML 500 throws with the HTML as body', async () => {
+        await expect(readUserAnswering(500, '<html>Internal Server Error</html>'))
+            .rejects.toMatchObject({status: 500, body: '<html>Internal Server Error</html>'});
+    });
+
+    test('a 400 that is not JSON throws', async () => {
+        await expect(readUserAnswering(400, '<html>Bad Request</html>')).rejects.toBeInstanceOf(BunqApiError);
+    });
+
+    test('the message truncates the body but the body field keeps it whole', () => {
+        const error = new BunqApiError(502, 'x'.repeat(2000));
+
+        expect(error.message.length).toBeLessThan(600);
+        expect(error.body).toHaveLength(2000);
+    });
+
+    test('a 200 is returned as is', async () => {
+        const response = await readUserAnswering(200, '{"Response":[{"UserPerson":{"id":1}}]}');
+
+        expect(response.status).toBe(200);
     });
 });

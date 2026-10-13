@@ -64,18 +64,29 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
 
     const responseHeaders: Record<string, string[]> = {};
     res.headers.forEach((value, key) => responseHeaders[key] = [value]);
-    return failOnNonJsonError({statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined});
+    return {statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined};
 }
 
-/** Proxies and gateways answer errors with HTML; name the status instead of failing in the JSON parser. */
-export function failOnNonJsonError(response: Wirespec.RawResponse): Wirespec.RawResponse {
-    if (response.statusCode >= 400 && response.body) {
-        const text = utf8Decoder.decode(response.body);
-        try {
-            JSON.parse(text);
-        } catch {
-            throw new Error(`bunq answered ${response.statusCode} with a non-JSON body: ${text.slice(0, 200)}`);
-        }
+/** bunq (or a proxy in front of it) answered with a status other than 200 or 400, or with a 400 that is not JSON. */
+export class BunqApiError extends Error {
+    constructor(readonly status: number, readonly body: string) {
+        super(`bunq answered ${status}: ${body.slice(0, 500)}`);
+        this.name = "BunqApiError";
     }
-    return response;
+}
+
+function isJson(text: string): boolean {
+    try {
+        JSON.parse(text);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/** Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller. */
+export function requireTyped(response: Wirespec.RawResponse): Wirespec.RawResponse {
+    const text = response.body ? utf8Decoder.decode(response.body) : "";
+    if (response.statusCode === 200 || (response.statusCode === 400 && isJson(text))) return response;
+    throw new BunqApiError(response.statusCode, text);
 }

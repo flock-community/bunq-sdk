@@ -1,7 +1,7 @@
 import {Wirespec} from "./gen/Wirespec";
 import {client} from "./gen/Client";
 import {Context, refreshSession} from "./context";
-import {rawHandler, serialization} from "./wirespec";
+import {rawHandler, requireTyped, serialization} from "./wirespec";
 
 const sessionRejection = "Insufficient authentication.";
 
@@ -31,7 +31,8 @@ function isSessionRejected(response: Wirespec.RawResponse): boolean {
 /**
  * Sends requests with the context's authentication headers.
  * A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
- * request with the new token. Other responses, and the original 403 when the refresh fails, are returned as is.
+ * request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
+ * are thrown as BunqApiError.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  */
 export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<Context> = refreshSession): Wirespec.Transportation {
@@ -58,9 +59,9 @@ export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<
         async transport(request) {
             const used = current;
             const response = await sendWith(used, request);
-            if (!isSessionRejected(response)) return response;
+            if (!isSessionRejected(response)) return requireTyped(response);
             const fresh = await refreshed(used);
-            return fresh ? sendWith(fresh, request) : response;
+            return requireTyped(fresh ? await sendWith(fresh, request) : response);
         }
     };
 }
