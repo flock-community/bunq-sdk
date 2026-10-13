@@ -5,7 +5,6 @@ import com.bunq.sdk.generated.endpoint.CreateInstallation
 import com.bunq.sdk.generated.endpoint.CreateSessionServer
 import com.bunq.sdk.generated.model.DeviceServer
 import com.bunq.sdk.generated.model.DeviceServerCreate
-import com.bunq.sdk.generated.model.GenericError
 import com.bunq.sdk.generated.model.Installation
 import com.bunq.sdk.generated.model.InstallationCreate
 import com.bunq.sdk.generated.model.SessionServer
@@ -17,8 +16,7 @@ import java.time.Instant
 
 private val logger = KotlinLogging.logger {}
 
-private fun setupFailure(action: String, status: Int, body: GenericError) =
-    "Cannot $action (status $status): ${body.Error?.firstOrNull()?.error_description}"
+private fun setupFailure(action: String, description: String?) = "Cannot $action (status 400): $description"
 
 data class Context(
     val serverPublicKey: String,
@@ -96,12 +94,12 @@ private fun createInstallation(config: Config): InstallationCreate {
     )
 
     val rawRequest = CreateInstallation.toRawRequest(serialization, request)
-    val rawResponse = send(config, rawRequest)
+    val rawResponse = send(config, rawRequest).requireTyped()
     val res = CreateInstallation.fromRawResponse(serialization, rawResponse)
 
     when (res) {
         is CreateInstallation.Response200 -> return res.body
-        is CreateInstallation.ResponseGenericError -> error(setupFailure("create installation", res.status, res.body))
+        is CreateInstallation.Response400 -> error(setupFailure("create installation", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 
@@ -117,12 +115,12 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
 
     val rawRequest = CreateDeviceServer.toRawRequest(serialization, request)
     val authRequest = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(token)))
-    val rawResponse = send(config, authRequest)
+    val rawResponse = send(config, authRequest).requireTyped()
     val res = CreateDeviceServer.fromRawResponse(serialization, rawResponse)
 
     when (res) {
         is CreateDeviceServer.Response200 -> return res.body
-        is CreateDeviceServer.ResponseGenericError -> error(setupFailure("create device server", res.status, res.body))
+        is CreateDeviceServer.Response400 -> error(setupFailure("create device server", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 
@@ -144,13 +142,13 @@ private fun createSessionServer(
             token
         ))
     )
-    val rawResponse = send(config, authRequest)
+    val rawResponse = send(config, authRequest).requireTyped()
 
     val res = CreateSessionServer.fromRawResponse(serialization, rawResponse)
 
     when (res) {
         is CreateSessionServer.Response200 -> return res.body
-        is CreateSessionServer.ResponseGenericError -> error(setupFailure("create session server", res.status, res.body))
+        is CreateSessionServer.Response400 -> error(setupFailure("create session server", res.body.Error?.firstOrNull()?.error_description))
     }
 }
 
