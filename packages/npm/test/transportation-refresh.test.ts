@@ -24,7 +24,7 @@ describe('transportation session refresh', () => {
             const token = req.headers['x-bunq-client-authentication'] as string | undefined;
             seenTokens.push(token);
             res.statusCode = token === 'fresh' ? 200 : 403;
-            res.end(token === 'fresh' ? '{}' : rejection);
+            res.end(token === 'fresh' ? '{"Response":[]}' : rejection);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
         const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;

@@ -61,6 +61,20 @@ describe('error responses', () => {
         await expect(readUserAnswering(400, '<html>Bad Request</html>')).rejects.toBeInstanceOf(BunqApiError);
     });
 
+    test('a 200 without Response throws with the status and body', async () => {
+        await expect(readUserAnswering(200, '{"unexpected":true}'))
+            .rejects.toMatchObject({status: 200, body: '{"unexpected":true}'});
+    });
+
+    test('a 400 without Error throws with the status and body', async () => {
+        await expect(readUserAnswering(400, '{"message":"Bad Request"}'))
+            .rejects.toMatchObject({status: 400, body: '{"message":"Bad Request"}'});
+    });
+
+    test('a non-object JSON 200 throws', async () => {
+        await expect(readUserAnswering(200, '[]')).rejects.toMatchObject({status: 200, body: '[]'});
+    });
+
     test('the message truncates the body but the body field keeps it whole', () => {
         const error = new BunqApiError(502, 'x'.repeat(2000));
 

@@ -67,7 +67,7 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
     return {statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined};
 }
 
-/** bunq (or a proxy in front of it) answered with a status other than 200 or 400, or with a 400 that is not JSON. */
+/** bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`. */
 export class BunqApiError extends Error {
     constructor(readonly status: number, readonly body: string) {
         super(`bunq answered ${status}: ${body.slice(0, 500)}`);
@@ -75,18 +75,19 @@ export class BunqApiError extends Error {
     }
 }
 
-function isJson(text: string): boolean {
+function isObjectWith(text: string, key: string): boolean {
     try {
-        JSON.parse(text);
-        return true;
+        const parsed = JSON.parse(text);
+        return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) && key in parsed;
     } catch {
         return false;
     }
 }
 
-/** Only a 200, or a 400 with a JSON body, is for the generated client; anything else is an error for the caller. */
+/** Only a 200 with a `Response` object or a 400 with an `Error` object is for the generated client; anything else is an error for the caller. */
 export function requireTyped(response: Wirespec.RawResponse): Wirespec.RawResponse {
     const text = response.body ? utf8Decoder.decode(response.body) : "";
-    if (response.statusCode === 200 || (response.statusCode === 400 && isJson(text))) return response;
+    const envelope = {200: "Response", 400: "Error"}[response.statusCode];
+    if (envelope && isObjectWith(text, envelope)) return response;
     throw new BunqApiError(response.statusCode, text);
 }
