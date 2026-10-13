@@ -54,6 +54,7 @@ import com.bunq.sdk.Wirespec;
 import com.bunq.sdk.generated.Client;
 import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser;
 import com.bunq.sdk.generated.endpoint.ReadUser;
+import com.bunq.sdk.generated.model.ErrorArray;
 import com.bunq.sdk.generated.model.UserPerson;
 import java.util.Optional;
 
@@ -128,14 +129,14 @@ ReadUser.Response<?> user = client.readUser(999999999L).get();
 if (user instanceof ReadUser.Response404) {
     System.out.println("No such user");
 } else if (user instanceof ReadUser.ResponseGenericError error) {
-    String description = error.body().Error().orElseThrow().get(0).error_description().orElse(null);
+    String description = error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description).orElse(null);
     throw new IllegalStateException("bunq answered " + error.status() + ": " + description);
 }
 ```
 
 A status outside the list (for example 502) throws `IllegalStateException("Cannot match response with status: 502")`, and a non-JSON error body throws `bunq answered 502 with a non-JSON body: ...`. Both arrive wrapped in the `ExecutionException` of `get()`.
 
-`Context.initContext` and `refreshSession()` throw an exception if session creation fails. The message is `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server"); `initContext` wraps it in a `RuntimeException` (cause chain: `ExecutionException`, then the `RuntimeException` with that message):
+`Context.initContext` and `refreshSession()` throw an exception if session creation fails. The message is `Cannot create session server (status 400): <error_description>` (the step is "create installation", "create device server" or "create session server"); `initContext` wraps the setup error in a `RuntimeException` whose message is the cause's `toString()` (cause chain: `ExecutionException`, then the `RuntimeException` with the "Cannot create ..." message). `refreshSession()` wraps it in `RuntimeException("Failed to refresh session")` with the same cause chain:
 
 ```java
 try {

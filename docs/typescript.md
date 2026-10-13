@@ -119,16 +119,21 @@ See [Error Handling in the README](../README.md#error-handling) for the error st
 Typed error responses are returned, not thrown. When `status` is not 200, `body` is a `GenericError`:
 
 ```typescript
-async function readLegalName(client: ReturnType<typeof bunqClient>, userId: number) {
+import {type BunqClient} from "bunq-sdk";
+
+async function readLegalName(client: BunqClient, userId: number) {
   const res = await client.readUser({itemId: userId});
   if (res.status === 200) {
     return res.body.UserPerson?.legal_name;
+  }
+  if (res.status === 404) {
+    return undefined;
   }
   throw new Error(`bunq answered ${res.status}: ${res.body.Error?.[0]?.error_description}`);
 }
 ```
 
-A status outside the list (for example 502) rejects with `Cannot match response with status: 502`, and a non-JSON error body rejects with `bunq answered 502 with a non-JSON body: ...`.
+A status outside the list (for example 502) rejects with `Error('Cannot match response with status:')` (the TypeScript emitter of Wirespec 0.21.1 omits the status number), and a non-JSON error body rejects with `bunq answered 502 with a non-JSON body: ...`.
 
 `initContext` and `refreshSession` reject if session creation fails, with a message like `Session server creation failed (status 400): <error_description>`:
 
