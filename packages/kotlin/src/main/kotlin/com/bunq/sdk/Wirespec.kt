@@ -144,6 +144,7 @@ fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     .toMap()
     .mapValues { (_, value) -> listOf(value) }
 
+@JvmOverloads
 fun bunqClient(context: Context, onContextChange: (Context) -> Unit = {}): Client =
     Client(serialization, transportation(context, onContextChange))
 
@@ -161,10 +162,11 @@ private const val EXPIRY_MARGIN_SECONDS = 30L
  * A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
  * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
  * and the request is retried with the new session token. A plain 403 ("not allowed"), and the original 403 when the
- * refresh itself fails, are thrown as [BunqApiException] like every status other than 200 and 400.
+ * refresh itself fails (a failed refresh before sending is not repeated after a 403 in the same request), are thrown as [BunqApiException] like every status other than 200 and 400.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  * [onContextChange] is called once with the new context after every successful refresh, so the caller can store it.
  */
+@JvmOverloads
 fun transportation(context: Context, onContextChange: (Context) -> Unit = {}): Wirespec.Transportation =
     refreshingTransportation(context, onContextChange) { it.refreshSession() }
 
@@ -183,9 +185,9 @@ internal fun refreshingTransportation(
 
     /** Returns the refreshed context, or null when the refresh failed. */
     suspend fun refreshed(used: Context): Context? = mutex.withLock {
-        // another request may have refreshed the session while this one waited
+        // another request may have refreshed while this one waited; compared by identity because bunq returns the same session token on a re-created session
         val latest = current.value
-        if (latest.sessionToken != used.sessionToken) return@withLock latest
+        if (latest !== used) return@withLock latest
         val new = try {
             refresh(used)
         } catch (e: CancellationException) {
@@ -201,9 +203,11 @@ internal fun refreshingTransportation(
 
     return Wirespec.Transportation { request ->
         val snapshot = current.value
-        val used = if (snapshot.sessionExpiryTime <= Instant.now().plusSeconds(EXPIRY_MARGIN_SECONDS)) refreshed(snapshot) ?: snapshot else snapshot
+        // null when the refresh before sending failed: a 403 then does not trigger a second refresh in the same request
+        val preRefreshed = if (snapshot.sessionExpiryTime <= Instant.now().plusSeconds(EXPIRY_MARGIN_SECONDS)) refreshed(snapshot) else snapshot
+        val used = preRefreshed ?: snapshot
         val response = sendWith(used, request)
-        if (!response.isSessionRejected()) return@Transportation response.requireTyped()
+        if (preRefreshed == null || !response.isSessionRejected()) return@Transportation response.requireTyped()
 
         val retry = refreshed(used) ?: return@Transportation response.requireTyped()
         sendWith(retry, request).requireTyped()
