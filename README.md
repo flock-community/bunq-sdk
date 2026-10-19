@@ -238,6 +238,8 @@ If you want to modify the SDKs:
 
 For the npm package, `src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test`.
 
+Run one `:packages` task per Gradle call (for example `./gradlew :packages:kotlin:build`, then `./gradlew :packages:java:build`). Naming two of them in one call fails with `Option 'preProcessor' cannot be cast to type 'kotlin.jvm.functions.Function1'`, because Gradle rejects the `preProcessor` option of Wirespec's `ConvertWirespecTask`.
+
 ### Releasing
 
 Kotlin and Java are published through JitPack, configured in `jitpack.yml`.
