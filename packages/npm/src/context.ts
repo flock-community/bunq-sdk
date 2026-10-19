@@ -36,7 +36,7 @@ function unauthenticatedClient(config: Config, token?: string, serverPublicKey?:
     const headers: Record<string, string[]> = token ? {"X-Bunq-Client-Authentication": [token]} : {};
     return client(serialization, {transport: async request => {
         const response = await rawHandler(config, {...request, headers: {...request.headers, ...headers}});
-        return serverPublicKey ? requireSigned(response, serverPublicKey) : requireTyped(response);
+        return serverPublicKey !== undefined ? requireSigned(response, serverPublicKey) : requireTyped(response);
     }});
 }
 
