@@ -4,7 +4,7 @@ from bunq_server import BunqServer
 from signing_keys import SigningKeys, SigningKeysFromPem
 
 
-@dataclass
+@dataclass(repr=False)
 class Config:
     """Configuration class for bunq API client containing all necessary settings and credentials
     for establishing and managing API connections.
@@ -22,6 +22,15 @@ class Config:
     client_request_id: Optional[str] = None
     geolocation: Optional[str] = None
     
+    def __repr__(self) -> str:
+        # Masks api_key and signing_keys; the object still holds them.
+        return (
+            f"Config(bunq_server={self.bunq_server!r}, service_name={self.service_name!r}, api_key='***', "
+            f"signing_keys='***', user_agent={self.user_agent!r}, cache_control={self.cache_control!r}, "
+            f"language={self.language!r}, region={self.region!r}, client_request_id={self.client_request_id!r}, "
+            f"geolocation={self.geolocation!r})"
+        )
+
     def __post_init__(self):
         """Validate configuration parameters after initialization"""
         self._validate_basic_parameters()
