@@ -21,6 +21,9 @@ export const serialization: Wirespec.Serialization = {
     },
     deserializeBody<T>(raw: Uint8Array, type: string): T {
         const body: {Response?: Record<string, unknown>[]} = JSON.parse(utf8Decoder.decode(raw));
+        if (typeof body !== "object" || body === null || Array.isArray(body)) {
+            throw new Error("Invalid bunq response: neither Response nor Error");
+        }
         if (!body.Response) {
             if (!("Error" in body)) {
                 throw new Error("Invalid bunq response: neither Response nor Error");

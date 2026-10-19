@@ -52,6 +52,11 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(Exception, "neither Response nor Error"):
             self.read_user(200, '{"unexpected":true}')
 
+    def test_body_that_is_not_an_object_is_rejected(self):
+        for body in ('null', '"x"', '[]'):
+            with self.assertRaisesRegex(Exception, "neither Response nor Error"):
+                self.read_user(400, body)
+
     async def test_status_other_than_200_and_400_raises_with_status_and_body(self):
         for status in (403, 404, 500):
             body = '{"Error":[{"error_description":"nope %d"}]}' % status
