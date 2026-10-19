@@ -185,11 +185,12 @@ class TransportationRefreshTest {
 
     @Test
     fun `a context expiring in 10 seconds is refreshed`() =
-        withServer(authenticationError, expiry = Instant.now().plusSeconds(10)) { context, _ ->
+        withServer(authenticationError, expiry = Instant.now().plusSeconds(10)) { context, tokens ->
             val refreshes = AtomicInteger()
             val transport = refreshingTransportation(context) { refreshes.incrementAndGet(); it.fresh() }
 
             assertEquals(200, runBlocking { transport.transport(request) }.statusCode)
             assertEquals(1, refreshes.get())
+            assertEquals(listOf("stale"), tokens) // refreshed before sending: no rejected request first
         }
 }

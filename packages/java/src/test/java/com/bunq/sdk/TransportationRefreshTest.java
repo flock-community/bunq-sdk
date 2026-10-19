@@ -291,6 +291,7 @@ public class TransportationRefreshTest {
 
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
             assertEquals(1, refreshes.get());
+            assertEquals(List.of("stale"), tokens); // refreshed before sending: no rejected request first
         });
     }
 }
