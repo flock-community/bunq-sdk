@@ -1,5 +1,7 @@
 package com.bunq.sdk;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -83,7 +85,7 @@ public record Config(
 
     /** Masks apiKey and signingKeys; the record still holds them. */
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "Config[bunqServer=" + bunqServer + ", serviceName=" + serviceName + ", apiKey=***, signingKeys=***"
                 + ", userAgent=" + userAgent + ", cacheControl=" + cacheControl + ", language=" + language
                 + ", region=" + region + ", clientRequestId=" + clientRequestId + ", geolocation=" + geolocation + "]";

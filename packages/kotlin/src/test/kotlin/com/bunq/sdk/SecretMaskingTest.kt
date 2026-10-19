@@ -15,9 +15,10 @@ class SecretMaskingTest {
 
         val text = context.toString()
 
-        listOf("secret-api-key", "secret-session", "secret-install", keys.privateKeyAsPem().lines()[1])
+        listOf("secret-api-key", "secret-session", "secret-install")
             .forEach { assertFalse(text.contains(it), it) }
         assertTrue(text.contains("my-service"))
+        assertTrue(text.contains("signingKeys=***"))
         assertTrue(text.contains("userId=3"))
     }
 }

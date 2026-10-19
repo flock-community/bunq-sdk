@@ -20,7 +20,11 @@ export interface Context {
  * Logging the object itself or JSON.stringify(context) prints the secrets; the object still holds them.
  */
 export function describeContext(context: Context): string {
-    return `Context ${JSON.stringify({...context, sessionToken: '***', installationToken: '***', config: '<config>'})} ${describeConfig(context.config)}`;
+    return `Context ${JSON.stringify({
+        serverPublicKey: context.serverPublicKey, deviceId: context.deviceId, sessionId: context.sessionId,
+        sessionToken: '***', userId: context.userId, sessionExpiryTime: context.sessionExpiryTime,
+        installationToken: '***', config: '<config>',
+    })} ${describeConfig(context.config)}`;
 }
 
 function setupFailure(what: string, body: {Error?: {error_description?: string}[]}): string {

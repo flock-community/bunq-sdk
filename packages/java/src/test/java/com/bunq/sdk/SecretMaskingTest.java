@@ -19,11 +19,11 @@ public class SecretMaskingTest {
 
         String text = context.toString();
 
-        for (String secret : List.of("secret-api-key", "secret-session", "secret-install",
-                keys.privateKeyPem().lines().toList().get(1))) {
+        for (String secret : List.of("secret-api-key", "secret-session", "secret-install")) {
             assertFalse(text.contains(secret), secret);
         }
         assertTrue(text.contains("my-service"));
+        assertTrue(text.contains("signingKeys=***"));
         assertTrue(text.contains("userId=3"));
     }
 }

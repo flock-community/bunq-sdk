@@ -22,4 +22,5 @@ test('describeContext masks secrets and keeps non-secret fields', () => {
         expect(text).toContain('my-service');
     }
     expect(describeContext(context)).toContain('"userId":3');
+    expect(JSON.stringify(config)).not.toContain(privateKey.split('\n')[1]);
 });
