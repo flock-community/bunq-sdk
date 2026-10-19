@@ -81,7 +81,7 @@ val serialization: Wirespec.Serialization =
         }
     }
 
-private val httpClient: java.net.http.HttpClient = java.net.http.HttpClient.newBuilder().build()
+internal val httpClient: java.net.http.HttpClient = java.net.http.HttpClient.newBuilder().build()
 
 fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     val baseUri = java.net.URI(config.bunqServer.baseUrl + req.path.joinToString("/"))
