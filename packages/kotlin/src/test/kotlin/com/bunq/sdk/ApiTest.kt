@@ -4,6 +4,7 @@ import com.bunq.sdk.generated.Client
 import com.bunq.sdk.generated.endpoint.CreateRequestInquiryForUserMonetaryAccount
 import com.bunq.sdk.generated.endpoint.DeleteSession
 import com.bunq.sdk.generated.endpoint.ListAllMonetaryAccountBankForUser
+import com.bunq.sdk.generated.endpoint.ListAllRequestInquiryForUserMonetaryAccount
 import com.bunq.sdk.generated.endpoint.ReadMonetaryAccountBankForUser
 import com.bunq.sdk.generated.endpoint.ReadUser
 import com.bunq.sdk.generated.model.Amount
@@ -27,6 +28,7 @@ import kotlin.collections.firstOrNull
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
@@ -113,7 +115,7 @@ class ApiTest {
         val client = bunqClient(context)
         val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)
         val body = when (res) {
-            is ListAllMonetaryAccountBankForUser.Response200 -> res.body
+            is ListAllMonetaryAccountBankForUser.Response200 -> res.body.Response
             is ListAllMonetaryAccountBankForUser.Response400 -> error("Could not get bank accounts")
         }
         assertNotNull(body.firstOrNull()?.id)
@@ -159,10 +161,36 @@ class ApiTest {
                 older_id = null
             )
         if (res is ListAllMonetaryAccountBankForUser.Response200) {
-            assertFalse(res.body[0].display_name.isNullOrBlank())
+            assertFalse(res.body.Response[0].display_name.isNullOrBlank())
         } else {
             fail { "Cannot list monetary accounts" }
         }
+    }
+
+    @Test
+    fun `a list is paged by following the older_url id`() = runTest {
+        val context = initContext(config)
+        val client = bunqClient(context)
+        suspend fun page(older: Long?) = when (val res =
+            client.listAllRequestInquiryForUserMonetaryAccount(context.userId, 1989601, 1, null, older)) {
+            is ListAllRequestInquiryForUserMonetaryAccount.Response200 -> res.body
+            is ListAllRequestInquiryForUserMonetaryAccount.Response400 -> fail("Could not list request inquiries")
+        }
+
+        val first = page(null)
+        val firstId = first.Response.single().id
+        assertNotNull(firstId)
+        // newest first: nothing is newer than the first page
+        assertNull(first.Pagination.newer_url)
+        val olderId = first.Pagination.older_url?.substringAfter("older_id=")?.toLong()
+        assertEquals(firstId, olderId)
+
+        delay(1.seconds) // bunq allows 3 calls per 3 seconds on this endpoint
+        val second = page(olderId)
+        val secondId = second.Response.single().id
+        assertNotNull(secondId)
+        assertTrue(secondId < firstId)
+        assertNotNull(second.Pagination.newer_url)
     }
 
     @Test
@@ -177,7 +205,7 @@ class ApiTest {
             older_id = null
         )
         val body = when (res) {
-            is ListAllMonetaryAccountBankForUser.Response200 -> res.body
+            is ListAllMonetaryAccountBankForUser.Response200 -> res.body.Response
             is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
         }
         assertEquals(1, body.size)
@@ -195,7 +223,7 @@ class ApiTest {
             older_id = null
         )
         val body2 = when (res2) {
-            is ListAllMonetaryAccountBankForUser.Response200 -> res2.body
+            is ListAllMonetaryAccountBankForUser.Response200 -> res2.body.Response
             is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
         }
         val monetaryAccountBankListing2 = body2.firstOrNull()
