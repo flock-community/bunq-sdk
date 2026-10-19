@@ -18,14 +18,17 @@ class TransportationRefreshTest {
     private val authenticationError = """{"Error":[{"error_description":"Insufficient authentication."}]}"""
     private val request = Wirespec.RawRequest("GET", listOf("ping"), emptyMap(), emptyMap(), null)
 
-    /** Answers 200 for the token "fresh", otherwise 403 with [rejection]. Returns the tokens it saw. */
+    /** Set by [fresh]: like bunq, the server accepts the session again after a refresh although the token stays the same. */
+    private val revived = java.util.concurrent.atomic.AtomicBoolean()
+
+    /** Answers 200 once [revived], otherwise 403 with [rejection]. Returns the tokens it saw. */
     private fun withServer(rejection: String, expiry: Instant = Instant.now().plusSeconds(3600), block: (Context, List<String>) -> Unit) {
         val seenTokens = java.util.Collections.synchronizedList(mutableListOf<String>())
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
             val token = exchange.requestHeaders.getFirst("X-Bunq-Client-Authentication")
             seenTokens += token
-            val (status, body) = if (token == "fresh") 200 to """{"Response":[]}""" else 403 to rejection
+            val (status, body) = if (revived.get()) 200 to """{"Response":[]}""" else 403 to rejection
             val bytes = body.toByteArray()
             exchange.sendResponseHeaders(status, if (bytes.isEmpty()) -1 else bytes.size.toLong())
             if (bytes.isNotEmpty()) exchange.responseBody.write(bytes)
@@ -46,7 +49,11 @@ class TransportationRefreshTest {
         }
     }
 
-    private fun Context.fresh() = copy(sessionToken = "fresh")
+    /** What bunq returns for a re-created session: the same token with a later expiry. */
+    private fun Context.fresh(): Context {
+        revived.set(true)
+        return copy(sessionExpiryTime = Instant.now().plusSeconds(3600))
+    }
 
     @Test
     fun `insufficient authentication refreshes once and retries with the new token`() = withServer(authenticationError) { context, tokens ->
@@ -57,7 +64,7 @@ class TransportationRefreshTest {
 
         assertEquals(200, response.statusCode)
         assertEquals(1, refreshes.get())
-        assertEquals(listOf("stale", "fresh"), tokens)
+        assertEquals(listOf("stale", "stale"), tokens)
     }
 
     @Test
@@ -124,19 +131,20 @@ class TransportationRefreshTest {
             assertEquals(200, runBlocking { transport.transport(request) }.statusCode)
 
             assertEquals(1, refreshes.get())
-            assertEquals(listOf("fresh"), tokens)
-            assertEquals(listOf("fresh"), changes.map { it.sessionToken })
+            assertEquals(listOf("stale"), tokens)
+            assertEquals(1, changes.size)
         }
 
     @Test
     fun `a context that is not expired is not refreshed`() = withServer(authenticationError) { context, tokens ->
         val refreshes = AtomicInteger()
-        val transport = refreshingTransportation(context.fresh(), { refreshes.incrementAndGet() }) { refreshes.incrementAndGet(); it }
+        revived.set(true)
+        val transport = refreshingTransportation(context, { refreshes.incrementAndGet() }) { refreshes.incrementAndGet(); it }
 
         assertEquals(200, runBlocking { transport.transport(request) }.statusCode)
 
         assertEquals(0, refreshes.get())
-        assertEquals(listOf("fresh"), tokens)
+        assertEquals(listOf("stale"), tokens)
     }
 
     @Test
@@ -146,11 +154,11 @@ class TransportationRefreshTest {
 
         assertEquals(200, runBlocking { transport.transport(request) }.statusCode)
 
-        assertEquals(listOf("fresh"), changes.map { it.sessionToken })
+        assertEquals(1, changes.size)
     }
 
     @Test
-    fun `concurrent calls on an expired context refresh once`() =
+    fun `concurrent calls on an expired context refresh once when bunq keeps the session token`() =
         withServer(authenticationError, expiry = Instant.now().minusSeconds(1)) { context, _ ->
             val refreshes = AtomicInteger()
             val changes = AtomicInteger()
@@ -163,5 +171,25 @@ class TransportationRefreshTest {
             assertEquals(listOf(200, 200, 200), statuses)
             assertEquals(1, refreshes.get())
             assertEquals(1, changes.get())
+        }
+
+    @Test
+    fun `a failed refresh before sending is not repeated after the 403`() =
+        withServer(authenticationError, expiry = Instant.now().minusSeconds(1)) { context, _ ->
+            val refreshes = AtomicInteger()
+            val transport = refreshingTransportation(context) { refreshes.incrementAndGet(); error("429") }
+
+            assertEquals(403, assertFailsWith<BunqApiException> { runBlocking { transport.transport(request) } }.status)
+            assertEquals(1, refreshes.get())
+        }
+
+    @Test
+    fun `a context expiring in 10 seconds is refreshed`() =
+        withServer(authenticationError, expiry = Instant.now().plusSeconds(10)) { context, _ ->
+            val refreshes = AtomicInteger()
+            val transport = refreshingTransportation(context) { refreshes.incrementAndGet(); it.fresh() }
+
+            assertEquals(200, runBlocking { transport.transport(request) }.statusCode)
+            assertEquals(1, refreshes.get())
         }
 }
