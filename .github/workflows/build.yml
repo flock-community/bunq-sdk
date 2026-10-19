@@ -82,6 +82,7 @@ jobs:
           python -m unittest ./error_response_test.py
           python -m unittest ./secret_masking_test.py
           python -m unittest ./response_signature_test.py
+          python -m unittest ./pagination_test.py
 
   build-npm:
 

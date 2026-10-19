@@ -35,6 +35,10 @@ class Serialization(Wirespec.Serialization):
             return from_dict(data_class=type, data=data)
 
         res_data = data["Response"]
+        if "Pagination" in data:
+            # list responses keep the items and the cursor urls
+            items = [next(iter(it.values())) for it in res_data]
+            return from_dict(data_class=type, data={"Response": items, "Pagination": data["Pagination"]})
         if get_origin(type) is list:
             generic = get_args(type)[0]
             return [from_dict(data_class=generic, data=next(iter(it.values()))) for it in res_data]
