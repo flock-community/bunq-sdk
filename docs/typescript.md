@@ -73,7 +73,7 @@ The optional query parameters (`count`, `newer_id`, `older_id`) can be left out.
 
 ## Pagination
 
-A list operation returns a page, `<Item>Page` (for example `PaymentPage`), with the items in `Response` and bunq's `Pagination` block in `Pagination`. `Pagination` has `future_url`, `newer_url` and `older_url`; each is null when there is nothing to follow. Items are listed newest first. To read the next (older) page, call the operation again with `older_id` set to the id of the last item of the current page. That is the `older_id` in `older_url`. When `older_url` is null there are no older items. `newer_id` goes the other way: pass the id of the first item to get the items newer than it. `count` is the page size (at most 200).
+A list operation returns a page, `<Item>Page` (for example `PaymentPage`), with the items in `Response` and bunq's `Pagination` block in `Pagination`. `Pagination` has `future_url`, `newer_url` and `older_url`; each is null when there is nothing to follow. Items are listed newest first. To read the next (older) page, call the operation again with `older_id` set to the id of the last item of the current page. That is the `older_id` in `older_url`. When `older_url` is null there are no older items. The generated TypeScript type of the `*_url` fields is `string | undefined`, but the value is `null` at runtime, so check with `!older_url` and not with `=== undefined`. `newer_id` goes the other way: pass the id of the first item to get the items newer than it. `count` is the page size (at most 200).
 
 ```typescript
 async function allPayments(client: BunqClient, userID: number, monetaryAccountID: number) {
@@ -85,7 +85,7 @@ async function allPayments(client: BunqClient, userID: number, monetaryAccountID
       throw new Error(res.body.Error?.[0]?.error_description);
     }
     payments.push(...res.body.Response);
-    olderId = res.body.Pagination.older_url ? res.body.Response.at(-1)?.id : undefined;
+    olderId = res.body.Pagination.older_url ? res.body.Response[res.body.Response.length - 1]?.id : undefined;
   } while (olderId !== undefined);
   return payments;
 }

@@ -152,7 +152,9 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
                 mediaType
             } else {
                 val name = pageSchemaName(itemName)
-                pages[name] = pageSchema(items)
+                val page = pageSchema(items)
+                check(pages[name] == null || pages[name] == page) { "Different list item schemas map to the same page schema name: $name" }
+                pages[name] = page
                 JsonObject(mediaType.jsonObject + ("schema" to schemaRef(name)))
             }
         }
@@ -261,15 +263,13 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
             requireUniqueOperationIds(processedPaths)
             processed["paths"] = processedPaths
         }
-        openApi["components"]?.jsonObject?.let { components ->
-            processed["components"] = JsonObject(components.toMutableMap().also { result ->
-                components["schemas"]?.jsonObject?.let { schemas ->
-                    val added = if (pages.isEmpty()) emptyMap() else pages + ("Pagination" to paginationSchema)
-                    val collisions = added.keys.filter { it in schemas }
-                    check(collisions.isEmpty()) { "Schemas to add already exist: $collisions" }
-                    result["schemas"] = JsonObject(processSchemas(schemas) + added)
-                }
-            })
+        val components = openApi["components"]?.jsonObject
+        if (components != null || pages.isNotEmpty()) {
+            val schemas = components?.get("schemas")?.jsonObject ?: JsonObject(emptyMap())
+            val added = if (pages.isEmpty()) emptyMap() else pages + ("Pagination" to paginationSchema)
+            val collisions = added.keys.filter { it in schemas }
+            check(collisions.isEmpty()) { "Schemas to add already exist: $collisions" }
+            processed["components"] = JsonObject((components ?: JsonObject(emptyMap())) + ("schemas" to JsonObject(processSchemas(schemas) + added)))
         }
         return Json.encodeToString(JsonObject.serializer(), JsonObject(processed))
     }
