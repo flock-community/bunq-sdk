@@ -21,14 +21,15 @@ NOT_ALLOWED = json.dumps({"Error": [{"error_description": "You are not allowed t
 class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
     def start_server(self, rejected_body: str, expiry: datetime | None = None):
-        """Answers 200 for the 'fresh' token and a 403 with rejected_body for every other token."""
+        """Answers 200 once a refresh has revived the session (see counting_refresh) and a 403 with rejected_body before."""
         self.tokens_seen: list[str | None] = []
+        self.revived = False
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(handler):
                 token = handler.headers.get('X-Bunq-Client-Authentication')
                 self.tokens_seen.append(token)
-                ok = token == 'fresh'
+                ok = self.revived
                 body = b'{"Response":[]}' if ok else rejected_body.encode()
                 handler.send_response(200 if ok else 403)
                 handler.send_header('Content-Length', str(len(body)))
@@ -60,7 +61,9 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
             await asyncio.sleep(0.05)
             if fails:
                 raise Exception("refresh failed")
-            return replace(context, session_token='fresh')
+            # what bunq returns for a re-created session: the same token with a later expiry
+            self.revived = True
+            return replace(context, session_expiry_time=datetime.now() + timedelta(hours=1))
 
         return refresh
 
@@ -72,7 +75,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, response.statusCode)
         self.assertEqual(1, self.refreshes)
-        self.assertEqual(['stale', 'fresh'], self.tokens_seen)
+        self.assertEqual(['stale', 'stale'], self.tokens_seen)
 
     async def test_failed_refresh_raises_original_403(self):
         self.start_server(SESSION_REJECTED)
@@ -132,7 +135,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         self.tokens_seen.clear()
         await transport.transport(self.request)
 
-        self.assertEqual(['fresh'], self.tokens_seen)
+        self.assertEqual(['stale'], self.tokens_seen)
         self.assertEqual(1, self.refreshes)
 
     async def test_expired_context_is_refreshed_before_the_first_request_and_callback_fires_once(self):
@@ -144,20 +147,21 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, response.statusCode)
         self.assertEqual(1, self.refreshes)
-        self.assertEqual(['fresh'], self.tokens_seen)
-        self.assertEqual(['fresh'], changes)
+        self.assertEqual(['stale'], self.tokens_seen)
+        self.assertEqual(1, len(changes))
 
     async def test_context_that_is_not_expired_is_not_refreshed(self):
         self.start_server(SESSION_REJECTED)
         changes: list[str] = []
-        transport = transportation(replace(self.context, session_token='fresh'), self.counting_refresh(),
+        self.revived = True
+        transport = transportation(self.context, self.counting_refresh(),
                                    lambda context: changes.append(context.session_token))
 
         self.assertEqual(200, (await transport.transport(self.request)).statusCode)
 
         self.assertEqual(0, self.refreshes)
         self.assertEqual([], changes)
-        self.assertEqual(['fresh'], self.tokens_seen)
+        self.assertEqual(['stale'], self.tokens_seen)
 
     async def test_403_refresh_calls_the_callback_once_with_the_new_context(self):
         self.start_server(SESSION_REJECTED)
@@ -166,9 +170,9 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, (await transport.transport(self.request)).statusCode)
 
-        self.assertEqual(['fresh'], changes)
+        self.assertEqual(1, len(changes))
 
-    async def test_concurrent_calls_on_an_expired_context_refresh_once(self):
+    async def test_concurrent_calls_on_an_expired_context_refresh_once_when_bunq_keeps_the_session_token(self):
         self.start_server(SESSION_REJECTED, expiry=datetime.now() - timedelta(seconds=1))
         changes: list[str] = []
         transport = transportation(self.context, self.counting_refresh(), lambda context: changes.append(context.session_token))
@@ -177,7 +181,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual([200] * 5, [response.statusCode for response in responses])
         self.assertEqual(1, self.refreshes)
-        self.assertEqual(['fresh'], changes)
+        self.assertEqual(1, len(changes))
 
     async def test_timezone_aware_expiry_is_compared_in_its_own_zone(self):
         self.start_server(SESSION_REJECTED, expiry=datetime.now(timezone.utc) - timedelta(seconds=1))
@@ -185,7 +189,23 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         response = await transportation(self.context, self.counting_refresh()).transport(self.request)
 
         self.assertEqual(200, response.statusCode)
-        self.assertEqual(['fresh'], self.tokens_seen)
+        self.assertEqual(['stale'], self.tokens_seen)
+
+    async def test_failed_refresh_before_sending_is_not_repeated_after_the_403(self):
+        self.start_server(SESSION_REJECTED, expiry=datetime.now() - timedelta(seconds=1))
+        with self.assertRaises(BunqApiError) as raised:
+            await transportation(self.context, self.counting_refresh(fails=True)).transport(self.request)
+
+        self.assertEqual(403, raised.exception.status)
+        self.assertEqual(1, self.refreshes)
+
+    async def test_context_expiring_in_10_seconds_is_refreshed(self):
+        self.start_server(SESSION_REJECTED, expiry=datetime.now() + timedelta(seconds=10))
+
+        response = await transportation(self.context, self.counting_refresh()).transport(self.request)
+
+        self.assertEqual(200, response.statusCode)
+        self.assertEqual(1, self.refreshes)
 
 
 if __name__ == '__main__':

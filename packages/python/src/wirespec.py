@@ -51,8 +51,8 @@ def transportation(
     Sends requests with the context's authentication headers.
     A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
     A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
-    request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
-    are raised as BunqApiError.
+    request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails
+    (a failed refresh before sending is not repeated after a 403 in the same request), are raised as BunqApiError.
     The refreshed context is kept inside this transportation, so later requests use the new token.
     on_context_change is called once with the new context after every successful refresh, so the caller can store it.
     """
@@ -67,8 +67,8 @@ def transportation(
         """Returns the refreshed context, or None when the refresh failed."""
         nonlocal current
         async with lock:
-            # another request may have refreshed the session while this one waited
-            if current.session_token != used.session_token:
+            # another request may have refreshed while this one waited; compared by identity because bunq returns the same session token on a re-created session
+            if current is not used:
                 return current
             try:
                 new = await refresh(used)
@@ -81,12 +81,15 @@ def transportation(
 
     class Transportation(Wirespec.Transportation):
         async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
-            used = current
+            snapshot = current
             # now() in the stored value's own time zone: naive values are compared with local time, aware ones with their zone
-            if used.session_expiry_time <= datetime.now(used.session_expiry_time.tzinfo) + EXPIRY_MARGIN:
-                used = await refreshed(used) or used
+            # None when the refresh before sending failed: a 403 then does not trigger a second refresh in the same request
+            pre_refreshed: Optional[Context] = snapshot
+            if snapshot.session_expiry_time <= datetime.now(snapshot.session_expiry_time.tzinfo) + EXPIRY_MARGIN:
+                pre_refreshed = await refreshed(snapshot)
+            used = pre_refreshed or snapshot
             response = await send_with(used, request)
-            if not _is_session_rejected(response):
+            if pre_refreshed is None or not _is_session_rejected(response):
                 return require_typed(response)
 
             fresh = await refreshed(used)
