@@ -27,7 +27,12 @@ data class Context(
     val sessionExpiryTime: Instant,
     val installationToken: String,
     val config: Config
-)
+) {
+    /** Masks sessionToken and installationToken; the object still holds them. config is masked by its own toString. */
+    override fun toString(): String =
+        "Context(serverPublicKey=$serverPublicKey, deviceId=$deviceId, sessionId=$sessionId, sessionToken=***, " +
+            "userId=$userId, sessionExpiryTime=$sessionExpiryTime, installationToken=***, config=$config)"
+}
 
 /**
  * Refresh this context's session.

@@ -59,5 +59,11 @@ data class Config(
         require(apiKey.isNotBlank()) { "API key cannot be blank" }
 
     }
+
+    /** Masks apiKey and signingKeys; the object still holds them. */
+    override fun toString(): String =
+        "Config(bunqServer=$bunqServer, serviceName=$serviceName, apiKey=***, signingKeys=***, userAgent=$userAgent, " +
+            "cacheControl=$cacheControl, language=$language, region=$region, clientRequestId=$clientRequestId, " +
+            "geolocation=$geolocation)"
 }
 
