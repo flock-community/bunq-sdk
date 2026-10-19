@@ -92,7 +92,7 @@ public class SdkTest {
     public void testListAllMonetaryAccountBankForUser() throws Exception {
         ListAllMonetaryAccountBankForUser.Response<?> res = client.listAllMonetaryAccountBankForUser(context.userId(), Optional.empty(), Optional.empty(), Optional.empty()).get();
         if (res instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
-            assertFalse(response.body().get(0).display_name().orElseThrow().isBlank());
+            assertFalse(response.body().Response().get(0).display_name().orElseThrow().isBlank());
         } else {
             throw new RuntimeException("Cannot list monetary accounts");
         }
@@ -112,8 +112,8 @@ public class SdkTest {
             throw new RuntimeException("Could not get bank accounts with original session");
         }
         
-        assertEquals(1, response1.body().size());
-        var monetaryAccountBankListing1 = response1.body().get(0);
+        assertEquals(1, response1.body().Response().size());
+        var monetaryAccountBankListing1 = response1.body().Response().get(0);
         assertNotNull(monetaryAccountBankListing1);
         assertTrue(monetaryAccountBankListing1.id().isPresent());
 
@@ -133,7 +133,7 @@ public class SdkTest {
             throw new RuntimeException("Could not get bank accounts with refreshed session");
         }
 
-        var monetaryAccountBankListing2 = response2.body().get(0);
+        var monetaryAccountBankListing2 = response2.body().Response().get(0);
         assertNotNull(monetaryAccountBankListing2);
         
         // Verify both sessions return the same account data
