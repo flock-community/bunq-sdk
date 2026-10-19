@@ -19,7 +19,7 @@ from config import Config
 from transport import require_typed, send, Serialization
 
 
-@dataclass
+@dataclass(repr=False)
 class Context:
     """Context containing authentication and session information for bunq API requests"""
     server_public_key: str
@@ -30,6 +30,14 @@ class Context:
     session_expiry_time: datetime
     installation_token: str
     config: Config
+
+    def __repr__(self) -> str:
+        # Masks session_token and installation_token; the object still holds them.
+        return (
+            f"Context(server_public_key={self.server_public_key!r}, device_id={self.device_id!r}, "
+            f"session_id={self.session_id!r}, session_token='***', user_id={self.user_id!r}, "
+            f"session_expiry_time={self.session_expiry_time!r}, installation_token='***', config={self.config!r})"
+        )
 
 
 async def init_context(config: Config) -> Context:
