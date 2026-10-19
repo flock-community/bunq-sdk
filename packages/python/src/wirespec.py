@@ -82,9 +82,9 @@ def transportation(
     class Transportation(Wirespec.Transportation):
         async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
             snapshot = current
-            # now() in the stored value's own time zone: naive values are compared with local time, aware ones with their zone
             # None when the refresh before sending failed: a 403 then does not trigger a second refresh in the same request
             pre_refreshed: Optional[Context] = snapshot
+            # now() in the stored value's own time zone: naive values are compared with local time, aware ones with their zone
             if snapshot.session_expiry_time <= datetime.now(snapshot.session_expiry_time.tzinfo) + EXPIRY_MARGIN:
                 pre_refreshed = await refreshed(snapshot)
             used = pre_refreshed or snapshot

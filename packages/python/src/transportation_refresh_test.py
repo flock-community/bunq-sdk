@@ -206,6 +206,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, response.statusCode)
         self.assertEqual(1, self.refreshes)
+        self.assertEqual(['stale'], self.tokens_seen)  # refreshed before sending: no rejected request first
 
 
 if __name__ == '__main__':

@@ -195,6 +195,7 @@ describe('transportation session refresh', () => {
 
         expect((await transport.transport(request)).statusCode).toBe(200);
         expect(refreshes).toBe(1);
+        expect(seenTokens).toEqual(['stale']); // refreshed before sending: no rejected request first
     });
 
     test('a 403 that arrives after another request refreshed reuses that refresh when bunq keeps the session token', async () => {
