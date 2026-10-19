@@ -60,7 +60,7 @@ The key is in `Response[].ApiKey.api_key` of the response.
 For install steps, configuration and more examples per language, see:
 
 - [Java](docs/java.md)
-- [Kotlin](docs/kotlin.md)
+- [Kotlin](docs/kotlin.md) (also covers [OAuth](docs/kotlin.md#oauth): authorize URL and code exchange to get an access token)
 - [TypeScript/npm](docs/typescript.md)
 - [Python](docs/python.md)
 

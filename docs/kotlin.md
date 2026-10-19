@@ -134,6 +134,58 @@ val client = bunqClient(restored, onContextChange = { save(it) })
 
 If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token; if bunq answers 403 "Insufficient authentication.", that 403 is returned as the error without a second refresh. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
 
+## OAuth
+
+bunq accepts an OAuth access token wherever it accepts an API key. The SDK has two helpers for getting the token: `authorizeUrl` and `exchangeCode`, with `BUNQ_PUBLIC_OAUTH` and `BUNQ_SANDBOX_OAUTH` for the endpoints.
+
+1. Create an app in [bunq Developer](https://developer.bunq.com/portal), add at least one redirect URL, and read the `client_id` and client secret from the app information tab. bunq allows one OAuth client at a time.
+2. Send the user to the authorize URL. Generate a unique `state` per request and keep it (for example in the user's session).
+3. bunq redirects to your redirect URL with `code` and `state`. Check that `state` matches, then exchange the code. The `redirectUri` must be the same as in step 2.
+4. Use the token as `Config.apiKey` and call `initContext` as usual.
+
+```kotlin
+import com.bunq.sdk.BUNQ_SANDBOX_OAUTH
+import com.bunq.sdk.authorizeUrl
+import com.bunq.sdk.exchangeCode
+
+val redirectUri = "https://myapp.example/bunq/callback"
+val url = authorizeUrl(BUNQ_SANDBOX_OAUTH, clientId, redirectUri, state) // redirect the user here
+
+// in the handler for the redirect, after checking `state`:
+val accessToken = exchangeCode(BUNQ_SANDBOX_OAUTH, clientId, clientSecret, redirectUri, code)
+
+val config = Config(
+    bunqServer = BUNQ_SANDBOX_SERVER,
+    serviceName = "MyApp",
+    apiKey = accessToken,
+    signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
+)
+val context = initContext(config)
+```
+
+`exchangeCode` throws `BunqApiException(status, body)` for any status other than 200, for example 400 `{"error":"invalid_grant",...}` for an invalid or expired code. Use `BUNQ_PUBLIC_OAUTH` with `BUNQ_PUBLIC_SERVER` for production.
+
+Testing: the authorize step needs a browser and a bunq login, so it is not covered by automated tests. `authorizeUrl` and the token exchange (against a local HTTP server) are tested offline only; the real bunq endpoints have not been called by the tests.
+
+### Which user and accounts a grant gives access to
+
+The token belongs to a new `UserApiKey` user with its own `id`. After `initContext`, use that `id` as `userId` in paths and the ids of the granting user (`grantedByUser`) for items, for example `/user/{userApiKey id}/monetary-account/{grantedByUser monetary-account id}/payment`. `GET /user/{id}` returns the `UserApiKey` object, which references both your user and the granting user. bunq's page does not say whether the user can pick a subset of accounts; it describes access to "the account of the user who has accepted your authorization request".
+
+### Permissions
+
+bunq launched OAuth with one default permission set, which is not read-only. It allows:
+
+- read and create monetary accounts
+- read payments and transactions
+- create payments between monetary accounts of the same user
+- create draft payments (the user approves them in the bunq app)
+- assign a monetary account to a card; read, create and manage cards
+- read and create request inquiries (payment requests); read request responses
+
+bunq.me tabs are not in this list. Whether the token can create them is not documented; check against the sandbox before relying on it. If you gain access to other users' account information or initiate payments for them, bunq says you may need a PSD2 permit. A PSD2-licensed developer is limited to the permissions of its role.
+
+Sources: the OAuth chapter of bunq's API documentation ([doc.bunq.com/oauth](https://doc.bunq.com/oauth)), which is also embedded as the description in this repository's `openapi.json` (sections "Authorization request", "Token exchange", "What can my apps do with OAuth?", "What's next?").
+
 ## Logging
 
 The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and a failed session refresh is logged as a warning. Credentials are never logged. `Context.toString()` and `Config.toString()` mask secrets; the object still holds them, so store it encrypted.
