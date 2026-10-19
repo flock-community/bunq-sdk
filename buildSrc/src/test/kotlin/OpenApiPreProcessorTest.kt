@@ -61,6 +61,8 @@ class OpenApiPreProcessorTest {
             .jsonObject["200"]!!.jsonObject["content"]!!.jsonObject["application/json"]!!.jsonObject["schema"]!!.jsonObject
         val schemas = out["components"]!!.jsonObject["schemas"]!!.jsonObject
 
+        // the page must be referenced, not inlined: inline schemas break codegen
+        assertEquals(setOf("ThingPage", "Pagination"), schemas.keys.intersect(setOf("ThingPage", "Pagination")))
         assertEquals("#/components/schemas/ThingPage", responseSchema("/a")["${'$'}ref"]!!.jsonPrimitive.content)
         assertEquals("#/components/schemas/ThingRead", responseSchema("/b")["${'$'}ref"]!!.jsonPrimitive.content)
         val page = schemas["ThingPage"]!!.jsonObject
@@ -73,5 +75,31 @@ class OpenApiPreProcessorTest {
             listOf("future_url", "newer_url", "older_url"),
             schemas["Pagination"]!!.jsonObject["properties"]!!.jsonObject.keys.toList()
         )
+    }
+
+    private fun listSpec(vararg items: String, schemas: String = """"components":{"schemas":{"ThingListing":{"type":"object"},"Thing":{"type":"object"},"ThingPage":{"type":"object"}}}""") =
+        """
+        {"openapi":"3.0.0","paths":{${
+            items.withIndex().joinToString(",") { (i, item) ->
+                """"/p$i":{"get":{"operationId":"List_all_X$i","responses":{"200":{"description":"ok","content":{"application/json":{"schema":{"type":"array","items":{"${'$'}ref":"#/components/schemas/$item"}}}}}}}}"""
+            }
+        }},$schemas}
+        """
+
+    @Test
+    fun `a page schema that already exists in components fails`() {
+        assertFailsWith<IllegalStateException> { OpenApiPreProcessor(listSpec("ThingListing")) }
+    }
+
+    @Test
+    fun `different items mapping to the same page name fail`() {
+        val noPage = """"components":{"schemas":{"ThingListing":{"type":"object"},"Thing":{"type":"object"}}}"""
+        assertFailsWith<IllegalStateException> { OpenApiPreProcessor(listSpec("ThingListing", "Thing", schemas = noPage)) }
+    }
+
+    @Test
+    fun `a spec without components schemas gets the page schemas`() {
+        val out = Json.parseToJsonElement(OpenApiPreProcessor(listSpec("ThingListing", schemas = """"info":{}"""))).jsonObject
+        assertEquals(setOf("ThingPage", "Pagination"), out["components"]!!.jsonObject["schemas"]!!.jsonObject.keys)
     }
 }

@@ -182,10 +182,11 @@ class ApiTest {
         assertNotNull(firstId)
         // newest first: nothing is newer than the first page
         assertNull(first.Pagination.newer_url)
-        val olderId = first.Pagination.older_url?.substringAfter("older_id=")?.toLong()
+        val olderId = first.Pagination.older_url?.substringAfter("older_id=")?.substringBefore('&')?.toLong()
         assertEquals(firstId, olderId)
 
-        delay(1.seconds) // bunq allows 3 calls per 3 seconds on this endpoint
+        // bunq allows 3 calls per 3 seconds on this endpoint; runTest would skip the delay
+        withContext(Dispatchers.Default) { delay(1.seconds) }
         val second = page(olderId)
         val secondId = second.Response.single().id
         assertNotNull(secondId)
