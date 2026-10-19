@@ -163,7 +163,7 @@ val config = Config(
 val context = initContext(config)
 ```
 
-`exchangeCode` throws `BunqApiException(status, body)` for any status other than 200, for example 400 `{"error":"invalid_grant",...}` for an invalid or expired code. Use `BUNQ_PUBLIC_OAUTH` with `BUNQ_PUBLIC_SERVER` for production.
+`exchangeCode` throws `BunqApiException(status, body)` for any status other than 200 and for a 200 without an `access_token` string (including a non-JSON body), for example 400 `{"error":"invalid_grant",...}` for an invalid or expired code. Use `BUNQ_PUBLIC_OAUTH` with `BUNQ_PUBLIC_SERVER` for production.
 
 Testing: the authorize step needs a browser and a bunq login, so it is not covered by automated tests. `authorizeUrl` and the token exchange (against a local HTTP server) are tested offline only; the real bunq endpoints have not been called by the tests.
 
