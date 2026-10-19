@@ -1,7 +1,7 @@
 import {describe, expect, test} from 'vitest';
 import {Context, initContext, refreshSession} from "../src/context";
 import {client as generatedClient} from "../src/gen/Client";
-import {serialization} from "../src/wirespec";
+import {rawHandler, requireTyped, serialization} from "../src/wirespec";
 import {bunqClient, transportation} from "../src/transportation";
 import {createConfig} from "../src/config";
 import {BUNQ_SANDBOX_SERVER} from "../src/bunq-server";
@@ -131,7 +131,8 @@ describe("API test", async () => {
 
 describe("dead session", () => {
     test('a deleted session is refreshed once and the call succeeds', async () => {
-        const unauthenticated = bunqClient({config, sessionExpiryTime: new Date(Date.now() + 3600_000)} as Context);
+        // no session and no server public key exist yet, so this one call is not signature-verified
+        const unauthenticated = generatedClient(serialization, {transport: async request => requireTyped(await rawHandler(config, request))});
         const sandboxUser = await unauthenticated.createSandboxUserPerson({body: {}});
         if (sandboxUser.status !== 200 || !sandboxUser.body.ApiKey?.api_key) {
             throw new Error("Cannot create sandbox user");

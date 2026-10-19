@@ -17,19 +17,19 @@ export const Signing = {
         return encodedSignature;
     },
 
-    verifyResponse: (config: Config, responseBody: string, signature: string): boolean => {
+    /** Verifies bunq's `X-Bunq-Server-Signature`: SHA256withRSA over the raw response body bytes. */
+    verifyResponse: (serverPublicKeyPem: string, responseBody: Uint8Array, signature: string | undefined): boolean => {
         try {
-            const decodedSignature = Buffer.from(signature, 'base64');
-            const verifier = verify(
+            if (!signature) return false;
+            return verify(
                 'SHA256',
-                Buffer.from(responseBody, 'utf-8'),
+                responseBody,
                 {
-                    key: config.signingKeys.publicKey(),
+                    key: createPublicKey(serverPublicKeyPem),
                     padding: constants.RSA_PKCS1_PADDING,
                 },
-                decodedSignature
+                Buffer.from(signature, 'base64')
             );
-            return verifier;
         } catch (e: any) {
             console.error(`[ERROR] Signature verification failed: ${e}`);
             return false;

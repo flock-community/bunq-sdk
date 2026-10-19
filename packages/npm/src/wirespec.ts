@@ -91,3 +91,14 @@ export function requireTyped(response: Wirespec.RawResponse): Wirespec.RawRespon
     if (envelope && isObjectWith(text, envelope)) return response;
     throw new BunqApiError(response.statusCode, text);
 }
+
+
+/** Like requireTyped, and the body must carry a valid `X-Bunq-Server-Signature` for the server public key. */
+export function requireSigned(response: Wirespec.RawResponse, serverPublicKey: string): Wirespec.RawResponse {
+    requireTyped(response);
+    const signature = Object.entries(response.headers).find(([name]) => name.toLowerCase() === "x-bunq-server-signature")?.[1][0];
+    if (!Signing.verifyResponse(serverPublicKey, response.body ?? new Uint8Array(), signature)) {
+        throw new Error("Invalid bunq server signature");
+    }
+    return response;
+}
