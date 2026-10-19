@@ -177,29 +177,44 @@ public class Wirespec {
                     // error responses have no Response envelope: the whole document is the body
                     return objectMapper.convertValue(tree, objectMapper.constructType(type));
                 }
-                Object json = aggregateJsonNodes(type, response);
+                Object json = tree.has("Pagination")
+                        ? listPage(response, tree.get("Pagination"))
+                        : aggregateJsonNodes(type, response);
                 return objectMapper.convertValue(json, objectMapper.constructType(type));
             } catch (IOException e) {
                 throw new RuntimeException("Failed to deserialize JSON", e);
             }
         }
 
-        private static Object aggregateJsonNodes(Type type, JsonNode response) {
+        private static Iterable<ObjectNode> objectNodes(JsonNode response) {
             // Convert the response to an iterable and filter for ObjectNode instances
-            Iterable<ObjectNode> objectNodes = () -> StreamSupport.stream(response.spliterator(), false)
+            return () -> StreamSupport.stream(response.spliterator(), false)
                     .filter(node -> node instanceof ObjectNode)
                     .map(node -> (ObjectNode) node)
                     .iterator();
+        }
+
+        private static ArrayNode flattenItems(JsonNode response) {
+            ArrayNode json = objectMapper.createArrayNode();
+            for (ObjectNode node : objectNodes(response)) {
+                node.fieldNames().forEachRemaining(fieldName -> json.add(node.get(fieldName)));
+            }
+            return json;
+        }
+
+        /** List responses: {"Response": [{"Item": {...}}], "Pagination": {...}} becomes {"Response": [{...}], "Pagination": {...}}. */
+        private static ObjectNode listPage(JsonNode response, JsonNode pagination) {
+            ObjectNode json = objectMapper.createObjectNode();
+            json.set("Response", flattenItems(response));
+            json.set("Pagination", pagination);
+            return json;
+        }
+
+        private static Object aggregateJsonNodes(Type type, JsonNode response) {
+            Iterable<ObjectNode> objectNodes = objectNodes(response);
 
             if (type instanceof ParameterizedType parameterizedType && parameterizedType.getRawType() == List.class) {
-                ArrayNode json = objectMapper.createArrayNode();
-                // Reduce the ObjectNodes to a single ObjectNode
-                for (ObjectNode node : objectNodes) {
-                    node.fieldNames().forEachRemaining(fieldName -> {
-                        json.add(node.get(fieldName));
-                    });
-                }
-                return json;
+                return flattenItems(response);
             }
 
             ObjectNode json = objectMapper.createObjectNode();
