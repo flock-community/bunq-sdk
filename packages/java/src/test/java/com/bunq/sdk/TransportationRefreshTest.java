@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
@@ -26,18 +27,22 @@ public class TransportationRefreshTest {
     private static final String AUTHENTICATION_ERROR = "{\"Error\":[{\"error_description\":\"Insufficient authentication.\"}]}";
     private static final RawRequest REQUEST = new RawRequest("GET", List.of("ping"), Map.of(), Map.of(), Optional.empty());
 
-    /** Answers 200 for the token "fresh", otherwise 403 with the given rejection body. */
+    /** Set by {@link #fresh}: like bunq, the server accepts the session again after a refresh although the token stays the same. */
+    private static final AtomicBoolean REVIVED = new AtomicBoolean();
+
+    /** Answers 200 once revived, otherwise 403 with the given rejection body. */
     private static void withServer(String rejection, BiConsumer<Context, List<String>> block) throws Exception {
         withServer(rejection, Instant.now().plusSeconds(3600), block);
     }
 
     private static void withServer(String rejection, Instant expiry, BiConsumer<Context, List<String>> block) throws Exception {
+        REVIVED.set(false);
         List<String> seenTokens = Collections.synchronizedList(new java.util.ArrayList<>());
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
             String token = exchange.getRequestHeaders().getFirst("X-Bunq-Client-Authentication");
             seenTokens.add(token);
-            boolean fresh = "fresh".equals(token);
+            boolean fresh = REVIVED.get();
             byte[] body = (fresh ? "{\"Response\":[]}" : rejection).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(fresh ? 200 : 403, body.length == 0 ? -1 : body.length);
             if (body.length > 0) {
@@ -62,9 +67,11 @@ public class TransportationRefreshTest {
         return assertInstanceOf(BunqApiException.class, e.getCause());
     }
 
+    /** What bunq returns for a re-created session: the same token with a later expiry. */
     private static Context fresh(Context context) {
-        return new Context(context.serverPublicKey(), context.deviceId(), context.sessionId(), "fresh", context.userId(),
-                context.sessionExpiryTime(), context.installationToken(), context.config());
+        REVIVED.set(true);
+        return new Context(context.serverPublicKey(), context.deviceId(), context.sessionId(), context.sessionToken(), context.userId(),
+                Instant.now().plusSeconds(3600), context.installationToken(), context.config());
     }
 
     @Test
@@ -78,7 +85,7 @@ public class TransportationRefreshTest {
 
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
             assertEquals(1, refreshes.get());
-            assertEquals(List.of("stale", "fresh"), tokens);
+            assertEquals(List.of("stale", "stale"), tokens);
         });
     }
 
@@ -179,8 +186,8 @@ public class TransportationRefreshTest {
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
 
             assertEquals(1, refreshes.get());
-            assertEquals(List.of("fresh"), tokens);
-            assertEquals(List.of("fresh"), changes);
+            assertEquals(List.of("stale"), tokens);
+            assertEquals(List.of("stale"), changes);
         });
     }
 
@@ -188,7 +195,8 @@ public class TransportationRefreshTest {
     public void aContextThatIsNotExpiredIsNotRefreshed() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.refreshingTransportation(fresh(context), c -> {
+            REVIVED.set(true);
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 refreshes.incrementAndGet();
                 return c;
             }, c -> refreshes.incrementAndGet());
@@ -196,7 +204,7 @@ public class TransportationRefreshTest {
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
 
             assertEquals(0, refreshes.get());
-            assertEquals(List.of("fresh"), tokens);
+            assertEquals(List.of("stale"), tokens);
         });
     }
 
@@ -208,12 +216,12 @@ public class TransportationRefreshTest {
 
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
 
-            assertEquals(List.of("fresh"), changes);
+            assertEquals(List.of("stale"), changes);
         });
     }
 
     @Test
-    public void concurrentCallsOnAnExpiredContextRefreshOnce() throws Exception {
+    public void concurrentCallsOnAnExpiredContextRefreshOnceWhenBunqKeepsTheSessionToken() throws Exception {
         withServer(AUTHENTICATION_ERROR, Instant.now().minusSeconds(1), (context, tokens) -> {
             var refreshes = new AtomicInteger();
             var changes = new AtomicInteger();
@@ -242,6 +250,47 @@ public class TransportationRefreshTest {
 
             assertEquals(1, refreshes.get());
             assertEquals(1, changes.get());
+        });
+    }
+
+    @Test
+    public void aFailedRefreshBeforeSendingIsNotRepeatedAfterThe403() throws Exception {
+        withServer(AUTHENTICATION_ERROR, Instant.now().minusSeconds(1), (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
+                refreshes.incrementAndGet();
+                throw new IllegalStateException("429");
+            });
+
+            assertEquals(403, failure(transport).status());
+            assertEquals(1, refreshes.get());
+        });
+    }
+
+    @Test
+    public void anExceptionFromTheCallbackBeforeSendingFailsTheFuture() throws Exception {
+        withServer(AUTHENTICATION_ERROR, Instant.now().minusSeconds(1), (context, tokens) -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, TransportationRefreshTest::fresh, c -> {
+                throw new IllegalStateException("callback");
+            });
+
+            var future = transport.transport(REQUEST);
+
+            assertEquals("callback", assertThrows(CompletionException.class, future::join).getCause().getMessage());
+        });
+    }
+
+    @Test
+    public void aContextExpiringIn10SecondsIsRefreshed() throws Exception {
+        withServer(AUTHENTICATION_ERROR, Instant.now().plusSeconds(10), (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
+            });
+
+            assertEquals(200, transport.transport(REQUEST).join().statusCode());
+            assertEquals(1, refreshes.get());
         });
     }
 }

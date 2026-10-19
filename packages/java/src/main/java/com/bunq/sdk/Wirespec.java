@@ -29,7 +29,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -221,7 +220,7 @@ public class Wirespec {
      * A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
      * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
      * and the request is retried with the new session token. Any other 403, and the original 403 when the
-     * refresh itself fails, is thrown as {@link BunqApiException} like every status other than 200 and 400. The refreshed context is kept inside this transportation.
+     * refresh itself fails (a failed refresh before sending is not repeated after a 403 in the same request), is thrown as {@link BunqApiException} like every status other than 200 and 400. The refreshed context is kept inside this transportation.
      * {@code onContextChange} is called once with the new context after every successful refresh, so the caller can store it.
      */
     public static Transportation transportation(Context context, Consumer<Context> onContextChange) {
@@ -240,9 +239,10 @@ public class Wirespec {
         UnaryOperator<Context> refreshed = used -> {
             lock.lock();
             try {
-                // another request may have refreshed the session while this one waited
-                if (!Objects.equals(current.get().sessionToken(), used.sessionToken())) {
-                    return current.get();
+                // another request may have refreshed while this one waited; compared by identity because bunq returns the same session token on a re-created session
+                Context latest = current.get();
+                if (latest != used) {
+                    return latest;
                 }
                 Context next;
                 try {
@@ -261,14 +261,20 @@ public class Wirespec {
 
         return request -> {
             Context snapshot = current.get();
-            Context used = snapshot;
+            // null when the refresh before sending failed: a 403 then does not trigger a second refresh in the same request
+            Context preRefreshed = snapshot;
             if (!snapshot.sessionExpiryTime().isAfter(Instant.now().plusSeconds(EXPIRY_MARGIN_SECONDS))) {
-                Context next = refreshed.apply(snapshot);
-                used = next != null ? next : snapshot;
+                try {
+                    preRefreshed = refreshed.apply(snapshot);
+                } catch (RuntimeException e) {
+                    // an exception from the onContextChange callback
+                    return CompletableFuture.failedFuture(e);
+                }
             }
-            Context sent = used;
+            boolean refreshFailed = preRefreshed == null;
+            Context sent = refreshFailed ? snapshot : preRefreshed;
             return sendWith(sent, request).thenCompose(response -> {
-                if (!isSessionRejected(response)) {
+                if (refreshFailed || !isSessionRejected(response)) {
                     return CompletableFuture.completedFuture(response);
                 }
                 Context retry = refreshed.apply(sent);
