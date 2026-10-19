@@ -51,12 +51,20 @@ val serialization: Wirespec.Serialization =
                 return objectMapper.treeToValue(tree, objectMapper.constructType(kType.javaType))
             }
 
+            val flattened by lazy { response.asIterable()
+                .filterIsInstance<ObjectNode>()
+                .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
+                    acc.addAll(jsonNode.propertyNames().asSequence().map { jsonNode.get(it) }.toList())
+                } }
+
             val json = when {
-                kType.classifier == List::class -> response.asIterable()
-                    .filterIsInstance<ObjectNode>()
-                    .fold(objectMapper.createArrayNode()) { acc, jsonNode ->
-                        acc.addAll(jsonNode.propertyNames().asSequence().map { jsonNode.get(it) }.toList())
-                    }
+                // list responses: `{"Response": [{"Item": {...}}], "Pagination": {...}}` becomes `{"Response": [{...}], "Pagination": {...}}`
+                tree.has("Pagination") -> objectMapper.createObjectNode().apply {
+                    set("Response", flattened)
+                    set("Pagination", tree.get("Pagination"))
+                }
+
+                kType.classifier == List::class -> flattened
 
                 else -> {
                     response.asIterable()

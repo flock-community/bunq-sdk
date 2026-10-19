@@ -109,6 +109,56 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         )
     )
 
+    /** bunq returns `{"Response": [...], "Pagination": {...}}` for lists; the spec only documents the array. */
+    private val paginationSchema = buildJsonObject {
+        put("type", "object")
+        put("properties", buildJsonObject {
+            listOf("future_url", "newer_url", "older_url").forEach { name ->
+                put(name, buildJsonObject {
+                    put("type", "string")
+                    put("nullable", true)
+                })
+            }
+        })
+    }
+
+    /** `MonetaryAccountBankListing` -> `MonetaryAccountBankPage`. */
+    private fun pageSchemaName(itemSchemaName: String) = itemSchemaName.removeSuffix("Listing") + "Page"
+
+    private fun pageSchema(itemRef: JsonElement) = buildJsonObject {
+        put("type", "object")
+        put("properties", buildJsonObject {
+            put("Response", buildJsonObject {
+                put("type", "array")
+                put("items", itemRef)
+            })
+            put("Pagination", schemaRef("Pagination"))
+        })
+        put("required", JsonArray(listOf("Response", "Pagination").map(::JsonPrimitive)))
+    }
+
+    /**
+     * Replaces the array schema of a list operation's 200 response by a named page schema and records it in [pages].
+     * The responses that do not have an array of schema references are left as they are.
+     */
+    private fun withPagedResponse(responses: JsonElement, pages: MutableMap<String, JsonElement>): JsonElement {
+        val ok = (responses as? JsonObject)?.get("200") as? JsonObject ?: return responses
+        val content = ok["content"] as? JsonObject ?: return responses
+        val paged = content.mapValues { (_, mediaType) ->
+            val schema = (mediaType as? JsonObject)?.get("schema") as? JsonObject
+            val items = schema?.get("items")
+            val itemName = (items as? JsonObject)?.get("\$ref")?.jsonPrimitive?.contentOrNull?.substringAfterLast('/')
+            if (schema?.get("type")?.jsonPrimitive?.contentOrNull != "array" || items == null || itemName == null) {
+                mediaType
+            } else {
+                val name = pageSchemaName(itemName)
+                pages[name] = pageSchema(items)
+                JsonObject(mediaType.jsonObject + ("schema" to schemaRef(name)))
+            }
+        }
+        return JsonObject(responses + ("200" to JsonObject(ok + ("content" to JsonObject(paged)))))
+    }
+
     private val createRequestInquirySchema = buildJsonObject {
         put("type", "object")
         put("properties", buildJsonObject {
@@ -150,7 +200,7 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
             if (index == 0) normalised.replaceFirstChar { it.lowercase() } else normalised.replaceFirstChar { it.uppercase() }
         }.joinToString("")
 
-    private fun processOperation(operation: JsonObject): JsonObject {
+    private fun processOperation(operation: JsonObject, pages: MutableMap<String, JsonElement>): JsonObject {
         val operationId = operation["operationId"]?.jsonPrimitive?.contentOrNull
         val result = operation.toMutableMap()
 
@@ -158,6 +208,10 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
             val kept = parameters.jsonArray.filter(::shouldKeepParameter)
             val withPagination = if (operationId?.startsWith("List_") == true) kept + paginationParams else kept
             result["parameters"] = JsonArray(withPagination)
+        }
+
+        if (operationId?.startsWith("List_") == true) {
+            operation["responses"]?.let { result["responses"] = withPagedResponse(it, pages) }
         }
 
         updateRequestBodyType[operationId]?.let { newReference ->
@@ -186,9 +240,9 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         check(collisions.isEmpty()) { "Operation ids collide after camelCase rewrite: $collisions" }
     }
 
-    private fun processPathItem(pathItem: JsonObject): JsonObject =
+    private fun processPathItem(pathItem: JsonObject, pages: MutableMap<String, JsonElement>): JsonObject =
         JsonObject(pathItem.mapValues { (key, value) ->
-            if (key in operationKeys && value is JsonObject) processOperation(value) else value
+            if (key in operationKeys && value is JsonObject) processOperation(value, pages) else value
         })
 
     /**
@@ -201,15 +255,21 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         val openApi = Json.parseToJsonElement(schema).withoutRefSiblings().jsonObject
         val processed = openApi.toMutableMap()
 
-        openApi["components"]?.jsonObject?.let { components ->
-            processed["components"] = JsonObject(components.toMutableMap().also { result ->
-                components["schemas"]?.jsonObject?.let { result["schemas"] = processSchemas(it) }
-            })
-        }
+        val pages = mutableMapOf<String, JsonElement>()
         openApi["paths"]?.jsonObject?.let { paths ->
-            val processedPaths = JsonObject(paths.mapValues { (_, item) -> processPathItem(item.jsonObject) })
+            val processedPaths = JsonObject(paths.mapValues { (_, item) -> processPathItem(item.jsonObject, pages) })
             requireUniqueOperationIds(processedPaths)
             processed["paths"] = processedPaths
+        }
+        openApi["components"]?.jsonObject?.let { components ->
+            processed["components"] = JsonObject(components.toMutableMap().also { result ->
+                components["schemas"]?.jsonObject?.let { schemas ->
+                    val added = if (pages.isEmpty()) emptyMap() else pages + ("Pagination" to paginationSchema)
+                    val collisions = added.keys.filter { it in schemas }
+                    check(collisions.isEmpty()) { "Schemas to add already exist: $collisions" }
+                    result["schemas"] = JsonObject(processSchemas(schemas) + added)
+                }
+            })
         }
         return Json.encodeToString(JsonObject.serializer(), JsonObject(processed))
     }
