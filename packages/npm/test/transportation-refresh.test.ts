@@ -3,7 +3,7 @@ import {createServer, Server} from 'node:http';
 import {AddressInfo} from 'node:net';
 import {generateKeyPairSync} from 'node:crypto';
 import {createConfig} from "../src/config";
-import {respond, serverPublicKey} from "./server-key";
+import {respond, serverPublicKey, signBody} from "./server-key";
 import {Context} from "../src/context";
 import {transportation} from "../src/transportation";
 import {Wirespec} from "../src/gen/Wirespec";
@@ -20,6 +20,8 @@ describe('transportation session refresh', () => {
 
     /** Set by `fresh`: like bunq, the server accepts the session again after a refresh although the token stays the same. */
     let revived: boolean;
+    /** Set to false to make the server answer revived requests without a signature. */
+    let signRetries = true;
     /** Answers the second request 400 ms late, so its 403 arrives after the first request's refresh has finished. */
     let slowSecondRequest: boolean;
 
@@ -28,12 +30,14 @@ describe('transportation session refresh', () => {
         seenTokens = [];
         revived = false;
         slowSecondRequest = false;
+        signRetries = true;
         server = createServer((req, res) => {
             const token = req.headers['x-bunq-client-authentication'] as string | undefined;
             seenTokens.push(token);
             const ok = revived;
             setTimeout(() => {
-                respond(res, ok ? 200 : 403, ok ? '{"Response":[]}' : rejection);
+                const body = ok ? '{"Response":[]}' : rejection;
+                respond(res, ok ? 200 : 403, body, ok && !signRetries ? null : signBody(body));
             }, slowSecondRequest && seenTokens.length === 2 ? 400 : 0);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -66,6 +70,14 @@ describe('transportation session refresh', () => {
         expect(response.statusCode).toBe(200);
         expect(refreshes).toBe(1);
         expect(seenTokens).toEqual(['stale', 'stale']);
+    });
+
+    test('an unsigned response after the refresh throws', async () => {
+        const context = await contextRejectingWith(authenticationError);
+        signRetries = false;
+        const transport = transportation(context, async ctx => fresh(ctx));
+
+        await expect(transport.transport(request)).rejects.toThrow('Invalid bunq server signature');
     });
 
     test('a failing refresh throws the original 403', async () => {
