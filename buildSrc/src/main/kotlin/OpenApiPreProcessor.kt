@@ -99,12 +99,12 @@ object OpenApiPreProcessor : (String) -> String, Serializable {
         ),
         queryParameter(
             "newer_id",
-            "Pagination parameter. The newer_id value can be used to get the next page. The newer_id is always the ID of the last item in the current page. If newer_url is null, there are no more recent items before the current page.",
+            "Pagination parameter. Returns the items newer than this id. Items are listed newest first, so to get the page before the current one pass the id of its first item (the newer_id in newer_url). If newer_url is null, there are no newer items.",
             integerSchema()
         ),
         queryParameter(
             "older_id",
-            "Pagination parameter. The older_id value can be used to get the previous page. The older_id is always the ID of the first item in the current page. If older_url is null, there are no older items after the current page.",
+            "Pagination parameter. Returns the items older than this id. Items are listed newest first, so to get the page after the current one pass the id of its last item (the older_id in older_url). If older_url is null, there are no older items.",
             integerSchema()
         )
     )
