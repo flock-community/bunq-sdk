@@ -133,6 +133,14 @@ internal fun Wirespec.RawResponse.requireTyped(): Wirespec.RawResponse {
     throw BunqApiException(statusCode, String(bytes, Charsets.UTF_8))
 }
 
+/** Like [requireTyped], and the body must carry a valid `X-Bunq-Server-Signature` for [serverPublicKey]. */
+internal fun Wirespec.RawResponse.requireSigned(serverPublicKey: String): Wirespec.RawResponse {
+    requireTyped()
+    val signature = headers.entries.firstOrNull { it.key.equals("X-Bunq-Server-Signature", ignoreCase = true) }?.value?.firstOrNull()
+    if (!Signing.verifyResponse(serverPublicKey, body ?: ByteArray(0), signature)) throw SecurityException("Invalid bunq server signature")
+    return this
+}
+
 fun Context.toHeaders(): Map<String, List<String>> = listOfNotNull(
     "X-Bunq-Client-Authentication" to sessionToken,
     config.cacheControl?.let { "Cache-Control" to it },
@@ -163,6 +171,8 @@ private const val EXPIRY_MARGIN_SECONDS = 30L
  * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
  * and the request is retried with the new session token. A plain 403 ("not allowed"), and the original 403 when the
  * refresh itself fails (a failed refresh before sending is not repeated after a 403 in the same request), are thrown as [BunqApiException] like every status other than 200 and 400.
+ * Every 200/400 response must carry a valid `X-Bunq-Server-Signature` (checked against [Context.serverPublicKey]);
+ * otherwise [SecurityException] is thrown.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  * [onContextChange] is called once with the new context after every successful refresh, so the caller can store it.
  */
@@ -207,9 +217,9 @@ internal fun refreshingTransportation(
         val preRefreshed = if (snapshot.sessionExpiryTime <= Instant.now().plusSeconds(EXPIRY_MARGIN_SECONDS)) refreshed(snapshot) else snapshot
         val used = preRefreshed ?: snapshot
         val response = sendWith(used, request)
-        if (preRefreshed == null || !response.isSessionRejected()) return@Transportation response.requireTyped()
+        if (preRefreshed == null || !response.isSessionRejected()) return@Transportation response.requireSigned(used.serverPublicKey)
 
-        val retry = refreshed(used) ?: return@Transportation response.requireTyped()
-        sendWith(retry, request).requireTyped()
+        val retry = refreshed(used) ?: return@Transportation response.requireSigned(used.serverPublicKey)
+        sendWith(retry, request).requireSigned(retry.serverPublicKey)
     }
 }

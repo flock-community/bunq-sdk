@@ -43,7 +43,8 @@ data class Context(
 fun Context.refreshSession(): Context {
     val serverSession = createSessionServer(
         token = installationToken,
-        config = config
+        config = config,
+        serverPublicKey = serverPublicKey,
     )
 
     val sessionTimeoutSeconds = serverSession.getSessionTimeout()
@@ -66,8 +67,9 @@ fun Context.refreshSession(): Context {
 fun initContext(config: Config): Context {
     val installation = createInstallation(config)
     if (installation.Token?.token == null) error("Token not available")
-    val deviceServer = createDeviceServer(installation.Token.token, config)
-    val serverSession = createSessionServer(installation.Token.token, config)
+    val serverPublicKey = installation.ServerPublicKey?.server_public_key ?: error("No server public key")
+    val deviceServer = createDeviceServer(installation.Token.token, config, serverPublicKey)
+    val serverSession = createSessionServer(installation.Token.token, config, serverPublicKey)
 
     val sessionTimeoutSeconds: Long = serverSession.getSessionTimeout() ?: run {
         logger.warn { "No session timeout found in session server response, using default of 30 minutes" }
@@ -79,7 +81,7 @@ fun initContext(config: Config): Context {
     }
 
     return Context(
-        serverPublicKey = installation.ServerPublicKey?.server_public_key ?: error("No server public key"),
+        serverPublicKey = serverPublicKey,
         deviceId = deviceServer.Id?.id ?: error("No device id"),
         sessionId = serverSession.Id?.id ?: error("No session id"),
         sessionToken = serverSession.Token?.token ?: error("No session token"),
@@ -108,7 +110,7 @@ private fun createInstallation(config: Config): InstallationCreate {
     }
 }
 
-fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
+fun createDeviceServer(token: String, config: Config, serverPublicKey: String): DeviceServerCreate {
     val body = DeviceServer(
         description = config.serviceName,
         secret = config.apiKey,
@@ -120,7 +122,7 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
 
     val rawRequest = CreateDeviceServer.toRawRequest(serialization, request)
     val authRequest = rawRequest.copy(headers = rawRequest.headers + ("X-Bunq-Client-Authentication" to listOf(token)))
-    val rawResponse = send(config, authRequest).requireTyped()
+    val rawResponse = send(config, authRequest).requireSigned(serverPublicKey)
     val res = CreateDeviceServer.fromRawResponse(serialization, rawResponse)
 
     when (res) {
@@ -132,7 +134,8 @@ fun createDeviceServer(token: String, config: Config): DeviceServerCreate {
 
 private fun createSessionServer(
     token: String,
-    config: Config
+    config: Config,
+    serverPublicKey: String,
 ): SessionServerCreate {
     val body = SessionServer(
         secret = config.apiKey,
@@ -147,7 +150,7 @@ private fun createSessionServer(
             token
         ))
     )
-    val rawResponse = send(config, authRequest).requireTyped()
+    val rawResponse = send(config, authRequest).requireSigned(serverPublicKey)
 
     val res = CreateSessionServer.fromRawResponse(serialization, rawResponse)
 
