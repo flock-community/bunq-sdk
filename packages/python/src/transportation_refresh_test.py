@@ -10,7 +10,7 @@ from bunq_server import BunqServer
 from bunq_signing_keys_generator import BunqSigningKeysGenerator
 from config import create_config
 from context import Context
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from transport import BunqApiError
 from wirespec import transportation
 
@@ -20,7 +20,7 @@ NOT_ALLOWED = json.dumps({"Error": [{"error_description": "You are not allowed t
 
 class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
-    def start_server(self, rejected_body: str):
+    def start_server(self, rejected_body: str, expiry: datetime | None = None):
         """Answers 200 for the 'fresh' token and a 403 with rejected_body for every other token."""
         self.tokens_seen: list[str | None] = []
 
@@ -50,7 +50,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
             api_key='key',
             private_key_pem=private_key_pem,
             public_key_pem=public_key_pem)
-        self.context = Context('', 1, 1, 'stale', 1, datetime.now(), 'installation', config)
+        self.context = Context('', 1, 1, 'stale', 1, expiry or datetime.now() + timedelta(hours=1), 'installation', config)
 
     def counting_refresh(self, fails: bool = False):
         self.refreshes = 0
@@ -134,6 +134,58 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(['fresh'], self.tokens_seen)
         self.assertEqual(1, self.refreshes)
+
+    async def test_expired_context_is_refreshed_before_the_first_request_and_callback_fires_once(self):
+        self.start_server(SESSION_REJECTED, expiry=datetime.now() - timedelta(seconds=1))
+        changes: list[str] = []
+        transport = transportation(self.context, self.counting_refresh(), lambda context: changes.append(context.session_token))
+
+        response = await transport.transport(self.request)
+
+        self.assertEqual(200, response.statusCode)
+        self.assertEqual(1, self.refreshes)
+        self.assertEqual(['fresh'], self.tokens_seen)
+        self.assertEqual(['fresh'], changes)
+
+    async def test_context_that_is_not_expired_is_not_refreshed(self):
+        self.start_server(SESSION_REJECTED)
+        changes: list[str] = []
+        transport = transportation(replace(self.context, session_token='fresh'), self.counting_refresh(),
+                                   lambda context: changes.append(context.session_token))
+
+        self.assertEqual(200, (await transport.transport(self.request)).statusCode)
+
+        self.assertEqual(0, self.refreshes)
+        self.assertEqual([], changes)
+        self.assertEqual(['fresh'], self.tokens_seen)
+
+    async def test_403_refresh_calls_the_callback_once_with_the_new_context(self):
+        self.start_server(SESSION_REJECTED)
+        changes: list[str] = []
+        transport = transportation(self.context, self.counting_refresh(), lambda context: changes.append(context.session_token))
+
+        self.assertEqual(200, (await transport.transport(self.request)).statusCode)
+
+        self.assertEqual(['fresh'], changes)
+
+    async def test_concurrent_calls_on_an_expired_context_refresh_once(self):
+        self.start_server(SESSION_REJECTED, expiry=datetime.now() - timedelta(seconds=1))
+        changes: list[str] = []
+        transport = transportation(self.context, self.counting_refresh(), lambda context: changes.append(context.session_token))
+
+        responses = await asyncio.gather(*[transport.transport(self.request) for _ in range(5)])
+
+        self.assertEqual([200] * 5, [response.statusCode for response in responses])
+        self.assertEqual(1, self.refreshes)
+        self.assertEqual(['fresh'], changes)
+
+    async def test_timezone_aware_expiry_is_compared_in_its_own_zone(self):
+        self.start_server(SESSION_REJECTED, expiry=datetime.now(timezone.utc) - timedelta(seconds=1))
+
+        response = await transportation(self.context, self.counting_refresh()).transport(self.request)
+
+        self.assertEqual(200, response.statusCode)
+        self.assertEqual(['fresh'], self.tokens_seen)
 
 
 if __name__ == '__main__':
