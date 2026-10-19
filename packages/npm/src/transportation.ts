@@ -1,7 +1,7 @@
 import {Wirespec} from "./gen/Wirespec";
 import {client} from "./gen/Client";
 import {Context, refreshSession} from "./context";
-import {rawHandler, requireTyped, serialization} from "./wirespec";
+import {rawHandler, requireSigned, serialization} from "./wirespec";
 
 const sessionRejection = "Insufficient authentication.";
 
@@ -37,6 +37,8 @@ const expiryMarginMs = 30_000;
  * A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
  * request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails
  * (a failed refresh before sending is not repeated after a 403 in the same request), are thrown as BunqApiError.
+ * Every 200/400 response must carry a valid X-Bunq-Server-Signature (checked against ctx.serverPublicKey);
+ * otherwise an Error("Invalid bunq server signature") is thrown.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  * onContextChange is called once with the new context after every successful refresh, so the caller can store it.
  * An error thrown by onContextChange rejects the shared refresh, so every request waiting for it rejects with that error.
@@ -75,9 +77,9 @@ export function transportation(
             const preRefreshed = snapshot.sessionExpiryTime.getTime() <= Date.now() + expiryMarginMs ? await refreshed(snapshot) : snapshot;
             const used = preRefreshed ?? snapshot;
             const response = await sendWith(used, request);
-            if (!preRefreshed || !isSessionRejected(response)) return requireTyped(response);
+            if (!preRefreshed || !isSessionRejected(response)) return requireSigned(response, used.serverPublicKey);
             const fresh = await refreshed(used);
-            return requireTyped(fresh ? await sendWith(fresh, request) : response);
+            return requireSigned(fresh ? await sendWith(fresh, request) : response, (fresh ?? used).serverPublicKey);
         }
     };
 }

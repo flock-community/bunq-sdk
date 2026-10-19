@@ -3,6 +3,7 @@ import {createServer, Server} from 'node:http';
 import {AddressInfo} from 'node:net';
 import {generateKeyPairSync} from 'node:crypto';
 import {createConfig} from "../src/config";
+import {respond, serverPublicKey} from "./server-key";
 import {Context} from "../src/context";
 import {transportation} from "../src/transportation";
 import {Wirespec} from "../src/gen/Wirespec";
@@ -32,8 +33,7 @@ describe('transportation session refresh', () => {
             seenTokens.push(token);
             const ok = revived;
             setTimeout(() => {
-                res.statusCode = ok ? 200 : 403;
-                res.end(ok ? '{"Response":[]}' : rejection);
+                respond(res, ok ? 200 : 403, ok ? '{"Response":[]}' : rejection);
             }, slowSecondRequest && seenTokens.length === 2 ? 400 : 0);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -44,7 +44,7 @@ describe('transportation session refresh', () => {
             publicKeyEncoding: {type: 'spki', format: 'pem'},
         });
         return {
-            serverPublicKey: '', deviceId: 1, sessionId: 1, sessionToken: 'stale', userId: 1,
+            serverPublicKey, deviceId: 1, sessionId: 1, sessionToken: 'stale', userId: 1,
             sessionExpiryTime: expiry, installationToken: 'installation',
             config: createConfig({baseUrl, pinnedKey: ''}, 'test', 'key', privateKey, publicKey),
         };

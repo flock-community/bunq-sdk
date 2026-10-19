@@ -1,6 +1,6 @@
 import {DeviceServer, Installation, SessionServer} from "./gen/model";
 import {client} from "./gen/Client";
-import {rawHandler, requireTyped, serialization} from "./wirespec";
+import {rawHandler, requireSigned, requireTyped, serialization} from "./wirespec";
 import {Config, describeConfig} from "./config";
 
 export interface Context {
@@ -31,9 +31,13 @@ function setupFailure(what: string, body: {Error?: {error_description?: string}[
     return `${what} (status 400): ${body.Error?.[0]?.error_description}`;
 }
 
-function unauthenticatedClient(config: Config, token?: string) {
+// serverPublicKey is not known yet for the installation call, so that response is not verified
+function unauthenticatedClient(config: Config, token?: string, serverPublicKey?: string) {
     const headers: Record<string, string[]> = token ? {"X-Bunq-Client-Authentication": [token]} : {};
-    return client(serialization, {transport: async request => requireTyped(await rawHandler(config, {...request, headers: {...request.headers, ...headers}}))});
+    return client(serialization, {transport: async request => {
+        const response = await rawHandler(config, {...request, headers: {...request.headers, ...headers}});
+        return serverPublicKey ? requireSigned(response, serverPublicKey) : requireTyped(response);
+    }});
 }
 
 export async function initContext(config: Config): Promise<Context> {
@@ -47,13 +51,13 @@ export async function initContext(config: Config): Promise<Context> {
         }
     }
 
-    const createDeviceServer = async (token: string) => {
+    const createDeviceServer = async (token: string, serverPublicKey: string) => {
         const body: DeviceServer = {
             description: config.serviceName,
             secret: config.apiKey,
             permitted_ips: ["*"]
         }
-        const res = await unauthenticatedClient(config, token).createDeviceServer({body})
+        const res = await unauthenticatedClient(config, token, serverPublicKey).createDeviceServer({body})
         if (res.status === 200) {
             return res.body
         } else {
@@ -61,11 +65,11 @@ export async function initContext(config: Config): Promise<Context> {
         }
     }
 
-    const createSessionServer = async (token: string) => {
+    const createSessionServer = async (token: string, serverPublicKey: string) => {
         const body: SessionServer = {
             secret: config.apiKey,
         }
-        const res = await unauthenticatedClient(config, token).createSessionServer({body})
+        const res = await unauthenticatedClient(config, token, serverPublicKey).createSessionServer({body})
         if (res.status === 200) {
             return res.body
         } else {
@@ -81,12 +85,12 @@ export async function initContext(config: Config): Promise<Context> {
         throw new Error("No server public key")
     }
 
-    const device = await createDeviceServer(installation.Token.token)
+    const device = await createDeviceServer(installation.Token.token, installation.ServerPublicKey.server_public_key)
     if (!device.Id?.id) {
         throw new Error("No device id")
     }
 
-    const session = await createSessionServer(installation.Token.token)
+    const session = await createSessionServer(installation.Token.token, installation.ServerPublicKey.server_public_key)
     if (!session.Id?.id) {
         throw new Error("No session id")
     }
@@ -165,7 +169,7 @@ export async function refreshSession(context: Context): Promise<Context> {
         const body: SessionServer = {
             secret: context.config.apiKey,
         }
-        const res = await unauthenticatedClient(context.config, token).createSessionServer({body})
+        const res = await unauthenticatedClient(context.config, token, context.serverPublicKey).createSessionServer({body})
         if (res.status === 200) {
             return res.body
         } else {
