@@ -112,6 +112,8 @@ interface Context {
 }
 ```
 
+`Context` and `Config` are plain objects, so logging them or calling `JSON.stringify` prints the secrets. Use `describeContext(context)` / `describeConfig(config)` for a masked string. The object still holds the secrets, so store it encrypted.
+
 ## Error Handling
 
 See [Error Handling in the README](../README.md#error-handling) for when the error is thrown.

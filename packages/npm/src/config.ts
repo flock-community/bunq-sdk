@@ -44,6 +44,14 @@ export interface Config {
 }
 
 /**
+ * String form of a Config with apiKey and signingKeys masked. Logging the object itself or
+ * JSON.stringify(config) prints the secrets; the object still holds them.
+ */
+export function describeConfig(config: Config): string {
+    return `Config ${JSON.stringify({...config, apiKey: '***', signingKeys: '***'})}`;
+}
+
+/**
  * Creates a configuration object from basic parameters.
  * The configuration is validated during construction.
  */

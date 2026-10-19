@@ -1,7 +1,7 @@
 import {DeviceServer, Installation, SessionServer} from "./gen/model";
 import {client} from "./gen/Client";
 import {rawHandler, requireTyped, serialization} from "./wirespec";
-import {Config} from "./config";
+import {Config, describeConfig} from "./config";
 
 export interface Context {
     readonly serverPublicKey: string;
@@ -14,6 +14,14 @@ export interface Context {
     readonly config: Config;
 }
 
+
+/**
+ * String form of a Context with sessionToken, installationToken and the config secrets masked.
+ * Logging the object itself or JSON.stringify(context) prints the secrets; the object still holds them.
+ */
+export function describeContext(context: Context): string {
+    return `Context ${JSON.stringify({...context, sessionToken: '***', installationToken: '***', config: '<config>'})} ${describeConfig(context.config)}`;
+}
 
 function setupFailure(what: string, body: {Error?: {error_description?: string}[]}): string {
     return `${what} (status 400): ${body.Error?.[0]?.error_description}`;

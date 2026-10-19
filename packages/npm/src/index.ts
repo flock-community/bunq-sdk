@@ -1,9 +1,9 @@
 import type {bunqClient} from "./transportation";
 export {bunqClient, transportation} from "./transportation";
 export type BunqClient = ReturnType<typeof bunqClient>;
-export {initContext, refreshSession} from "./context";
+export {initContext, refreshSession, describeContext} from "./context";
 export type {Context} from "./context";
-export {createConfig, InvalidConfigError} from "./config";
+export {createConfig, describeConfig, InvalidConfigError} from "./config";
 export type {Config} from "./config";
 export {BUNQ_PUBLIC_SERVER, BUNQ_SANDBOX_SERVER} from "./bunq-server";
 export type {BunqServer} from "./bunq-server";
