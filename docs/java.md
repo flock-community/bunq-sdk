@@ -167,7 +167,7 @@ public record Context(
 
 bunq signs every response: the `X-Bunq-Server-Signature` header holds a base64 SHA256withRSA (PKCS#1 v1.5) signature over the raw response body bytes. Every 200 and 400 response that reaches the generated client is verified against `Context.serverPublicKey()`, the server public key bunq returned when the installation was created. The requests of `Context.initContext` after the installation are verified with that key as well.
 
-A response without the header, or with a signature that does not match the body, is rejected with `SecurityException("Invalid bunq server signature")`, wrapped in a `CompletionException` by the returned future,; the future completes exceptionally. Other statuses (403, 404, 5xx, ...) are thrown as the API error described under Error Handling before the signature is looked at.
+A response without the header, or with a signature that does not match the body, is rejected with `SecurityException("Invalid bunq server signature")`; the future completes exceptionally with it, wrapped in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`. `Context.initContext` and `refreshSession()` throw a `RuntimeException` whose cause is an `ExecutionException` whose cause is the `SecurityException`. Other statuses (403, 404, 5xx, ...) are thrown as the API error described under Error Handling before the signature is looked at.
 
 The installation response itself is not verified: the key it carries is not known yet, so it only proves that the sender holds the key it announces. The pinned certificate of the `BunqServer` is what protects that call.
 
