@@ -21,6 +21,8 @@ import java.security.interfaces.RSAPublicKey;
 
 public class BunqSigningKeysGenerator {
 
+    private static final System.Logger logger = System.getLogger(BunqSigningKeysGenerator.class.getName());
+
     private static final KeyPairGenerator keyPairGenerator;
 
     static {
@@ -43,7 +45,7 @@ public class BunqSigningKeysGenerator {
     public static SigningKeys generateBunqSigningKeys() {
         try {
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
-            System.out.println("bunq - created new keypair [KEEP THESE SAFE]");
+            logger.log(System.Logger.Level.INFO, "bunq - created new keypair [KEEP THESE SAFE]");
             return new SigningKeysFromRsa((RSAPrivateKey) keyPair.getPrivate(), (RSAPublicKey) keyPair.getPublic());
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate RSA key pair", e);
@@ -75,7 +77,7 @@ public class BunqSigningKeysGenerator {
             Files.writeString(privateKeyFile.toPath(), privateKeyPem);
             Files.writeString(publicKeyFile.toPath(), publicKeyPem);
 
-            System.out.println("bunq - creating new keypair [KEEP THESE FILES SAFE]");
+            logger.log(System.Logger.Level.INFO, "bunq - creating new keypair [KEEP THESE FILES SAFE]");
             return new SigningKeysFromPem(privateKeyPem, publicKeyPem);
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate RSA key pair", e);

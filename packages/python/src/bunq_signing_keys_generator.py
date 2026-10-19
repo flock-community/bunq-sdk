@@ -3,6 +3,7 @@ Bunq signing keys generator utility for handling cryptographic key generation.
 Provides methods to generate SigningKeys implementations for bunq API usage.
 """
 
+import logging
 import os
 from pathlib import Path
 from cryptography.hazmat.primitives import serialization
@@ -11,6 +12,8 @@ from cryptography.hazmat.backends import default_backend
 from typing import Tuple, Union
 
 from signing_keys import SigningKeys, SigningKeysFromRsa, SigningKeysFromPem
+
+logger = logging.getLogger(__name__)
 
 
 class BunqSigningKeysGenerator:
@@ -24,7 +27,7 @@ class BunqSigningKeysGenerator:
         Returns:
             SigningKeys: A SigningKeys implementation containing the generated key pair
         """
-        print('bunq - created new keypair [KEEP IT SAFE]')
+        logger.info('bunq - created new keypair [KEEP IT SAFE]')
         
         # Generate new RSA keys with 2048 bits as required by bunq
         private_key = rsa.generate_private_key(
@@ -53,7 +56,7 @@ class BunqSigningKeysGenerator:
         public_key_path = Path(public_key_file)
         
         if private_key_path.exists() and public_key_path.exists():
-            print('bunq - using existing keypair')
+            logger.info('bunq - using existing keypair')
             private_key_pem = private_key_path.read_text(encoding='utf-8')
             public_key_pem = public_key_path.read_text(encoding='utf-8')
             return SigningKeysFromPem(private_key_pem, public_key_pem)
@@ -69,7 +72,7 @@ class BunqSigningKeysGenerator:
         private_key_path.write_text(signing_keys.private_key_as_pem(), encoding='utf-8')
         public_key_path.write_text(signing_keys.public_key_as_pem(), encoding='utf-8')
         
-        print('bunq - created new keypair [KEEP THESE FILES SAFE]')
+        logger.info('bunq - created new keypair [KEEP THESE FILES SAFE]')
         return signing_keys
     
     @staticmethod

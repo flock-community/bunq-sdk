@@ -135,7 +135,7 @@ function getSessionTimeout(session: any): number {
         ?? getUserApiKeySessionTimeout(session.UserApiKey);
         
     if (timeout === undefined) {
-        console.log("bunq - No session timeout found in session server response, using default of 30 minutes");
+        console.warn("bunq - No session timeout found in session server response, using default of 30 minutes");
         return 30 * 60; // 30 minutes default
     }
     

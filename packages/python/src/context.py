@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -17,6 +18,8 @@ from api.model.SessionServer import SessionServer
 
 from config import Config
 from transport import require_signed, require_typed, send, Serialization
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(repr=False)
@@ -214,7 +217,7 @@ def _get_session_timeout(session_server: SessionServerCreate) -> int:
         timeout = _get_user_api_key_session_timeout(session_server.UserApiKey)
     
     if timeout is None:
-        print("bunq - No session timeout found in session server response, using default of 30 minutes")
+        logger.warning("bunq - No session timeout found in session server response, using default of 30 minutes")
         return 30 * 60  # 30 minutes default
     
     return timeout

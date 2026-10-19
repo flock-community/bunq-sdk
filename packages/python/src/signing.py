@@ -1,5 +1,6 @@
 import hashlib
 from typing import Optional
+import logging
 
 from cryptography.hazmat.primitives import hashes
 import base64
@@ -8,6 +9,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 
 from signing_keys import _validate_and_load_public_key
+
+logger = logging.getLogger(__name__)
 
 
 class Signing:
@@ -57,5 +60,5 @@ class Signing:
             )
             return True
         except Exception as e:
-            print(f"[ERROR] Signature verification failed: {e}")
+            logger.warning("Signature verification failed: %s", e)
             return False
