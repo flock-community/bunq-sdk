@@ -29,10 +29,7 @@ class TransportationRefreshTest {
             val token = exchange.requestHeaders.getFirst("X-Bunq-Client-Authentication")
             seenTokens += token
             val (status, body) = if (revived.get()) 200 to """{"Response":[]}""" else 403 to rejection
-            val bytes = body.toByteArray()
-            exchange.sendResponseHeaders(status, if (bytes.isEmpty()) -1 else bytes.size.toLong())
-            if (bytes.isNotEmpty()) exchange.responseBody.write(bytes)
-            exchange.close()
+            TestServerKey.respond(exchange, status, body)
         }
         server.start()
         try {
@@ -42,7 +39,7 @@ class TransportationRefreshTest {
                 apiKey = "key",
                 signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
             )
-            val context = Context("", 1, 1, "stale", 1, expiry, "installation", config)
+            val context = Context(TestServerKey.publicPem, 1, 1, "stale", 1, expiry, "installation", config)
             block(context, seenTokens)
         } finally {
             server.stop(0)

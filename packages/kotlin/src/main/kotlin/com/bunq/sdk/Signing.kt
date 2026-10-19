@@ -33,17 +33,17 @@ object Signing{
         return Base64.getEncoder().encodeToString(signature)
     }
 
+    /** Verifies bunq's `X-Bunq-Server-Signature`: SHA256withRSA over the raw response body bytes. */
     fun verifyResponse(
-        config: Config,
-        responseBody: String,
-        signature: String,
+        serverPublicKeyPem: String,
+        responseBody: ByteArray,
+        signature: String?,
     ): Boolean = try {
-        val publicKey = config.signingKeys.publicKey()
-        val decodedSignature = Base64.getDecoder().decode(signature)
+        val decodedSignature = Base64.getDecoder().decode(signature ?: return false)
 
         val verifier = Signature.getInstance("SHA256withRSA", "BC")
-        verifier.initVerify(publicKey)
-        verifier.update(responseBody.toByteArray(Charsets.UTF_8))
+        verifier.initVerify(validateAndLoadPublicKey(serverPublicKeyPem))
+        verifier.update(responseBody)
 
         verifier.verify(decodedSignature)
     } catch (e: Exception) {
@@ -51,5 +51,3 @@ object Signing{
         false
     }
 }
-
-

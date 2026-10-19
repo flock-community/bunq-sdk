@@ -21,10 +21,7 @@ class ErrorResponseTest {
     private fun <T> answering(status: Int, body: String, block: (Client) -> T): T {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
-            val bytes = body.toByteArray()
-            exchange.sendResponseHeaders(status, bytes.size.toLong())
-            exchange.responseBody.write(bytes)
-            exchange.close()
+            TestServerKey.respond(exchange, status, body)
         }
         server.start()
         try {
@@ -34,7 +31,7 @@ class ErrorResponseTest {
                 apiKey = "key",
                 signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
             )
-            return block(bunqClient(Context("", 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config)))
+            return block(bunqClient(Context(TestServerKey.publicPem, 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config)))
         } finally {
             server.stop(0)
         }
