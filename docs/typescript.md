@@ -103,7 +103,7 @@ const willExpireSoon = expiryTime.getTime() < Date.now() + 5 * 60 * 1000;
 
 Store every field of `Context`: `serverPublicKey`, `deviceId`, `sessionId`, `sessionToken`, `userId`, `sessionExpiryTime`, `installationToken` and the secrets in `config` (API key and signing keys). The SDK has no serialisation format of its own. Treat the stored data as a secret and store it encrypted (see the masking note under Context Properties).
 
-Pass `onContextChange` to `bunqClient` to receive the new `Context` after every refresh, whether triggered by a 403 or by expiry. It is called once per refresh. If it throws, the exception reaches the caller of the request that triggered the refresh.
+Pass `onContextChange` to `bunqClient` to receive the new `Context` after every refresh, whether triggered by a 403 or by expiry. It is called once per refresh. If it throws, the exception reaches the caller of the request that triggered the refresh. It rejects the shared refresh, so every request waiting for that refresh rejects with the same error.
 
 ```typescript
 // first start
@@ -124,7 +124,7 @@ const restored: Context = {
 const client = bunqClient(restored, updated => save(updated));
 ```
 
-If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token and the 403 handling applies. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
+If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token; if bunq answers 403 "Insufficient authentication.", that 403 is returned as the error without a second refresh. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
 
 ## Context Properties
 
