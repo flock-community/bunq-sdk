@@ -73,9 +73,33 @@ suspend fun readLegalName(context: Context): String? {
 suspend fun listAccountNames(context: Context): List<String?> {
     val client = bunqClient(context)
     return when (val res = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
-        is ListAllMonetaryAccountBankForUser.Response200 -> res.body.map { it.display_name }
+        is ListAllMonetaryAccountBankForUser.Response200 -> res.body.Response.map { it.display_name }
         is ListAllMonetaryAccountBankForUser.Response400 -> error("Cannot list monetary accounts: ${res.body.Error?.firstOrNull()?.error_description}")
     }
+}
+```
+
+## Pagination
+
+A list operation returns a page, `<Item>Page` (for example `PaymentPage`), with the items in `Response` and bunq's `Pagination` block in `Pagination`. `Pagination` has `future_url`, `newer_url` and `older_url`; each is null when there is nothing to follow. Items are listed newest first. To read the next (older) page, call the operation again with `older_id` set to the id of the last item of the current page. That is the `older_id` in `older_url`. When `older_url` is null there are no older items. `newer_id` goes the other way: pass the id of the first item to get the items newer than it. `count` is the page size (at most 200).
+
+```kotlin
+import com.bunq.sdk.generated.endpoint.ListAllPaymentForUserMonetaryAccount
+import com.bunq.sdk.generated.model.PaymentListing
+
+suspend fun allPayments(context: Context, monetaryAccountId: Long): List<PaymentListing> {
+    val client = bunqClient(context)
+    val payments = mutableListOf<PaymentListing>()
+    var olderId: Long? = null
+    do {
+        val page = when (val res = client.listAllPaymentForUserMonetaryAccount(context.userId, monetaryAccountId, 200, null, olderId)) {
+            is ListAllPaymentForUserMonetaryAccount.Response200 -> res.body
+            is ListAllPaymentForUserMonetaryAccount.Response400 -> error("Cannot list payments: ${res.body.Error?.firstOrNull()?.error_description}")
+        }
+        payments += page.Response
+        olderId = page.Response.lastOrNull()?.id.takeIf { page.Pagination.older_url != null }
+    } while (olderId != null)
+    return payments
 }
 ```
 

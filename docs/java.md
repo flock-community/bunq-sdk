@@ -92,9 +92,34 @@ ListAllMonetaryAccountBankForUser.Response<?> accounts = client
     .listAllMonetaryAccountBankForUser(context.userId(), Optional.empty(), Optional.empty(), Optional.empty())
     .get();
 if (accounts instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
-    response.body().forEach(account -> System.out.println(account.display_name().orElse("")));
+    response.body().Response().forEach(account -> System.out.println(account.display_name().orElse("")));
 } else if (accounts instanceof ListAllMonetaryAccountBankForUser.Response400 error) {
     System.err.println(error.body().Error());
+}
+```
+
+## Pagination
+
+A list operation returns a page, `<Item>Page` (for example `PaymentPage`), with the items in `Response` and bunq's `Pagination` block in `Pagination`. `Pagination` has `future_url`, `newer_url` and `older_url`; each is null when there is nothing to follow. Items are listed newest first. To read the next (older) page, call the operation again with `older_id` set to the id of the last item of the current page. That is the `older_id` in `older_url`. When `older_url` is null there are no older items. `newer_id` goes the other way: pass the id of the first item to get the items newer than it. `count` is the page size (at most 200).
+
+```java
+List<PaymentListing> allPayments(Context context, long monetaryAccountId) throws Exception {
+    Client client = Wirespec.bunqClient(context);
+    List<PaymentListing> payments = new ArrayList<>();
+    Optional<Long> olderId = Optional.empty();
+    do {
+        var res = client.listAllPaymentForUserMonetaryAccount(
+            context.userId(), monetaryAccountId, Optional.of(200L), Optional.empty(), olderId).get();
+        if (!(res instanceof ListAllPaymentForUserMonetaryAccount.Response200 ok)) {
+            throw new IllegalStateException("Cannot list payments");
+        }
+        PaymentPage page = ok.body();
+        payments.addAll(page.Response());
+        olderId = page.Pagination().older_url().isPresent() && !page.Response().isEmpty()
+            ? page.Response().get(page.Response().size() - 1).id()
+            : Optional.empty();
+    } while (olderId.isPresent());
+    return payments;
 }
 ```
 
