@@ -1,5 +1,6 @@
 jdk:
   - openjdk17
 install:
+  # JitPack republishes the artifacts under the requested tag/commit, so -Pgroup/-Pversion do not determine the published coordinates.
   - ./gradlew -Pgroup=com.github.flock-community -Pversion=$VERSION -xtest :packages:kotlin:publishToMavenLocal
   - ./gradlew -Pgroup=com.github.flock-community -Pversion=$VERSION -xtest :packages:java:publishToMavenLocal

@@ -235,7 +235,7 @@ For the npm package, `src/gen` is generated and not committed: run `./gradlew :p
 Kotlin and Java are published through JitPack, configured in `jitpack.yml`.
 
 1. On GitHub, create a release with tag `X.Y.Z` from `main`.
-2. JitPack builds `kotlin` and `java` on the first request for that version, for example by resolving the dependency or opening `https://jitpack.io/#flock-community/bunq-sdk`.
+2. JitPack builds `kotlin` and `java` on the first request for that version. Opening `https://jitpack.io/#flock-community/bunq-sdk` does not start a build; clicking "Get it" next to the version or resolving the dependency does.
 3. Check the build log:
 
 ```text
