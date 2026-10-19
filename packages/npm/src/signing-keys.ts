@@ -91,13 +91,13 @@ export interface SigningKeys {
  * SigningKeys implementation that loads from PEM string representations
  */
 export class SigningKeysFromPem implements SigningKeys {
-    private readonly privateKeyPem: string;
+    readonly #privateKeyPem: string;
     private readonly publicKeyPem: string;
     private readonly privateKeyObj: crypto.KeyObject;
     private readonly publicKeyObj: crypto.KeyObject;
 
     constructor(privateKeyPem: string, publicKeyPem: string) {
-        this.privateKeyPem = privateKeyPem;
+        this.#privateKeyPem = privateKeyPem;
         this.publicKeyPem = publicKeyPem;
         
         this.privateKeyObj = validateAndLoadPrivateKey(privateKeyPem);
@@ -107,7 +107,7 @@ export class SigningKeysFromPem implements SigningKeys {
     }
 
     privateKeyAsPem(): string {
-        return this.privateKeyPem;
+        return this.#privateKeyPem;
     }
 
     publicKeyAsPem(): string {
@@ -129,7 +129,7 @@ export class SigningKeysFromPem implements SigningKeys {
 export class SigningKeysFromRsa implements SigningKeys {
     private readonly privateKeyObj: crypto.KeyObject;
     private readonly publicKeyObj: crypto.KeyObject;
-    private readonly privateKeyPem: string;
+    readonly #privateKeyPem: string;
     private readonly publicKeyPem: string;
 
     constructor(privateKey: crypto.KeyObject, publicKey: crypto.KeyObject) {
@@ -138,7 +138,7 @@ export class SigningKeysFromRsa implements SigningKeys {
         
         validateKeyCompatibility(this.privateKeyObj, this.publicKeyObj);
         
-        this.privateKeyPem = privateKey.export({
+        this.#privateKeyPem = privateKey.export({
             type: 'pkcs8',
             format: 'pem'
         }).toString();
@@ -150,7 +150,7 @@ export class SigningKeysFromRsa implements SigningKeys {
     }
 
     privateKeyAsPem(): string {
-        return this.privateKeyPem;
+        return this.#privateKeyPem;
     }
 
     publicKeyAsPem(): string {

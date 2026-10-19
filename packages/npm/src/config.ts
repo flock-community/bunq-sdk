@@ -48,7 +48,11 @@ export interface Config {
  * JSON.stringify(config) prints the secrets; the object still holds them.
  */
 export function describeConfig(config: Config): string {
-    return `Config ${JSON.stringify({...config, apiKey: '***', signingKeys: '***'})}`;
+    return `Config ${JSON.stringify({
+        bunqServer: config.bunqServer, serviceName: config.serviceName, apiKey: '***', signingKeys: '***',
+        userAgent: config.userAgent, cacheControl: config.cacheControl, language: config.language,
+        region: config.region, clientRequestId: config.clientRequestId, geolocation: config.geolocation,
+    })}`;
 }
 
 /**

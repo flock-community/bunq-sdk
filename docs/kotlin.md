@@ -74,8 +74,6 @@ suspend fun listAccountNames(context: Context): List<String?> {
 }
 ```
 
-`Context.toString()` and `Config.toString()` mask secrets; the object still holds them, so store it encrypted.
-
 ## Session Refresh
 
 See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call throws `BunqApiException` with status 403), and the manual refresh.
@@ -104,7 +102,7 @@ val willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60))
 
 ## Logging
 
-The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and a failed session refresh is logged as a warning. Credentials are never logged.
+The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and a failed session refresh is logged as a warning. Credentials are never logged. `Context.toString()` and `Config.toString()` mask secrets; the object still holds them, so store it encrypted.
 
 ## Error Handling
 

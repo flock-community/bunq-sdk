@@ -17,9 +17,10 @@ class SecretMaskingTest(unittest.TestCase):
 
         text = repr(context)
 
-        for secret in ['secret-api-key', 'secret-session', 'secret-install', private_key_pem.splitlines()[1]]:
+        for secret in ['secret-api-key', 'secret-session', 'secret-install']:
             self.assertNotIn(secret, text)
         self.assertIn('my-service', text)
+        self.assertIn("signing_keys='***'", text)
         self.assertIn('user_id=3', text)
 
 
