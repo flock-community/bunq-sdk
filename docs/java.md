@@ -139,6 +139,8 @@ public record Context(
 ) {}
 ```
 
+`toString()` on `Context` and `Config` masks secrets; the object still holds them, so store it encrypted.
+
 ## Error Handling
 
 See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.

@@ -81,6 +81,14 @@ public record Config(
 
 
 
+    /** Masks apiKey and signingKeys; the record still holds them. */
+    @Override
+    public String toString() {
+        return "Config[bunqServer=" + bunqServer + ", serviceName=" + serviceName + ", apiKey=***, signingKeys=***"
+                + ", userAgent=" + userAgent + ", cacheControl=" + cacheControl + ", language=" + language
+                + ", region=" + region + ", clientRequestId=" + clientRequestId + ", geolocation=" + geolocation + "]";
+    }
+
     private static void validateBasicParameters(String serviceName, String apiKey) {
         if (serviceName == null || serviceName.isBlank()) {
             throw new IllegalArgumentException("Service name cannot be blank");

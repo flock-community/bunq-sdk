@@ -235,6 +235,6 @@ public record Context(
 
     @Override
     public @NotNull String toString() {
-        return "Context{" + "serverPublicKey='" + serverPublicKey + '\'' + ", deviceId=" + deviceId + ", sessionId=" + sessionId + ", sessionToken='" + sessionToken + '\'' + ", userId=" + userId + ", config=" + config + '}';
+        return "Context{" + "serverPublicKey='" + serverPublicKey + '\'' + ", deviceId=" + deviceId + ", sessionId=" + sessionId + ", sessionToken=***" + ", userId=" + userId + ", sessionExpiryTime=" + sessionExpiryTime + ", installationToken=***" + ", config=" + config + '}';
     }
 }
