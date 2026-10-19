@@ -18,7 +18,7 @@ describe('transportation session refresh', () => {
     afterEach(() => new Promise(resolve => server.close(resolve)));
 
     /** Answers 200 for the token "fresh", otherwise 403 with [rejection]. */
-    async function contextRejectingWith(rejection: string): Promise<Context> {
+    async function contextRejectingWith(rejection: string, expiry = new Date(Date.now() + 3600_000)): Promise<Context> {
         seenTokens = [];
         server = createServer((req, res) => {
             const token = req.headers['x-bunq-client-authentication'] as string | undefined;
@@ -35,7 +35,7 @@ describe('transportation session refresh', () => {
         });
         return {
             serverPublicKey: '', deviceId: 1, sessionId: 1, sessionToken: 'stale', userId: 1,
-            sessionExpiryTime: new Date(), installationToken: 'installation',
+            sessionExpiryTime: expiry, installationToken: 'installation',
             config: createConfig({baseUrl, pinnedKey: ''}, 'test', 'key', privateKey, publicKey),
         };
     }
@@ -110,5 +110,57 @@ describe('transportation session refresh', () => {
 
         expect(responses.map(response => response.statusCode)).toEqual([200, 200]);
         expect(refreshes).toBe(1);
+    });
+
+    test('an expired context is refreshed before the first request and the callback fires once', async () => {
+        const context = await contextRejectingWith(authenticationError, new Date(Date.now() - 1000));
+        let refreshes = 0;
+        const changes: string[] = [];
+        const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); }, ctx => { changes.push(ctx.sessionToken); });
+
+        const response = await transport.transport(request);
+
+        expect(response.statusCode).toBe(200);
+        expect(refreshes).toBe(1);
+        expect(seenTokens).toEqual(['fresh']);
+        expect(changes).toEqual(['fresh']);
+    });
+
+    test('a context that is not expired is not refreshed', async () => {
+        const context = fresh(await contextRejectingWith(authenticationError));
+        let refreshes = 0;
+        const transport = transportation(context, async ctx => { refreshes++; return ctx; }, () => { refreshes++; });
+
+        expect((await transport.transport(request)).statusCode).toBe(200);
+
+        expect(refreshes).toBe(0);
+        expect(seenTokens).toEqual(['fresh']);
+    });
+
+    test('a 403 refresh calls the callback once with the new context', async () => {
+        const context = await contextRejectingWith(authenticationError);
+        const changes: string[] = [];
+        const transport = transportation(context, async ctx => fresh(ctx), ctx => { changes.push(ctx.sessionToken); });
+
+        expect((await transport.transport(request)).statusCode).toBe(200);
+
+        expect(changes).toEqual(['fresh']);
+    });
+
+    test('concurrent calls on an expired context refresh once', async () => {
+        const context = await contextRejectingWith(authenticationError, new Date(Date.now() - 1000));
+        let refreshes = 0;
+        let changes = 0;
+        const transport = transportation(context, async ctx => {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            refreshes++;
+            return fresh(ctx);
+        }, () => { changes++; });
+
+        const responses = await Promise.all([transport.transport(request), transport.transport(request), transport.transport(request)]);
+
+        expect(responses.map(r => r.statusCode)).toEqual([200, 200, 200]);
+        expect(refreshes).toBe(1);
+        expect(changes).toBe(1);
     });
 });

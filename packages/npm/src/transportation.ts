@@ -28,14 +28,23 @@ function isSessionRejected(response: Wirespec.RawResponse): boolean {
     }
 }
 
+// a session that expires within this many milliseconds is refreshed before the request is sent
+const expiryMarginMs = 30_000;
+
 /**
  * Sends requests with the context's authentication headers.
+ * A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
  * A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
  * request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
  * are thrown as BunqApiError.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
+ * onContextChange is called once with the new context after every successful refresh, so the caller can store it.
  */
-export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<Context> = refreshSession): Wirespec.Transportation {
+export function transportation(
+    ctx: Context,
+    refresh: (ctx: Context) => Promise<Context> = refreshSession,
+    onContextChange: (ctx: Context) => void = () => {},
+): Wirespec.Transportation {
     let current = ctx;
     let refreshing: Promise<Context | undefined> | undefined;
 
@@ -46,8 +55,11 @@ export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<
         // another request may have refreshed the session while this one was in flight
         if (current.sessionToken !== used.sessionToken) return Promise.resolve(current);
         refreshing ??= Promise.resolve().then(() => refresh(used))
-            .then(fresh => current = fresh)
-            .catch(error => {
+            .then(fresh => {
+                current = fresh;
+                onContextChange(fresh);
+                return fresh;
+            }, error => {
                 console.warn(`bunq session refresh failed: ${error?.message}`);
                 return undefined;
             })
@@ -57,7 +69,8 @@ export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<
 
     return {
         async transport(request) {
-            const used = current;
+            const snapshot = current;
+            const used = snapshot.sessionExpiryTime.getTime() <= Date.now() + expiryMarginMs ? await refreshed(snapshot) ?? snapshot : snapshot;
             const response = await sendWith(used, request);
             if (!isSessionRejected(response)) return requireTyped(response);
             const fresh = await refreshed(used);
@@ -66,6 +79,6 @@ export function transportation(ctx: Context, refresh: (ctx: Context) => Promise<
     };
 }
 
-export function bunqClient(ctx: Context) {
-    return client(serialization, transportation(ctx));
+export function bunqClient(ctx: Context, onContextChange: (ctx: Context) => void = () => {}) {
+    return client(serialization, transportation(ctx, refreshSession, onContextChange));
 }

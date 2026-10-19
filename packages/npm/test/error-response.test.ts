@@ -27,7 +27,7 @@ describe('error responses', () => {
         });
         const context: Context = {
             serverPublicKey: '', deviceId: 1, sessionId: 1, sessionToken: 'token', userId: 1,
-            sessionExpiryTime: new Date(), installationToken: 'installation',
+            sessionExpiryTime: new Date(Date.now() + 3600_000), installationToken: 'installation',
             config: createConfig({baseUrl, pinnedKey: ''}, 'test', 'key', privateKey, publicKey),
         };
         return bunqClient(context).readUser({itemId: 1});

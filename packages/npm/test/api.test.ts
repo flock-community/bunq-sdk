@@ -131,7 +131,7 @@ describe("API test", async () => {
 
 describe("dead session", () => {
     test('a deleted session is refreshed once and the call succeeds', async () => {
-        const unauthenticated = bunqClient({config} as Context);
+        const unauthenticated = bunqClient({config, sessionExpiryTime: new Date(Date.now() + 3600_000)} as Context);
         const sandboxUser = await unauthenticated.createSandboxUserPerson({body: {}});
         if (sandboxUser.status !== 200 || !sandboxUser.body.ApiKey?.api_key) {
             throw new Error("Cannot create sandbox user");
