@@ -17,14 +17,24 @@ describe('transportation session refresh', () => {
 
     afterEach(() => new Promise(resolve => server.close(resolve)));
 
-    /** Answers 200 for the token "fresh", otherwise 403 with [rejection]. */
+    /** Set by `fresh`: like bunq, the server accepts the session again after a refresh although the token stays the same. */
+    let revived: boolean;
+    /** Answers the second request 400 ms late, so its 403 arrives after the first request's refresh has finished. */
+    let slowSecondRequest: boolean;
+
+    /** Answers 200 once revived, otherwise 403 with [rejection]. */
     async function contextRejectingWith(rejection: string, expiry = new Date(Date.now() + 3600_000)): Promise<Context> {
         seenTokens = [];
+        revived = false;
+        slowSecondRequest = false;
         server = createServer((req, res) => {
             const token = req.headers['x-bunq-client-authentication'] as string | undefined;
             seenTokens.push(token);
-            res.statusCode = token === 'fresh' ? 200 : 403;
-            res.end(token === 'fresh' ? '{"Response":[]}' : rejection);
+            const ok = revived;
+            setTimeout(() => {
+                res.statusCode = ok ? 200 : 403;
+                res.end(ok ? '{"Response":[]}' : rejection);
+            }, slowSecondRequest && seenTokens.length === 2 ? 400 : 0);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
         const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
@@ -40,7 +50,11 @@ describe('transportation session refresh', () => {
         };
     }
 
-    const fresh = (context: Context): Context => ({...context, sessionToken: 'fresh'});
+    /** What bunq returns for a re-created session: the same token with a later expiry. */
+    const fresh = (context: Context): Context => {
+        revived = true;
+        return {...context, sessionExpiryTime: new Date(Date.now() + 3600_000)};
+    };
 
     test('insufficient authentication refreshes once and retries with the new token', async () => {
         const context = await contextRejectingWith(authenticationError);
@@ -51,7 +65,7 @@ describe('transportation session refresh', () => {
 
         expect(response.statusCode).toBe(200);
         expect(refreshes).toBe(1);
-        expect(seenTokens).toEqual(['stale', 'fresh']);
+        expect(seenTokens).toEqual(['stale', 'stale']);
     });
 
     test('a failing refresh throws the original 403', async () => {
@@ -122,19 +136,20 @@ describe('transportation session refresh', () => {
 
         expect(response.statusCode).toBe(200);
         expect(refreshes).toBe(1);
-        expect(seenTokens).toEqual(['fresh']);
-        expect(changes).toEqual(['fresh']);
+        expect(seenTokens).toEqual(['stale']);
+        expect(changes).toHaveLength(1);
     });
 
     test('a context that is not expired is not refreshed', async () => {
-        const context = fresh(await contextRejectingWith(authenticationError));
+        const context = await contextRejectingWith(authenticationError);
+        revived = true;
         let refreshes = 0;
         const transport = transportation(context, async ctx => { refreshes++; return ctx; }, () => { refreshes++; });
 
         expect((await transport.transport(request)).statusCode).toBe(200);
 
         expect(refreshes).toBe(0);
-        expect(seenTokens).toEqual(['fresh']);
+        expect(seenTokens).toEqual(['stale']);
     });
 
     test('a 403 refresh calls the callback once with the new context', async () => {
@@ -144,15 +159,15 @@ describe('transportation session refresh', () => {
 
         expect((await transport.transport(request)).statusCode).toBe(200);
 
-        expect(changes).toEqual(['fresh']);
+        expect(changes).toHaveLength(1);
     });
 
-    test('concurrent calls on an expired context refresh once', async () => {
+    test('concurrent calls on an expired context refresh once when bunq keeps the session token', async () => {
         const context = await contextRejectingWith(authenticationError, new Date(Date.now() - 1000));
         let refreshes = 0;
         let changes = 0;
         const transport = transportation(context, async ctx => {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 200));
             refreshes++;
             return fresh(ctx);
         }, () => { changes++; });
@@ -162,5 +177,39 @@ describe('transportation session refresh', () => {
         expect(responses.map(r => r.statusCode)).toEqual([200, 200, 200]);
         expect(refreshes).toBe(1);
         expect(changes).toBe(1);
+    });
+
+    test('a failed refresh before sending is not repeated after the 403', async () => {
+        const context = await contextRejectingWith(authenticationError, new Date(Date.now() - 1000));
+        let refreshes = 0;
+        const transport = transportation(context, async () => { refreshes++; throw new Error('429'); });
+
+        await expect(transport.transport(request)).rejects.toMatchObject({status: 403});
+        expect(refreshes).toBe(1);
+    });
+
+    test('a context expiring in 10 seconds is refreshed', async () => {
+        const context = await contextRejectingWith(authenticationError, new Date(Date.now() + 10_000));
+        let refreshes = 0;
+        const transport = transportation(context, async ctx => { refreshes++; return fresh(ctx); });
+
+        expect((await transport.transport(request)).statusCode).toBe(200);
+        expect(refreshes).toBe(1);
+    });
+
+    test('a 403 that arrives after another request refreshed reuses that refresh when bunq keeps the session token', async () => {
+        const context = await contextRejectingWith(authenticationError);
+        slowSecondRequest = true;
+        let refreshes = 0;
+        const transport = transportation(context, async ctx => {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            refreshes++;
+            return fresh(ctx);
+        });
+
+        const responses = await Promise.all([transport.transport(request), transport.transport(request)]);
+
+        expect(responses.map(r => r.statusCode)).toEqual([200, 200]);
+        expect(refreshes).toBe(1);
     });
 });

@@ -35,10 +35,11 @@ const expiryMarginMs = 30_000;
  * Sends requests with the context's authentication headers.
  * A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
  * A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
- * request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
- * are thrown as BunqApiError.
+ * request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails
+ * (a failed refresh before sending is not repeated after a 403 in the same request), are thrown as BunqApiError.
  * The refreshed context is kept inside this transportation, so later requests use the new token.
  * onContextChange is called once with the new context after every successful refresh, so the caller can store it.
+ * An error thrown by onContextChange rejects the shared refresh, so every request waiting for it rejects with that error.
  */
 export function transportation(
     ctx: Context,
@@ -52,8 +53,8 @@ export function transportation(
         rawHandler(used.config, {...request, headers: {...request.headers, ...authenticationHeaders(used)}});
 
     const refreshed = (used: Context): Promise<Context | undefined> => {
-        // another request may have refreshed the session while this one was in flight
-        if (current.sessionToken !== used.sessionToken) return Promise.resolve(current);
+        // another request may have refreshed while this one was in flight; compared by identity because bunq returns the same session token on a re-created session
+        if (current !== used) return Promise.resolve(current);
         refreshing ??= Promise.resolve().then(() => refresh(used))
             .then(fresh => {
                 current = fresh;
@@ -70,9 +71,11 @@ export function transportation(
     return {
         async transport(request) {
             const snapshot = current;
-            const used = snapshot.sessionExpiryTime.getTime() <= Date.now() + expiryMarginMs ? await refreshed(snapshot) ?? snapshot : snapshot;
+            // undefined when the refresh before sending failed: a 403 then does not trigger a second refresh in the same request
+            const preRefreshed = snapshot.sessionExpiryTime.getTime() <= Date.now() + expiryMarginMs ? await refreshed(snapshot) : snapshot;
+            const used = preRefreshed ?? snapshot;
             const response = await sendWith(used, request);
-            if (!isSessionRejected(response)) return requireTyped(response);
+            if (!preRefreshed || !isSessionRejected(response)) return requireTyped(response);
             const fresh = await refreshed(used);
             return requireTyped(fresh ? await sendWith(fresh, request) : response);
         }
