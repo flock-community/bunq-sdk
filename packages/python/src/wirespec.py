@@ -2,7 +2,8 @@ import json
 import logging
 from asyncio import Lock
 from dataclasses import replace
-from typing import Awaitable, Callable, Dict, List
+from datetime import datetime, timedelta
+from typing import Awaitable, Callable, Dict, List, Optional
 
 from api.Client import Client
 from api.wirespec import Wirespec
@@ -37,16 +38,23 @@ def _is_session_rejected(response: Wirespec.RawResponse) -> bool:
         return False
 
 
+# a session that expires within this many seconds is refreshed before the request is sent
+EXPIRY_MARGIN = timedelta(seconds=30)
+
+
 def transportation(
     context: Context,
     refresh: Callable[[Context], Awaitable[Context]] = refresh_session,
+    on_context_change: Callable[[Context], None] = lambda context: None,
 ) -> Wirespec.Transportation:
     """
     Sends requests with the context's authentication headers.
+    A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
     A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
     request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails,
     are raised as BunqApiError.
     The refreshed context is kept inside this transportation, so later requests use the new token.
+    on_context_change is called once with the new context after every successful refresh, so the caller can store it.
     """
     current = context
     lock = Lock()
@@ -55,31 +63,41 @@ def transportation(
         headers = {**request.headers, **_authentication_headers(used)}
         return await send(used.config, replace(request, headers=headers))
 
+    async def refreshed(used: Context) -> Optional[Context]:
+        """Returns the refreshed context, or None when the refresh failed."""
+        nonlocal current
+        async with lock:
+            # another request may have refreshed the session while this one waited
+            if current.session_token != used.session_token:
+                return current
+            try:
+                new = await refresh(used)
+            except Exception as e:
+                logger.warning("bunq session refresh failed: %s", e)
+                return None
+            current = new
+            on_context_change(new)
+            return new
+
     class Transportation(Wirespec.Transportation):
         async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
-            nonlocal current
             used = current
+            # now() in the stored value's own time zone: naive values are compared with local time, aware ones with their zone
+            if used.session_expiry_time <= datetime.now(used.session_expiry_time.tzinfo) + EXPIRY_MARGIN:
+                used = await refreshed(used) or used
             response = await send_with(used, request)
             if not _is_session_rejected(response):
                 return require_typed(response)
 
-            async with lock:
-                # another request may have refreshed the session while this one waited
-                if current.session_token == used.session_token:
-                    try:
-                        current = await refresh(used)
-                    except Exception as e:
-                        logger.warning("bunq session refresh failed: %s", e)
-                        return require_typed(response)
-                fresh = current
-            return require_typed(await send_with(fresh, request))
+            fresh = await refreshed(used)
+            return require_typed(await send_with(fresh, request) if fresh else response)
 
     return Transportation()
 
 
-def bunq_client(context: Context) -> Client:
+def bunq_client(context: Context, on_context_change: Callable[[Context], None] = lambda context: None) -> Client:
     """
     Returns the generated async client, e.g. `await bunq_client(context).read_user(context.user_id)`.
     Sync callers can wrap a call in `asyncio.run(...)`.
     """
-    return Client(Serialization(), transportation(context))
+    return Client(Serialization(), transportation(context, refresh_session, on_context_change))

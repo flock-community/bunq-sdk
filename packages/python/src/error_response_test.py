@@ -1,6 +1,6 @@
 import threading
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from api.endpoint.ReadUser import Response200, Response400, ReadUser
@@ -41,7 +41,7 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
             api_key='key',
             private_key_pem=private_key_pem,
             public_key_pem=public_key_pem)
-        context = Context('', 1, 1, 'token', 1, datetime.now(), 'installation', config)
+        context = Context('', 1, 1, 'token', 1, datetime.now() + timedelta(hours=1), 'installation', config)
         return await bunq_client(context).read_user(1)
 
     async def test_400_error_body_without_response_envelope_is_a_typed_response_400(self):
