@@ -126,6 +126,18 @@ public class Wirespec {
         throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8));
     }
 
+    /** Like {@link #requireTyped}, and the body must carry a valid {@code X-Bunq-Server-Signature} for the server public key. */
+    static RawResponse requireSigned(RawResponse response, String serverPublicKey) {
+        requireTyped(response);
+        var signature = response.headers().entrySet().stream()
+                .filter(h -> h.getKey() != null && h.getKey().equalsIgnoreCase("X-Bunq-Server-Signature"))
+                .flatMap(h -> h.getValue().stream()).findFirst().orElse(null);
+        if (signature == null || !Signing.verifyResponse(serverPublicKey, response.body().orElse(new byte[0]), signature)) {
+            throw new SecurityException("Invalid bunq server signature");
+        }
+        return response;
+    }
+
     private static boolean isObjectWith(byte[] bytes, String field) {
         try {
             var tree = objectMapper.readTree(bytes);
@@ -279,7 +291,7 @@ public class Wirespec {
                 }
                 Context retry = refreshed.apply(sent);
                 return retry == null ? CompletableFuture.completedFuture(response) : sendWith(retry, request);
-            }).thenApply(Wirespec::requireTyped);
+            }).thenApply(response -> requireSigned(response, context.serverPublicKey()));
         };
     }
 
