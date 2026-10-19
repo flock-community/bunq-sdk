@@ -142,7 +142,7 @@ The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) o
 
 bunq signs every response: the `X-Bunq-Server-Signature` header holds a base64 SHA256withRSA (PKCS#1 v1.5) signature over the raw response body bytes. Every 200 and 400 response that reaches the generated client is verified against `Context.serverPublicKey`, the server public key bunq returned when the installation was created. The requests of `initContext` after the installation are verified with that key as well.
 
-A response without the header, or with a signature that does not match the body, is rejected with `SecurityException("Invalid bunq server signature")`; the exception is thrown from the call. Other statuses (403, 404, 5xx, ...) are thrown as the API error described under Error Handling before the signature is looked at.
+A response without the header, or with a signature that does not match the body, is rejected with `SecurityException("Invalid bunq server signature")`; the exception is thrown from the call, and from `initContext` and `refreshSession()`. Other statuses (403, 404, 5xx, ...) are thrown as the API error described under Error Handling before the signature is looked at.
 
 The installation response itself is not verified: the key it carries is not known yet, so it only proves that the sender holds the key it announces. The pinned certificate of the `BunqServer` is what protects that call.
 
