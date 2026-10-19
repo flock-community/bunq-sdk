@@ -26,6 +26,8 @@ class Serialization(Wirespec.Serialization):
 
     def deserializeBody(self, raw: bytes, type: Type[T]) -> Any:
         data = json.loads(raw)
+        if not isinstance(data, dict):
+            raise Exception("Invalid bunq response: neither Response nor Error")
         if "Response" not in data:
             if "Error" not in data:
                 raise Exception("Invalid bunq response: neither Response nor Error")
