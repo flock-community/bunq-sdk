@@ -78,7 +78,7 @@ class BunqApiError(Exception):
     """bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`."""
 
     def __init__(self, status: int, body: str):
-        super().__init__(f"bunq answered {status}: {body[:500]}")
+        super().__init__(f"Received {status}: {body[:500]}")
         self.status = status
         self.body = body
 

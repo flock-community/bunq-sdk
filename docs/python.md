@@ -64,7 +64,7 @@ async def main():
         case ReadUserResponse200(body=body):
             print(body.UserPerson.legal_name if body.UserPerson else None)
         case ReadUserResponse400(body=error):
-            raise RuntimeError(f"bunq answered 400: {error.Error}")
+            raise RuntimeError(f"Received 400: {error.Error}")
 
     accounts = await client.list_all_monetary_account_bank_for_user(
         userID=ctx.user_id, count=None, newer_id=None, older_id=None
@@ -74,7 +74,7 @@ async def main():
             for account in body:
                 print(account.display_name)
         case ListAccountsResponse400(body=error):
-            raise RuntimeError(f"bunq answered 400: {error.Error}")
+            raise RuntimeError(f"Received 400: {error.Error}")
 
 
 asyncio.run(main())
@@ -167,7 +167,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the error is raised.
 
-A 400 is returned as `Response400`, whose body has `Error` (a list with an `error_description` per entry). Every other outcome raises `BunqApiError` (`from transport import BunqApiError`), which has `status` and `body`, the full response body as a string; the message is `bunq answered <status>: <first 500 characters>`:
+A 400 is returned as `Response400`, whose body has `Error` (a list with an `error_description` per entry). Every other outcome raises `BunqApiError` (`from transport import BunqApiError`), which has `status` and `body`, the full response body as a string; the message is `Received <status>: <first 500 characters>`:
 
 ```python
 from api.endpoint.ReadUser import Response200 as ReadUserResponse200, Response400 as ReadUserResponse400
@@ -180,7 +180,7 @@ async def read_legal_name(client, user_id: int):
             case ReadUserResponse200(body=body):
                 return body.UserPerson.legal_name if body.UserPerson else None
             case ReadUserResponse400(body=error):
-                raise RuntimeError(f"bunq answered 400: {error.Error}")
+                raise RuntimeError(f"Received 400: {error.Error}")
     except BunqApiError as e:
         if e.status == 404:
             return None

@@ -92,7 +92,7 @@ An operation returns a typed response for two statuses only: 200 (`Response200`,
 | TypeScript | `BunqApiError` | `import {BunqApiError} from "bunq-sdk"` |
 | Python | `BunqApiError` | `from transport import BunqApiError` |
 
-It has a `status` and a `body` (the full response body as a string). The message is `bunq answered <status>: ` followed by the first 500 characters of the body.
+It has a `status` and a `body` (the full response body as a string). The message is `Received <status>: ` followed by the first 500 characters of the body.
 
 It is thrown for:
 
@@ -115,10 +115,10 @@ val client = bunqClient(context)
 try {
     when (val res = client.readUser(context.userId)) {
         is ReadUser.Response200 -> println(res.body.UserPerson?.legal_name)
-        is ReadUser.Response400 -> error("bunq answered 400: ${res.body.Error?.firstOrNull()?.error_description}")
+        is ReadUser.Response400 -> error("Received 400: ${res.body.Error?.firstOrNull()?.error_description}")
     }
 } catch (e: BunqApiException) {
-    println("bunq answered ${e.status}: ${e.body}")
+    println("Received ${e.status}: ${e.body}")
 }
 ```
 
@@ -136,7 +136,7 @@ try {
     }
 } catch (CompletionException e) {
     if (e.getCause() instanceof BunqApiException api) {
-        System.out.println("bunq answered " + api.status() + ": " + api.body());
+        System.out.println("Received " + api.status() + ": " + api.body());
     } else {
         throw e;
     }
@@ -156,7 +156,7 @@ try {
   }
 } catch (e) {
   if (e instanceof BunqApiError) {
-    console.log(`bunq answered ${e.status}: ${e.body}`);
+    console.log(`Received ${e.status}: ${e.body}`);
   } else {
     throw e;
   }
@@ -179,7 +179,7 @@ async def main():
             case ReadUserResponse400(body=body):
                 raise RuntimeError(body.Error[0].error_description if body.Error else None)
     except BunqApiError as e:
-        print(f"bunq answered {e.status}: {e.body}")
+        print(f"Received {e.status}: {e.body}")
 
 asyncio.run(main())
 ```

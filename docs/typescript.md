@@ -155,7 +155,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the error is thrown.
 
-A 400 is returned as a response with `status === 400`, whose `body` has `Error[]` with an `error_description` per entry. Every other outcome rejects with `BunqApiError` (exported from `bunq-sdk`), which has `status` and `body`, the full response body as a string; the message is `bunq answered <status>: <first 500 characters>`:
+A 400 is returned as a response with `status === 400`, whose `body` has `Error[]` with an `error_description` per entry. Every other outcome rejects with `BunqApiError` (exported from `bunq-sdk`), which has `status` and `body`, the full response body as a string; the message is `Received <status>: <first 500 characters>`:
 
 ```typescript
 import {BunqApiError, type BunqClient} from "bunq-sdk";
@@ -166,7 +166,7 @@ async function readLegalName(client: BunqClient, userId: number) {
     if (res.status === 200) {
       return res.body.UserPerson?.legal_name;
     }
-    throw new Error(`bunq answered 400: ${res.body.Error?.[0]?.error_description}`);
+    throw new Error(`Received 400: ${res.body.Error?.[0]?.error_description}`);
   } catch (error) {
     if (error instanceof BunqApiError && error.status === 404) {
       return undefined;

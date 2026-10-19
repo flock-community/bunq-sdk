@@ -8,7 +8,7 @@ public class BunqApiException extends RuntimeException {
     private final String body;
 
     public BunqApiException(int status, String body) {
-        super("bunq answered " + status + ": " + body.substring(0, Math.min(body.length(), MAX_MESSAGE_BODY)));
+        super("Received " + status + ": " + body.substring(0, Math.min(body.length(), MAX_MESSAGE_BODY)));
         this.status = status;
         this.body = body;
     }
