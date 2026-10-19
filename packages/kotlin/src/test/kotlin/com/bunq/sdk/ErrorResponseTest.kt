@@ -34,7 +34,7 @@ class ErrorResponseTest {
                 apiKey = "key",
                 signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
             )
-            return block(bunqClient(Context("", 1, 1, "token", 1, Instant.now(), "installation", config)))
+            return block(bunqClient(Context("", 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config)))
         } finally {
             server.stop(0)
         }

@@ -189,7 +189,7 @@ class ApiTest {
     fun `a dead session is refreshed once and the call succeeds`() = runTest {
         val context = initContext(config)
         var refreshCount = 0
-        val client = Client(serialization, transportation(context) { refreshCount++; it.refreshSession() })
+        val client = Client(serialization, refreshingTransportation(context) { refreshCount++; it.refreshSession() })
 
         assertTrue(client.listAllMonetaryAccountBankForUser(context.userId, null, null, null) is ListAllMonetaryAccountBankForUser.Response200)
         assertEquals(0, refreshCount)
