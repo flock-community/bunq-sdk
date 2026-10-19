@@ -122,6 +122,28 @@ Instant expiryTime = context.sessionExpiryTime();
 boolean willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60));
 ```
 
+## Persist and restore a Context
+
+`Context.initContext` registers an installation and a device, which you only need once per API key. Store the `Context` and build the client from it on the next start instead of calling `Context.initContext` again.
+
+Store every field of `Context`: `serverPublicKey`, `deviceId`, `sessionId`, `sessionToken`, `userId`, `sessionExpiryTime`, `installationToken` and the secrets in `config` (API key and signing keys). The SDK has no serialisation format of its own. Treat the stored data as a secret and store it encrypted (see the masking note under Context Properties).
+
+Pass `onContextChange` to `Wirespec.bunqClient` to receive the new `Context` after every refresh, whether triggered by a 403 or by expiry. It is called once per refresh. If it throws, the exception reaches the caller of the request that triggered the refresh.
+
+```java
+// first start
+Context context = Context.initContext(config);
+save(context);
+
+// later starts: build the Context from the stored fields (config is supplied again by your code)
+Context restored = new Context(
+    stored.serverPublicKey(), stored.deviceId(), stored.sessionId(), stored.sessionToken(),
+    stored.userId(), stored.sessionExpiryTime(), stored.installationToken(), config);
+Client client = Wirespec.bunqClient(restored, updated -> save(updated)); // Consumer<Context>
+```
+
+If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token and the 403 handling applies. If bunq no longer accepts the stored installation or device, the refresh fails; call `Context.initContext` again. The refresh runs on the calling thread before the request is sent.
+
 ## Context Properties
 
 `Context` is an immutable record, so it can be shared between threads. `refreshSession()` returns a new instance and leaves the original unchanged.

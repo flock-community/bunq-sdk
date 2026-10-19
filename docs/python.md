@@ -109,6 +109,35 @@ def will_expire_soon(ctx) -> bool:
     return ctx.session_expiry_time < datetime.now() + timedelta(minutes=5)
 ```
 
+## Persist and restore a Context
+
+`init_context` registers an installation and a device, which you only need once per API key. Store the `Context` and build the client from it on the next start instead of calling `init_context` again.
+
+Store every field of `Context`: `server_public_key`, `device_id`, `session_id`, `session_token`, `user_id`, `session_expiry_time`, `installation_token` and the secrets in `config` (API key and signing keys). The SDK has no serialisation format of its own. Treat the stored data as a secret and store it encrypted (see the masking note under Context Properties).
+
+Pass `on_context_change` to `bunq_client` to receive the new `Context` after every refresh, whether triggered by a 403 or by expiry. It is called once per refresh. If it throws, the exception reaches the caller of the request that triggered the refresh.
+
+```python
+# first start
+context = await init_context(config)
+save(context)
+
+# later starts: build the Context from the stored fields (config is supplied again by your code)
+restored = Context(
+    server_public_key=stored["server_public_key"],
+    device_id=stored["device_id"],
+    session_id=stored["session_id"],
+    session_token=stored["session_token"],
+    user_id=stored["user_id"],
+    session_expiry_time=datetime.fromisoformat(stored["session_expiry_time"]),
+    installation_token=stored["installation_token"],
+    config=config,
+)
+client = bunq_client(restored, on_context_change=save)  # a plain function, not a coroutine
+```
+
+If `session_expiry_time` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token and the 403 handling applies. If bunq no longer accepts the stored installation or device, the refresh fails; call `init_context` again. `session_expiry_time` is a naive local `datetime` when created by `init_context`; a timezone-aware value is compared in its own zone.
+
 ## Context Properties
 
 ```python
