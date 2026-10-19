@@ -79,6 +79,8 @@ suspend fun listAccountNames(context: Context): List<String?> {
 }
 ```
 
+`Context.toString()` and `Config.toString()` mask secrets; the object still holds them, so store it encrypted.
+
 ## Session Refresh
 
 See [Session Refresh in the README](../README.md#session-refresh) for how the client refreshes the session, what happens when the refresh fails (the call throws `BunqApiException` with status 403), and the manual refresh.
