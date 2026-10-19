@@ -28,6 +28,10 @@ public class TransportationRefreshTest {
 
     /** Answers 200 for the token "fresh", otherwise 403 with the given rejection body. */
     private static void withServer(String rejection, BiConsumer<Context, List<String>> block) throws Exception {
+        withServer(rejection, Instant.now().plusSeconds(3600), block);
+    }
+
+    private static void withServer(String rejection, Instant expiry, BiConsumer<Context, List<String>> block) throws Exception {
         List<String> seenTokens = Collections.synchronizedList(new java.util.ArrayList<>());
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
@@ -47,7 +51,7 @@ public class TransportationRefreshTest {
                     new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
                     "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
                     null, null, null, null, null, null);
-            block.accept(new Context("", 1, 1, "stale", 1, Instant.now(), "installation", config), seenTokens);
+            block.accept(new Context("", 1, 1, "stale", 1, expiry, "installation", config), seenTokens);
         } finally {
             server.stop(0);
         }
@@ -67,7 +71,7 @@ public class TransportationRefreshTest {
     public void insufficientAuthenticationRefreshesOnceAndRetriesWithTheNewToken() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 refreshes.incrementAndGet();
                 return fresh(c);
             });
@@ -81,7 +85,7 @@ public class TransportationRefreshTest {
     @Test
     public void aFailingRefreshThrowsTheOriginal403() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 throw new IllegalStateException("429");
             });
 
@@ -97,7 +101,7 @@ public class TransportationRefreshTest {
     public void another403DoesNotRefresh() throws Exception {
         withServer("{\"Error\":[{\"error_description\":\"You are not allowed to make this call.\"}]}", (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 refreshes.incrementAndGet();
                 return fresh(c);
             });
@@ -111,7 +115,7 @@ public class TransportationRefreshTest {
     public void a403WithAnEmptyBodyDoesNotRefresh() throws Exception {
         withServer("", (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 refreshes.incrementAndGet();
                 return fresh(c);
             });
@@ -125,7 +129,7 @@ public class TransportationRefreshTest {
     public void a403WithAnHtmlBodyThrowsAndDoesNotRefresh() throws Exception {
         withServer("<html>forbidden</html>", (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 refreshes.incrementAndGet();
                 return fresh(c);
             });
@@ -142,7 +146,7 @@ public class TransportationRefreshTest {
     public void concurrentCallsRefreshOnce() throws Exception {
         withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
             var refreshes = new AtomicInteger();
-            Transportation transport = Wirespec.transportation(context, c -> {
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
                 try {
                     Thread.sleep(200);
                 } catch (InterruptedException e) {
@@ -159,6 +163,85 @@ public class TransportationRefreshTest {
             assertEquals(200, first.join().statusCode());
             assertEquals(200, second.join().statusCode());
             assertEquals(1, refreshes.get());
+        });
+    }
+
+    @Test
+    public void anExpiredContextIsRefreshedBeforeTheFirstRequestAndTheCallbackFiresOnce() throws Exception {
+        withServer(AUTHENTICATION_ERROR, Instant.now().minusSeconds(1), (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            var changes = Collections.synchronizedList(new java.util.ArrayList<String>());
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
+                refreshes.incrementAndGet();
+                return fresh(c);
+            }, c -> changes.add(c.sessionToken()));
+
+            assertEquals(200, transport.transport(REQUEST).join().statusCode());
+
+            assertEquals(1, refreshes.get());
+            assertEquals(List.of("fresh"), tokens);
+            assertEquals(List.of("fresh"), changes);
+        });
+    }
+
+    @Test
+    public void aContextThatIsNotExpiredIsNotRefreshed() throws Exception {
+        withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            Transportation transport = Wirespec.refreshingTransportation(fresh(context), c -> {
+                refreshes.incrementAndGet();
+                return c;
+            }, c -> refreshes.incrementAndGet());
+
+            assertEquals(200, transport.transport(REQUEST).join().statusCode());
+
+            assertEquals(0, refreshes.get());
+            assertEquals(List.of("fresh"), tokens);
+        });
+    }
+
+    @Test
+    public void a403RefreshCallsTheCallbackOnceWithTheNewContext() throws Exception {
+        withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
+            var changes = Collections.synchronizedList(new java.util.ArrayList<String>());
+            Transportation transport = Wirespec.refreshingTransportation(context, TransportationRefreshTest::fresh, c -> changes.add(c.sessionToken()));
+
+            assertEquals(200, transport.transport(REQUEST).join().statusCode());
+
+            assertEquals(List.of("fresh"), changes);
+        });
+    }
+
+    @Test
+    public void concurrentCallsOnAnExpiredContextRefreshOnce() throws Exception {
+        withServer(AUTHENTICATION_ERROR, Instant.now().minusSeconds(1), (context, tokens) -> {
+            var refreshes = new AtomicInteger();
+            var changes = new AtomicInteger();
+            Transportation transport = Wirespec.refreshingTransportation(context, c -> {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new IllegalStateException(e);
+                }
+                refreshes.incrementAndGet();
+                return fresh(c);
+            }, c -> changes.incrementAndGet());
+
+            // the refresh runs on the calling thread, so the calls are made from separate threads
+            var pool = java.util.concurrent.Executors.newFixedThreadPool(3);
+            try {
+                var calls = java.util.stream.IntStream.range(0, 3)
+                        .mapToObj(i -> CompletableFuture.supplyAsync(() -> transport.transport(REQUEST).join().statusCode(), pool))
+                        .toList();
+                for (var call : calls) {
+                    assertEquals(200, call.join());
+                }
+            } finally {
+                pool.shutdown();
+            }
+
+            assertEquals(1, refreshes.get());
+            assertEquals(1, changes.get());
         });
     }
 }

@@ -38,7 +38,7 @@ public class ErrorResponseTest {
                     new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
                     "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
                     null, null, null, null, null, null);
-            var context = new Context("", 1, 1, "token", 1, Instant.now(), "installation", config);
+            var context = new Context("", 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config);
             return Wirespec.bunqClient(context).readUser(1L).join();
         } finally {
             server.stop(0);
