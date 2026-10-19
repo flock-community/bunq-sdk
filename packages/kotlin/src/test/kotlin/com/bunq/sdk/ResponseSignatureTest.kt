@@ -46,6 +46,41 @@ class ResponseSignatureTest {
     }
 
     @Test
+    fun `a 400 with an invalid signature throws`() {
+        val e = assertFailsWith<SecurityException> { call(400, TestServerKey.sign("other".toByteArray()), """{"Error":[{"error_description":"x"}]}""") }
+        assertEquals("Invalid bunq server signature", e.message)
+    }
+
+    @Test
+    fun `a 400 with a missing signature throws`() {
+        assertFailsWith<SecurityException> { call(400, null, """{"Error":[{"error_description":"x"}]}""") }
+    }
+
+    @Test
+    fun `initContext throws on an unsigned device server response`() {
+        val installation = """{"Response":[{"Id":{"id":1}},{"Token":{"token":"t"}},{"ServerPublicKey":{"server_public_key":${jsonString(TestServerKey.publicPem)}}}]}"""
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
+        server.createContext("/") {
+            TestServerKey.respond(it, 200, if (it.requestURI.path.endsWith("installation")) installation else """{"Response":[{"Id":{"id":3}}]}""", null)
+        }
+        server.start()
+        try {
+            val config = Config(
+                bunqServer = BunqServer("http://127.0.0.1:${server.address.port}/", ""),
+                serviceName = "test",
+                apiKey = "key",
+                signingKeys = BunqSigningKeysGenerator.generateBunqSigningKeys(),
+            )
+            val e = assertFailsWith<SecurityException> { initContext(config) }
+            assertEquals("Invalid bunq server signature", e.message)
+        } finally {
+            server.stop(0)
+        }
+    }
+
+    private fun jsonString(s: String) = "\"" + s.replace("\n", "\\n") + "\""
+
+    @Test
     fun `a signature over another body throws`() {
         val e = assertFailsWith<SecurityException> { call(signature = TestServerKey.sign("other".toByteArray())) }
         assertEquals("Invalid bunq server signature", e.message)
