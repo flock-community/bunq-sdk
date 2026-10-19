@@ -16,7 +16,7 @@ from api.model.Installation import Installation
 from api.model.SessionServer import SessionServer
 
 from config import Config
-from transport import require_typed, send, Serialization
+from transport import require_signed, require_typed, send, Serialization
 
 
 @dataclass(repr=False)
@@ -46,16 +46,17 @@ async def init_context(config: Config) -> Context:
     Async; sync callers can use `asyncio.run(init_context(config))`.
     """
     installation = await _create_installation(config)
-    if installation.ServerPublicKey is None:
+    if installation.ServerPublicKey is None or installation.ServerPublicKey.server_public_key is None:
         raise Exception("No server public key")
     if installation.Token is None or installation.Token.token is None:
         raise Exception("Token not available")
-    
-    device_server = await _create_device_server(config, installation.Token.token)
+    server_public_key = installation.ServerPublicKey.server_public_key
+
+    device_server = await _create_device_server(config, installation.Token.token, server_public_key)
     if device_server.Id is None:
         raise Exception("No device id")
     
-    session_server = await _create_session_server(config, installation.Token.token)
+    session_server = await _create_session_server(config, installation.Token.token, server_public_key)
     if session_server.Id is None:
         raise Exception("No session id")
     if session_server.Token is None:
@@ -77,7 +78,7 @@ async def init_context(config: Config) -> Context:
         raise Exception("Installation token not available")
     
     return Context(
-        server_public_key=installation.ServerPublicKey.server_public_key,
+        server_public_key=server_public_key,
         device_id=device_server.Id.id,
         session_id=session_server.Id.id,
         session_token=session_server.Token.token,
@@ -98,7 +99,7 @@ async def refresh_session(context: Context) -> Context:
     Returns:
         A new Context with refreshed session information
     """
-    session_server = await _create_session_server(context.config, context.installation_token)
+    session_server = await _create_session_server(context.config, context.installation_token, context.server_public_key)
     if session_server.Id is None:
         raise Exception("No session id")
     if session_server.Token is None:
@@ -128,18 +129,21 @@ async def refresh_session(context: Context) -> Context:
 class _SetupTransportation(Wirespec.Transportation):
     """Sends the unauthenticated or installation-token requests used to build a context."""
 
-    def __init__(self, config: Config, token: Optional[str] = None):
+    def __init__(self, config: Config, token: Optional[str] = None, server_public_key: Optional[str] = None):
         self.config = config
         self.token = token
+        self.server_public_key = server_public_key
 
     async def transport(self, request: Wirespec.RawRequest) -> Wirespec.RawResponse:
         if self.token is not None:
             request = replace(request, headers={**request.headers, "X-Bunq-Client-Authentication": [self.token]})
-        return require_typed(await send(self.config, request))
+        response = await send(self.config, request)
+        # the server public key is not known yet for the installation call, so that response is not verified
+        return require_signed(response, self.server_public_key) if self.server_public_key else require_typed(response)
 
 
-def _setup_client(config: Config, token: Optional[str] = None) -> Client:
-    return Client(Serialization(), _SetupTransportation(config, token))
+def _setup_client(config: Config, token: Optional[str] = None, server_public_key: Optional[str] = None) -> Client:
+    return Client(Serialization(), _SetupTransportation(config, token, server_public_key))
 
 
 def _setup_failure(what: str, error: Any) -> str:
@@ -159,9 +163,9 @@ async def _create_installation(config: Config) -> InstallationCreate:
             raise Exception(_setup_failure("Installation failed", res.body))
 
 
-async def _create_device_server(config: Config, token: str) -> DeviceServerCreate:
+async def _create_device_server(config: Config, token: str, server_public_key: str) -> DeviceServerCreate:
     """Create device server with the bunq API"""
-    res = await _setup_client(config, token).create_device_server(
+    res = await _setup_client(config, token, server_public_key).create_device_server(
         DeviceServer(description=config.service_name, secret=config.api_key, permitted_ips=["*"]))
 
     match res:
@@ -171,9 +175,9 @@ async def _create_device_server(config: Config, token: str) -> DeviceServerCreat
             raise Exception(_setup_failure("Device server creation failed", res.body))
 
 
-async def _create_session_server(config: Config, token: str) -> SessionServerCreate:
+async def _create_session_server(config: Config, token: str, server_public_key: str) -> SessionServerCreate:
     """Create session server with the bunq API"""
-    res = await _setup_client(config, token).create_session_server(SessionServer(secret=config.api_key))
+    res = await _setup_client(config, token, server_public_key).create_session_server(SessionServer(secret=config.api_key))
 
     match res:
         case SessionServerResponse200(body=server_session):

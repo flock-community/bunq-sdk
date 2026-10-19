@@ -1,10 +1,13 @@
 import hashlib
+from typing import Optional
 
 from cryptography.hazmat.primitives import hashes
 import base64
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+
+from signing_keys import _validate_and_load_public_key
 
 
 class Signing:
@@ -37,28 +40,18 @@ class Signing:
 
         return encoded_signature
 
-    def verify_response(response_body, signature, server_public_key_pem):
-        """Verifies the server's response signature.
+    @staticmethod
+    def verify_response(server_public_key_pem: str, response_body: bytes, signature: Optional[str]) -> bool:
+        """Verifies bunq's X-Bunq-Server-Signature: SHA256withRSA over the raw response body bytes.
 
-        Args:
-            response_body (str): The response body as a string
-            signature (str): The base64 encoded signature from X-Bunq-Server-Signature header
-            server_public_key_pem (str): The server's public key in PEM format
-
-        Returns:
-            bool: True if signature is valid, False otherwise
+        Returns True if the signature is valid, False otherwise (including a missing signature).
         """
         try:
-            # Load the server's public key
-            public_key = load_public_key(server_public_key_pem)
-
-            # Decode the base64 signature
-            decoded_signature = base64.b64decode(signature)
-
-            # Verify the signature
-            public_key.verify(
-                decoded_signature,
-                response_body.encode('utf-8'),
+            if not signature:
+                return False
+            _validate_and_load_public_key(server_public_key_pem).verify(
+                base64.b64decode(signature),
+                response_body,
                 padding.PKCS1v15(),
                 hashes.SHA256()
             )

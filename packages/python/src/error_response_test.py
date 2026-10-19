@@ -10,6 +10,7 @@ from bunq_signing_keys_generator import BunqSigningKeysGenerator
 from config import create_config
 from context import Context
 from transport import BunqApiError, Serialization
+from server_key import SERVER_PUBLIC_KEY, respond
 from wirespec import bunq_client
 
 
@@ -21,11 +22,7 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
     async def read_user_answering(self, status: int, body: str):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(handler):
-                content = body.encode('utf-8')
-                handler.send_response(status)
-                handler.send_header('Content-Length', str(len(content)))
-                handler.end_headers()
-                handler.wfile.write(content)
+                respond(handler, status, body.encode('utf-8'))
 
             def log_message(handler, *args):
                 pass
@@ -41,7 +38,7 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
             api_key='key',
             private_key_pem=private_key_pem,
             public_key_pem=public_key_pem)
-        context = Context('', 1, 1, 'token', 1, datetime.now() + timedelta(hours=1), 'installation', config)
+        context = Context(SERVER_PUBLIC_KEY, 1, 1, 'token', 1, datetime.now() + timedelta(hours=1), 'installation', config)
         return await bunq_client(context).read_user(1)
 
     async def test_400_error_body_without_response_envelope_is_a_typed_response_400(self):

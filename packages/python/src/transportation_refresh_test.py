@@ -11,6 +11,7 @@ from bunq_signing_keys_generator import BunqSigningKeysGenerator
 from config import create_config
 from context import Context
 from datetime import datetime, timedelta, timezone
+from server_key import SERVER_PUBLIC_KEY, respond
 from transport import BunqApiError
 from wirespec import transportation
 
@@ -31,10 +32,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
                 self.tokens_seen.append(token)
                 ok = self.revived
                 body = b'{"Response":[]}' if ok else rejected_body.encode()
-                handler.send_response(200 if ok else 403)
-                handler.send_header('Content-Length', str(len(body)))
-                handler.end_headers()
-                handler.wfile.write(body)
+                respond(handler, 200 if ok else 403, body)
 
             def log_message(handler, *args):
                 pass
@@ -51,7 +49,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
             api_key='key',
             private_key_pem=private_key_pem,
             public_key_pem=public_key_pem)
-        self.context = Context('', 1, 1, 'stale', 1, expiry or datetime.now() + timedelta(hours=1), 'installation', config)
+        self.context = Context(SERVER_PUBLIC_KEY, 1, 1, 'stale', 1, expiry or datetime.now() + timedelta(hours=1), 'installation', config)
 
     def counting_refresh(self, fails: bool = False):
         self.refreshes = 0

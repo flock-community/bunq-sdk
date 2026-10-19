@@ -98,3 +98,13 @@ def require_typed(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
     if envelope and _is_object_with(body, envelope):
         return response
     raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'))
+
+
+def require_signed(response: Wirespec.RawResponse, server_public_key: str) -> Wirespec.RawResponse:
+    """Like require_typed, and the body must carry a valid `X-Bunq-Server-Signature` for the server public key."""
+    require_typed(response)
+    signature = next((values[0] for name, values in response.headers.items()
+                      if name.lower() == "x-bunq-server-signature" and values), None)
+    if not Signing.verify_response(server_public_key, response.body or b"", signature):
+        raise Exception("Invalid bunq server signature")
+    return response
