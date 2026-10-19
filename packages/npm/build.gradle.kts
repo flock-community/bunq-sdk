@@ -22,8 +22,8 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     shared = true
     preProcessor = OpenApiPreProcessor
 
-    // Upstream Wirespec 0.21.1 bug: TypeScript validators read capitalised fields (Id, Error) without `obj.`; the validators are unused, so type checking is skipped for those files.
-    val bareFieldAccess = Regex("""(?<!\w)(?<!obj\.)[A-Z]\w* != null""")
+    // Upstream Wirespec 0.21.1 bug: TypeScript validators read capitalised fields (Id, Error, Response, Pagination) without `obj.`; the validators are unused, so type checking is skipped for those files.
+    val bareFieldAccess = Regex("""(?<!\w)(?<!obj\.)[A-Z]\w* != null|\.\.\.Response\.flatMap""")
     doLast {
         // Upstream Wirespec 0.21.1 bug: generator annotations contain unescaped quotes, so the files are not valid TypeScript.
         output.get().dir("generator").asFile.deleteRecursively()
