@@ -46,7 +46,7 @@ describe('error responses', () => {
         expect(() => ReadUser.fromRawResponse(serialization, raw)).toThrow('neither Response nor Error');
     });
 
-    test.each(['null', '"x"', '[]'])('a body that is not an object (%s) is rejected', json => {
+    test.each(['null', '"x"', '"Error"', '[]'])('a body that is not an object (%s) is rejected', json => {
         const raw = {statusCode: 400, headers: {}, body: new TextEncoder().encode(json)};
 
         expect(() => ReadUser.fromRawResponse(serialization, raw)).toThrow('neither Response nor Error');

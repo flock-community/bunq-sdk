@@ -53,7 +53,7 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
             self.read_user(200, '{"unexpected":true}')
 
     def test_body_that_is_not_an_object_is_rejected(self):
-        for body in ('null', '"x"', '[]'):
+        for body in ('null', '"x"', '"Error"', '[]'):
             with self.assertRaisesRegex(Exception, "neither Response nor Error"):
                 self.read_user(400, body)
 
