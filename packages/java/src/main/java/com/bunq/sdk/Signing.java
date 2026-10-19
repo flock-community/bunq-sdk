@@ -7,6 +7,8 @@ import java.util.Base64;
 
 public class Signing {
 
+    private static final System.Logger logger = System.getLogger(Signing.class.getName());
+
 
     public static String signData(Config config, String data) {
         try {
@@ -38,7 +40,7 @@ public class Signing {
 
             return verifier.verify(decodedSignature);
         } catch (Exception e) {
-            System.out.println("[ERROR] Signature verification failed: " + e.getMessage());
+            logger.log(System.Logger.Level.WARNING, "Signature verification failed: " + e.getMessage());
             return false;
         }
     }

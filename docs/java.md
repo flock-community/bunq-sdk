@@ -144,6 +144,10 @@ Client client = Wirespec.bunqClient(restored, updated -> save(updated)); // Cons
 
 If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token; if bunq answers 403 "Insufficient authentication.", that 403 is returned as the error without a second refresh. If bunq no longer accepts the stored installation or device, the refresh fails; call `Context.initContext` again. The refresh runs on the calling thread before the request is sent.
 
+## Logging
+
+The SDK logs through `System.Logger`, using the class name as logger name (for example `com.bunq.sdk.Wirespec`, `com.bunq.sdk.Context`). Configure the `com.bunq.sdk` prefix in your logging backend.
+
 ## Context Properties
 
 `Context` is an immutable record, so it can be shared between threads. `refreshSession()` returns a new instance and leaves the original unchanged.

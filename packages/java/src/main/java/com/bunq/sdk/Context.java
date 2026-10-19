@@ -45,6 +45,8 @@ public record Context(
         Config config
 ) {
 
+    private static final System.Logger logger = System.getLogger(Context.class.getName());
+
     public static Context initContext(Config config) {
 
         try {
@@ -59,7 +61,7 @@ public record Context(
 
             Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
                     .orElseGet(() -> {
-                        System.out.println("bunq - No session timeout found in session server response, using default of 30 minutes");
+                        logger.log(System.Logger.Level.WARNING, "bunq - No session timeout found in session server response, using default of 30 minutes");
                         return 30 * 60L;
                     });
             Instant sessionExpiryTime = Instant.now().plusSeconds(sessionTimeoutSeconds);
@@ -98,7 +100,7 @@ public record Context(
 
             Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
                     .orElseGet(() -> {
-                        System.out.println("bunq - No session timeout found in session server response, using default of 30 minutes");
+                        logger.log(System.Logger.Level.WARNING, "bunq - No session timeout found in session server response, using default of 30 minutes");
                         return 30 * 60L;
                     });
             Instant sessionExpiryTime = Instant.now().plusSeconds(sessionTimeoutSeconds);
