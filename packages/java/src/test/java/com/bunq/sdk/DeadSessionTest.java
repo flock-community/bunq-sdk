@@ -41,7 +41,7 @@ public class DeadSessionTest {
                 BunqSigningKeysGenerator.generateBunqSigningKeys(), null, null, null, null, null, null);
         Context context = Context.initContext(config);
         var refreshes = new AtomicInteger();
-        Client client = new Client(Wirespec.serialization, Wirespec.transportation(context, c -> {
+        Client client = new Client(Wirespec.serialization, Wirespec.refreshingTransportation(context, c -> {
             refreshes.incrementAndGet();
             return c.refreshSession();
         }));

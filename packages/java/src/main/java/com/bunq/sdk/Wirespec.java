@@ -25,6 +25,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -200,46 +202,77 @@ public class Wirespec {
     }
 
     public static Client bunqClient(Context context) {
-        return new Client(serialization, transportation(context));
+        return bunqClient(context, c -> { });
+    }
+
+    public static Client bunqClient(Context context, Consumer<Context> onContextChange) {
+        return new Client(serialization, transportation(context, onContextChange));
+    }
+
+    /** A session that expires within this many seconds is refreshed before the request is sent. */
+    private static final long EXPIRY_MARGIN_SECONDS = 30;
+
+    public static Transportation transportation(Context context) {
+        return transportation(context, c -> { });
     }
 
     /**
      * Sends requests with the context's authentication headers.
+     * A session that has expired (or expires within 30 seconds) is refreshed before the request is sent.
      * bunq answers a dead session with 403 "Insufficient authentication."; the session is then refreshed once
      * and the request is retried with the new session token. Any other 403, and the original 403 when the
      * refresh itself fails, is thrown as {@link BunqApiException} like every status other than 200 and 400. The refreshed context is kept inside this transportation.
+     * {@code onContextChange} is called once with the new context after every successful refresh, so the caller can store it.
      */
-    public static Transportation transportation(Context context) {
-        return transportation(context, Context::refreshSession);
+    public static Transportation transportation(Context context, Consumer<Context> onContextChange) {
+        return refreshingTransportation(context, Context::refreshSession, onContextChange);
     }
 
-    static Transportation transportation(Context context, UnaryOperator<Context> refresh) {
+    static Transportation refreshingTransportation(Context context, UnaryOperator<Context> refresh) {
+        return refreshingTransportation(context, refresh, c -> { });
+    }
+
+    static Transportation refreshingTransportation(Context context, UnaryOperator<Context> refresh, Consumer<Context> onContextChange) {
         var current = new AtomicReference<>(context);
         var lock = new ReentrantLock();
 
+        // returns the refreshed context, or null when the refresh failed
+        UnaryOperator<Context> refreshed = used -> {
+            lock.lock();
+            try {
+                // another request may have refreshed the session while this one waited
+                if (!Objects.equals(current.get().sessionToken(), used.sessionToken())) {
+                    return current.get();
+                }
+                Context next;
+                try {
+                    next = refresh.apply(used);
+                } catch (RuntimeException e) {
+                    logger.log(System.Logger.Level.WARNING, "bunq session refresh failed: " + e.getMessage());
+                    return null;
+                }
+                current.set(next);
+                onContextChange.accept(next);
+                return next;
+            } finally {
+                lock.unlock();
+            }
+        };
+
         return request -> {
-            Context used = current.get();
-            return sendWith(used, request).thenCompose(response -> {
+            Context snapshot = current.get();
+            Context used = snapshot;
+            if (!snapshot.sessionExpiryTime().isAfter(Instant.now().plusSeconds(EXPIRY_MARGIN_SECONDS))) {
+                Context next = refreshed.apply(snapshot);
+                used = next != null ? next : snapshot;
+            }
+            Context sent = used;
+            return sendWith(sent, request).thenCompose(response -> {
                 if (!isSessionRejected(response)) {
                     return CompletableFuture.completedFuture(response);
                 }
-                Context refreshed;
-                lock.lock();
-                try {
-                    // another request may have refreshed the session while this one waited
-                    if (!Objects.equals(current.get().sessionToken(), used.sessionToken())) {
-                        refreshed = current.get();
-                    } else {
-                        refreshed = refresh.apply(used);
-                        current.set(refreshed);
-                    }
-                } catch (RuntimeException e) {
-                    logger.log(System.Logger.Level.WARNING, "bunq session refresh failed: " + e.getMessage());
-                    return CompletableFuture.completedFuture(response);
-                } finally {
-                    lock.unlock();
-                }
-                return sendWith(refreshed, request);
+                Context retry = refreshed.apply(sent);
+                return retry == null ? CompletableFuture.completedFuture(response) : sendWith(retry, request);
             }).thenApply(Wirespec::requireTyped);
         };
     }
