@@ -132,7 +132,7 @@ val restored = Context(
 val client = bunqClient(restored, onContextChange = { save(it) })
 ```
 
-If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token and the 403 handling applies. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
+If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token; if bunq answers 403 "Insufficient authentication.", that 403 is returned as the error without a second refresh. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
 
 ## Logging
 
