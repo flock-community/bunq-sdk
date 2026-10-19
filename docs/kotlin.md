@@ -105,6 +105,35 @@ val expiryTime: Instant = context.sessionExpiryTime
 val willExpireSoon = expiryTime.isBefore(Instant.now().plusSeconds(5 * 60))
 ```
 
+## Persist and restore a Context
+
+`initContext` registers an installation and a device, which you only need once per API key. Store the `Context` and build the client from it on the next start instead of calling `initContext` again.
+
+Store every field of `Context`: `serverPublicKey`, `deviceId`, `sessionId`, `sessionToken`, `userId`, `sessionExpiryTime`, `installationToken` and the secrets in `config` (API key and signing keys). The SDK has no serialisation format of its own. Treat the stored data as a secret and store it encrypted (`toString()` masks secrets in log output only; the object still holds them).
+
+Pass `onContextChange` to `bunqClient` to receive the new `Context` after every refresh, whether triggered by a 403 or by expiry. It is called once per refresh. If it throws, the exception reaches the caller of the request that triggered the refresh.
+
+```kotlin
+// first start
+val context = initContext(config)
+save(context)
+
+// later starts: build the Context from the stored fields (config is supplied again by your code)
+val restored = Context(
+    serverPublicKey = stored.serverPublicKey,
+    deviceId = stored.deviceId,
+    sessionId = stored.sessionId,
+    sessionToken = stored.sessionToken,
+    userId = stored.userId,
+    sessionExpiryTime = stored.sessionExpiryTime,
+    installationToken = stored.installationToken,
+    config = config,
+)
+val client = bunqClient(restored, onContextChange = { save(it) })
+```
+
+If `sessionExpiryTime` is in the past or less than 30 seconds away, the client refreshes the session before the first request, so a stored context that expired while the app was stopped works. Concurrent calls share one refresh. If that refresh fails, the request is sent with the old token and the 403 handling applies. If bunq no longer accepts the stored installation or device, the refresh fails; call `initContext` again.
+
 ## Logging
 
 The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) on top of `slf4j-api`. It ships no logging backend; add one (for example Logback or `slf4j-simple`) to see the output. Spring Boot apps already have a backend through `spring-boot-starter-logging` (Logback), so they need nothing extra. The method, URI and status of each request are logged at debug level, and a failed session refresh is logged as a warning. Credentials are never logged. `Context.toString()` and `Config.toString()` mask secrets; the object still holds them, so store it encrypted.

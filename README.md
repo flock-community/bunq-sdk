@@ -75,6 +75,8 @@ The client refreshes the session by itself. When bunq answers 403 "Insufficient 
 
 Keep using the same client instance so that calls share the refreshed session.
 
+The client also refreshes before sending when `sessionExpiryTime` is in the past or less than 30 seconds away, and reports every refreshed `Context` to an optional `onContextChange` callback. See Persist and restore a Context in the SDK docs ([Kotlin](docs/kotlin.md#persist-and-restore-a-context), [Java](docs/java.md#persist-and-restore-a-context), [TypeScript](docs/typescript.md#persist-and-restore-a-context), [Python](docs/python.md#persist-and-restore-a-context)).
+
 If the refresh fails, a warning is logged and the call throws the API exception with status 403 (see [Error Handling](#error-handling)). A 403 for another reason (for example a missing permission), or a 403 with a body that is not JSON, throws the same exception without a refresh.
 
 `Context.refreshSession()` (`refreshSession(context)` in TypeScript and Python) still creates a session by hand and returns a new `Context`. An existing client does not use it; create a new client from the returned context.
