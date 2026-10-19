@@ -184,6 +184,17 @@ async def main():
 asyncio.run(main())
 ```
 
+## Migrating to the next minor release: list pagination
+
+List operations (`listAll...`) used to return a bare list of items and dropped bunq's `Pagination` block. They now return a page, `<Item>Page` (for example `MonetaryAccountBankPage`), with the items in `Response` and the cursor urls in `Pagination` (`future_url`, `newer_url`, `older_url`, each nullable). This is a breaking change.
+
+- Kotlin: `res.body.map { ... }` becomes `res.body.Response.map { ... }`.
+- Java: `response.body().get(0)` becomes `response.body().Response().get(0)`.
+- TypeScript: `res.body[0]` becomes `res.body.Response[0]`.
+- Python: `body[0]` becomes `body.Response[0]`.
+
+Items are listed newest first. To get the next (older) page, pass the id of the last item as `older_id` and stop when `Pagination.older_url` is null; `newer_id` returns the items newer than the given id. The language pages show a loop. The generated types are named by the item schema: `MonetaryAccountBankListing` items come in a `MonetaryAccountBankPage`.
+
 ## Migrating from 0.x
 
 The packages moved from Wirespec 0.16.3 to 0.21.1 and use the generated client instead of our own `Sdk`/`handler` code.

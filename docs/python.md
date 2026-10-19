@@ -71,13 +71,37 @@ async def main():
     )
     match accounts:
         case ListAccountsResponse200(body=body):
-            for account in body:
+            for account in body.Response:
                 print(account.display_name)
         case ListAccountsResponse400(body=error):
             raise RuntimeError(f"Received 400: {error.Error}")
 
 
 asyncio.run(main())
+```
+
+## Pagination
+
+A list operation returns a page, `<Item>Page` (for example `PaymentPage`), with the items in `Response` and bunq's `Pagination` block in `Pagination`. `Pagination` has `future_url`, `newer_url` and `older_url`; each is null when there is nothing to follow. Items are listed newest first. To read the next (older) page, call the operation again with `older_id` set to the id of the last item of the current page. That is the `older_id` in `older_url`. When `older_url` is null there are no older items. `newer_id` goes the other way: pass the id of the first item to get the items newer than it. `count` is the page size (at most 200).
+
+```python
+from api.endpoint.ListAllPaymentForUserMonetaryAccount import Response200 as ListPaymentsResponse200
+
+
+async def all_payments(client, user_id: int, monetary_account_id: int):
+    payments = []
+    older_id = None
+    while True:
+        res = await client.list_all_payment_for_user_monetary_account(
+            userID=user_id, monetaryAccountID=monetary_account_id, count=200, newer_id=None, older_id=older_id
+        )
+        if not isinstance(res, ListPaymentsResponse200):
+            raise RuntimeError(f"Cannot list payments: {res}")
+        page = res.body
+        payments.extend(page.Response)
+        if page.Pagination.older_url is None or not page.Response:
+            return payments
+        older_id = page.Response[-1].id
 ```
 
 ## Session Refresh
