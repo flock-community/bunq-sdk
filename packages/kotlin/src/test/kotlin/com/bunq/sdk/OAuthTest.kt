@@ -76,4 +76,24 @@ class OAuthTest {
 
         assertEquals(200, e.status)
     }
+
+    @Test
+    fun `exchangeCode throws when a 200 has a null access_token`() {
+        val body = """{"access_token": null}"""
+
+        val e = assertFailsWith<BunqApiException> { answering(200, body) { exchangeCode(it, "id", "secret", "r", "c") } }
+
+        assertEquals(200, e.status)
+        assertEquals(body, e.body)
+    }
+
+    @Test
+    fun `exchangeCode throws when a 200 is not JSON`() {
+        val body = "<html>maintenance</html>"
+
+        val e = assertFailsWith<BunqApiException> { answering(200, body) { exchangeCode(it, "id", "secret", "r", "c") } }
+
+        assertEquals(200, e.status)
+        assertEquals(body, e.body)
+    }
 }

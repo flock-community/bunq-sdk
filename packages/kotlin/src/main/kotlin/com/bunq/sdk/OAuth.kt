@@ -4,6 +4,7 @@ import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import tools.jackson.core.JacksonException
 
 /** The two bunq OAuth endpoints: where the user is sent to authorize, and where the code is exchanged for a token. */
 data class OAuthServer(
@@ -32,7 +33,7 @@ fun authorizeUrl(server: OAuthServer, clientId: String, redirectUri: String, sta
 
 /**
  * Exchanges the authorization [code] for an access token, which can be used as `Config.apiKey`.
- * [redirectUri] must be the one used in [authorizeUrl]. Any status other than 200 throws [BunqApiException].
+ * [redirectUri] must be the one used in [authorizeUrl]. Any status other than 200, and a 200 without a string `access_token`, throws [BunqApiException].
  */
 fun exchangeCode(server: OAuthServer, clientId: String, clientSecret: String, redirectUri: String, code: String): String {
     val params = query(
@@ -47,6 +48,11 @@ fun exchangeCode(server: OAuthServer, clientId: String, clientSecret: String, re
         .build()
     val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
     if (response.statusCode() != 200) throw BunqApiException(response.statusCode(), response.body())
-    return objectMapper.readTree(response.body()).get("access_token")?.asString()
+    val tree = try {
+        objectMapper.readTree(response.body())
+    } catch (e: JacksonException) {
+        throw BunqApiException(200, response.body())
+    }
+    return tree.get("access_token")?.takeIf { it.isString }?.asString()
         ?: throw BunqApiException(200, response.body())
 }
