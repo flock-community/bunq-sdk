@@ -30,6 +30,9 @@ public class TransportationRefreshTest {
     /** Set by {@link #fresh}: like bunq, the server accepts the session again after a refresh although the token stays the same. */
     private static final AtomicBoolean REVIVED = new AtomicBoolean();
 
+    /** Set to false to make the server answer revived requests without a signature. */
+    private static final AtomicBoolean SIGN_RETRIES = new AtomicBoolean(true);
+
     /** Answers 200 once revived, otherwise 403 with the given rejection body. */
     private static void withServer(String rejection, BiConsumer<Context, List<String>> block) throws Exception {
         withServer(rejection, Instant.now().plusSeconds(3600), block);
@@ -37,13 +40,16 @@ public class TransportationRefreshTest {
 
     private static void withServer(String rejection, Instant expiry, BiConsumer<Context, List<String>> block) throws Exception {
         REVIVED.set(false);
+        SIGN_RETRIES.set(true);
         List<String> seenTokens = Collections.synchronizedList(new java.util.ArrayList<>());
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
             String token = exchange.getRequestHeaders().getFirst("X-Bunq-Client-Authentication");
             seenTokens.add(token);
             boolean fresh = REVIVED.get();
-            TestServerKey.respond(exchange, fresh ? 200 : 403, fresh ? "{\"Response\":[]}" : rejection);
+            String body = fresh ? "{\"Response\":[]}" : rejection;
+            TestServerKey.respond(exchange, fresh ? 200 : 403, body,
+                    fresh && !SIGN_RETRIES.get() ? null : TestServerKey.sign(body.getBytes(StandardCharsets.UTF_8)));
         });
         server.start();
         try {
@@ -81,6 +87,17 @@ public class TransportationRefreshTest {
             assertEquals(200, transport.transport(REQUEST).join().statusCode());
             assertEquals(1, refreshes.get());
             assertEquals(List.of("stale", "stale"), tokens);
+        });
+    }
+
+    @Test
+    public void anUnsignedResponseAfterTheRefreshThrows() throws Exception {
+        withServer(AUTHENTICATION_ERROR, (context, tokens) -> {
+            SIGN_RETRIES.set(false);
+            Transportation transport = Wirespec.refreshingTransportation(context, TransportationRefreshTest::fresh);
+
+            var e = assertThrows(CompletionException.class, () -> transport.transport(REQUEST).join());
+            assertEquals("Invalid bunq server signature", assertInstanceOf(SecurityException.class, e.getCause()).getMessage());
         });
     }
 
