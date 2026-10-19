@@ -70,7 +70,7 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
 /** bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`. */
 export class BunqApiError extends Error {
     constructor(readonly status: number, readonly body: string) {
-        super(`bunq answered ${status}: ${body.slice(0, 500)}`);
+        super(`Received ${status}: ${body.slice(0, 500)}`);
         this.name = "BunqApiError";
     }
 }

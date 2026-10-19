@@ -143,7 +143,7 @@ public record Context(
 
 See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException` (unchecked, in `com.bunq.sdk`) with `status()` and `body()`, the full response body as a string; the message is `bunq answered <status>: <first 500 characters>`. The exception arrives wrapped, in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`, so check `getCause()`:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException` (unchecked, in `com.bunq.sdk`) with `status()` and `body()`, the full response body as a string; the message is `Received <status>: <first 500 characters>`. The exception arrives wrapped, in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`, so check `getCause()`:
 
 ```java
 import com.bunq.sdk.BunqApiException;
@@ -153,7 +153,7 @@ try {
     ReadUser.Response<?> user = client.readUser(999999999L).join();
     if (user instanceof ReadUser.Response400 error) {
         String description = error.body().Error().flatMap(errors -> errors.stream().findFirst()).flatMap(ErrorArray::error_description).orElse(null);
-        throw new IllegalStateException("bunq answered 400: " + description);
+        throw new IllegalStateException("Received 400: " + description);
     }
 } catch (CompletionException e) {
     if (e.getCause() instanceof BunqApiException api && api.status() == 404) {

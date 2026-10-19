@@ -61,7 +61,7 @@ suspend fun readLegalName(context: Context): String? {
     val client = bunqClient(context)
     return when (val res = client.readUser(context.userId)) {
         is ReadUser.Response200 -> res.body.UserPerson?.legal_name
-        is ReadUser.Response400 -> error("bunq answered 400: ${res.body.Error?.firstOrNull()?.error_description}")
+        is ReadUser.Response400 -> error("Received 400: ${res.body.Error?.firstOrNull()?.error_description}")
     }
 }
 
@@ -108,7 +108,7 @@ The SDK logs through [kotlin-logging](https://github.com/oshai/kotlin-logging) o
 
 See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException(status, body)` (unchecked, in `com.bunq.sdk`); `body` is the full response body as a string and the message is `bunq answered <status>: <first 500 characters>`. A `when` over `Response200` and `Response400` is exhaustive:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException(status, body)` (unchecked, in `com.bunq.sdk`); `body` is the full response body as a string and the message is `Received <status>: <first 500 characters>`. A `when` over `Response200` and `Response400` is exhaustive:
 
 ```kotlin
 import com.bunq.sdk.BunqApiException
@@ -118,7 +118,7 @@ suspend fun readUserOrNull(context: Context, userId: Long): UserRead? {
     return try {
         when (val res = client.readUser(userId)) {
             is ReadUser.Response200 -> res.body
-            is ReadUser.Response400 -> error("bunq answered 400: ${res.body.Error?.map { it.error_description }}")
+            is ReadUser.Response400 -> error("Received 400: ${res.body.Error?.map { it.error_description }}")
         }
     } catch (e: BunqApiException) {
         if (e.status == 404) null else throw e
