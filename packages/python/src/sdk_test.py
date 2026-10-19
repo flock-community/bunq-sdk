@@ -44,7 +44,7 @@ class Testing(unittest.IsolatedAsyncioTestCase):
 
         match res:
             case ListAccountsResponse200(body=body):
-                self.assertTrue(body[0].display_name)
+                self.assertTrue(body.Response[0].display_name)
             case _:
                 self.fail(res)
 
