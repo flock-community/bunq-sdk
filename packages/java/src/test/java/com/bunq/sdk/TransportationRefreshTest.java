@@ -43,12 +43,7 @@ public class TransportationRefreshTest {
             String token = exchange.getRequestHeaders().getFirst("X-Bunq-Client-Authentication");
             seenTokens.add(token);
             boolean fresh = REVIVED.get();
-            byte[] body = (fresh ? "{\"Response\":[]}" : rejection).getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(fresh ? 200 : 403, body.length == 0 ? -1 : body.length);
-            if (body.length > 0) {
-                exchange.getResponseBody().write(body);
-            }
-            exchange.close();
+            TestServerKey.respond(exchange, fresh ? 200 : 403, fresh ? "{\"Response\":[]}" : rejection);
         });
         server.start();
         try {
@@ -56,7 +51,7 @@ public class TransportationRefreshTest {
                     new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
                     "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
                     null, null, null, null, null, null);
-            block.accept(new Context("", 1, 1, "stale", 1, expiry, "installation", config), seenTokens);
+            block.accept(new Context(TestServerKey.PUBLIC_PEM, 1, 1, "stale", 1, expiry, "installation", config), seenTokens);
         } finally {
             server.stop(0);
         }

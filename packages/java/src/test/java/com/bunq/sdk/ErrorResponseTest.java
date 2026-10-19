@@ -27,10 +27,7 @@ public class ErrorResponseTest {
     private static ReadUser.Response<?> readUserFrom(int status, String body) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
-            byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(status, bytes.length);
-            exchange.getResponseBody().write(bytes);
-            exchange.close();
+            TestServerKey.respond(exchange, status, body);
         });
         server.start();
         try {
@@ -38,7 +35,7 @@ public class ErrorResponseTest {
                     new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
                     "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
                     null, null, null, null, null, null);
-            var context = new Context("", 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config);
+            var context = new Context(TestServerKey.PUBLIC_PEM, 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config);
             return Wirespec.bunqClient(context).readUser(1L).join();
         } finally {
             server.stop(0);

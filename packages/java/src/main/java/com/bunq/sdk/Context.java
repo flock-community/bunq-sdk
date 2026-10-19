@@ -53,8 +53,9 @@ public record Context(
                     .flatMap(it -> it)
                     .flatMap(InstallationToken::token).orElseThrow(error("Token not available"));
 
-            DeviceServerCreate deviceServer = createDeviceServer(config, installationToken).get();
-            SessionServerCreate serverSession = createSessionServer(config, installationToken).get();
+            String serverPublicKey = installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key"));
+            DeviceServerCreate deviceServer = createDeviceServer(config, installationToken, serverPublicKey).get();
+            SessionServerCreate serverSession = createSessionServer(config, installationToken, serverPublicKey).get();
 
             Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
                     .orElseGet(() -> {
@@ -64,7 +65,7 @@ public record Context(
             Instant sessionExpiryTime = Instant.now().plusSeconds(sessionTimeoutSeconds);
 
             return new Context(
-                    installation.ServerPublicKey().flatMap(InstallationServerPublicKey::server_public_key).orElseThrow(error("No server public key")),
+                    serverPublicKey,
                     deviceServer.Id().flatMap(DeviceServerCreateId::id).orElseThrow(error("No device id")),
                     serverSession.Id().flatMap(BunqId::id).orElseThrow(error("No session id")),
                     serverSession.Token().flatMap(SessionServerToken::token).orElseThrow(error("No session token")),
@@ -93,7 +94,7 @@ public record Context(
         }
 
         try {
-            SessionServerCreate serverSession = createSessionServer(config, installationToken).get();
+            SessionServerCreate serverSession = createSessionServer(config, installationToken, this.serverPublicKey).get();
 
             Long sessionTimeoutSeconds = getSessionTimeout(serverSession)
                     .orElseGet(() -> {
@@ -148,7 +149,7 @@ public record Context(
         });
     }
 
-    private static CompletableFuture<DeviceServerCreate> createDeviceServer(Config config, String token) {
+    private static CompletableFuture<DeviceServerCreate> createDeviceServer(Config config, String token, String serverPublicKey) {
         DeviceServer body = new DeviceServer(config.serviceName(), config.apiKey(), Optional.of(Collections.singletonList("*")));
 
         CreateDeviceServer.Request request = new CreateDeviceServer.Request(body);
@@ -161,7 +162,7 @@ public record Context(
                 Map.of("X-Bunq-Client-Authentication", List.of(token)),
                 rawRequest.body()
         );
-        return send(config, authRequest).thenApply(Wirespec::requireTyped).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(response -> Wirespec.requireSigned(response, serverPublicKey)).thenApply(rawResponse -> {
             Object response = CreateDeviceServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateDeviceServer.Response200) {
                 return ((CreateDeviceServer.Response200) response).body();
@@ -174,7 +175,7 @@ public record Context(
         });
     }
 
-    private static CompletableFuture<SessionServerCreate> createSessionServer(Config config, String token) {
+    private static CompletableFuture<SessionServerCreate> createSessionServer(Config config, String token, String serverPublicKey) {
         SessionServer body = new SessionServer(config.apiKey());
 
         CreateSessionServer.Request request = new CreateSessionServer.Request(body);
@@ -188,7 +189,7 @@ public record Context(
                 ),
                 rawRequest.body()
         );
-        return send(config, authRequest).thenApply(Wirespec::requireTyped).thenApply(rawResponse -> {
+        return send(config, authRequest).thenApply(response -> Wirespec.requireSigned(response, serverPublicKey)).thenApply(rawResponse -> {
             Object response = CreateSessionServer.fromRawResponse(serialization, rawResponse);
             if (response instanceof CreateSessionServer.Response200) {
                 return ((CreateSessionServer.Response200) response).body();
