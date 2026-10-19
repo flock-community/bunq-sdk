@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -45,7 +46,11 @@ public class ResponseSignatureTest {
     }
 
     private static void assertRejected(String signature) {
-        var e = assertThrows(CompletionException.class, () -> call(200, BODY, signature));
+        assertRejected(200, BODY, signature);
+    }
+
+    private static void assertRejected(int status, String body, String signature) {
+        var e = assertThrows(CompletionException.class, () -> call(status, body, signature));
         assertEquals("Invalid bunq server signature", assertInstanceOf(SecurityException.class, e.getCause()).getMessage());
     }
 
@@ -58,6 +63,37 @@ public class ResponseSignatureTest {
     public void aValidSignatureOnA400Passes() throws Exception {
         String error = "{\"Error\":[{\"error_description\":\"x\"}]}";
         assertEquals(400, call(400, error, TestServerKey.sign(bytes(error))).statusCode());
+    }
+
+    @Test
+    public void aFourHundredWithAnInvalidSignatureThrows() {
+        assertRejected(400, "{\"Error\":[{\"error_description\":\"x\"}]}", TestServerKey.sign(bytes("other")));
+    }
+
+    @Test
+    public void aFourHundredWithAMissingSignatureThrows() {
+        assertRejected(400, "{\"Error\":[{\"error_description\":\"x\"}]}", null);
+    }
+
+    @Test
+    public void initContextThrowsOnAnUnsignedDeviceServerResponse() throws Exception {
+        String installation = "{\"Response\":[{\"Id\":{\"id\":1}},{\"Token\":{\"token\":\"t\"}},{\"ServerPublicKey\":{\"server_public_key\":\""
+                + TestServerKey.PUBLIC_PEM.replace("\n", "\\n") + "\"}}]}";
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", exchange -> TestServerKey.respond(exchange, 200,
+                exchange.getRequestURI().getPath().endsWith("installation") ? installation : "{\"Response\":[{\"Id\":{\"id\":3}}]}", null));
+        server.start();
+        try {
+            Config config = new Config(
+                    new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
+                    "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
+                    null, null, null, null, null, null);
+            var e = assertThrows(RuntimeException.class, () -> Context.initContext(config));
+            var cause = assertInstanceOf(ExecutionException.class, e.getCause()).getCause();
+            assertEquals("Invalid bunq server signature", assertInstanceOf(SecurityException.class, cause).getMessage());
+        } finally {
+            server.stop(0);
+        }
     }
 
     @Test
