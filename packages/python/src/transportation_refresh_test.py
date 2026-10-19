@@ -25,6 +25,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         """Answers 200 once a refresh has revived the session (see counting_refresh) and a 403 with rejected_body before."""
         self.tokens_seen: list[str | None] = []
         self.revived = False
+        self.sign_retries = True
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(handler):
@@ -32,7 +33,7 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
                 self.tokens_seen.append(token)
                 ok = self.revived
                 body = b'{"Response":[]}' if ok else rejected_body.encode()
-                respond(handler, 200 if ok else 403, body)
+                respond(handler, 200 if ok else 403, body, None if ok and not self.sign_retries else "valid")
 
             def log_message(handler, *args):
                 pass
@@ -74,6 +75,12 @@ class RefreshTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(200, response.statusCode)
         self.assertEqual(1, self.refreshes)
         self.assertEqual(['stale', 'stale'], self.tokens_seen)
+
+    async def test_unsigned_response_after_the_refresh_raises(self):
+        self.start_server(SESSION_REJECTED)
+        self.sign_retries = False
+        with self.assertRaisesRegex(Exception, "Invalid bunq server signature"):
+            await transportation(self.context, self.counting_refresh()).transport(self.request)
 
     async def test_failed_refresh_raises_original_403(self):
         self.start_server(SESSION_REJECTED)

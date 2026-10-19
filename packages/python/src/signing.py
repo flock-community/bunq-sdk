@@ -50,7 +50,7 @@ class Signing:
             if not signature:
                 return False
             _validate_and_load_public_key(server_public_key_pem).verify(
-                base64.b64decode(signature),
+                base64.b64decode(signature, validate=True),
                 response_body,
                 padding.PKCS1v15(),
                 hashes.SHA256()

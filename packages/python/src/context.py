@@ -46,7 +46,7 @@ async def init_context(config: Config) -> Context:
     Async; sync callers can use `asyncio.run(init_context(config))`.
     """
     installation = await _create_installation(config)
-    if installation.ServerPublicKey is None or installation.ServerPublicKey.server_public_key is None:
+    if installation.ServerPublicKey is None or not installation.ServerPublicKey.server_public_key:
         raise Exception("No server public key")
     if installation.Token is None or installation.Token.token is None:
         raise Exception("Token not available")
@@ -139,7 +139,7 @@ class _SetupTransportation(Wirespec.Transportation):
             request = replace(request, headers={**request.headers, "X-Bunq-Client-Authentication": [self.token]})
         response = await send(self.config, request)
         # the server public key is not known yet for the installation call, so that response is not verified
-        return require_signed(response, self.server_public_key) if self.server_public_key else require_typed(response)
+        return require_signed(response, self.server_public_key) if self.server_public_key is not None else require_typed(response)
 
 
 def _setup_client(config: Config, token: Optional[str] = None, server_public_key: Optional[str] = None) -> Client:
