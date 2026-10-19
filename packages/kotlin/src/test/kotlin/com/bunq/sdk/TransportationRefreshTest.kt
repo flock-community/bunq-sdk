@@ -21,15 +21,19 @@ class TransportationRefreshTest {
     /** Set by [fresh]: like bunq, the server accepts the session again after a refresh although the token stays the same. */
     private val revived = java.util.concurrent.atomic.AtomicBoolean()
 
+    /** Set to false to make the server answer revived requests without a signature. */
+    private var signRetries = true
+
     /** Answers 200 once [revived], otherwise 403 with [rejection]. Returns the tokens it saw. */
     private fun withServer(rejection: String, expiry: Instant = Instant.now().plusSeconds(3600), block: (Context, List<String>) -> Unit) {
+        signRetries = true
         val seenTokens = java.util.Collections.synchronizedList(mutableListOf<String>())
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
             val token = exchange.requestHeaders.getFirst("X-Bunq-Client-Authentication")
             seenTokens += token
             val (status, body) = if (revived.get()) 200 to """{"Response":[]}""" else 403 to rejection
-            TestServerKey.respond(exchange, status, body)
+            TestServerKey.respond(exchange, status, body, if (status == 200 && !signRetries) null else TestServerKey.sign(body.toByteArray()))
         }
         server.start()
         try {
@@ -62,6 +66,14 @@ class TransportationRefreshTest {
         assertEquals(200, response.statusCode)
         assertEquals(1, refreshes.get())
         assertEquals(listOf("stale", "stale"), tokens)
+    }
+
+    @Test
+    fun `an unsigned response after the refresh throws`() = withServer(authenticationError) { context, _ ->
+        signRetries = false
+        val transport = refreshingTransportation(context) { it.fresh() }
+
+        assertFailsWith<SecurityException> { runBlocking { transport.transport(request) } }
     }
 
     @Test
