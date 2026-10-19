@@ -8,7 +8,7 @@ from typing import Awaitable, Callable, Dict, List, Optional
 from api.Client import Client
 from api.wirespec import Wirespec
 from context import Context, refresh_session
-from transport import Serialization, require_typed, send
+from transport import Serialization, require_signed, send
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +53,8 @@ def transportation(
     A 403 "Insufficient authentication." refreshes the session once (shared by concurrent requests) and retries the
     request with the new token. Statuses other than 200 and 400, including the original 403 when the refresh fails
     (a failed refresh before sending is not repeated after a 403 in the same request), are raised as BunqApiError.
+    Every 200/400 response must carry a valid X-Bunq-Server-Signature (checked against context.server_public_key);
+    otherwise Exception("Invalid bunq server signature") is raised.
     The refreshed context is kept inside this transportation, so later requests use the new token.
     on_context_change is called once with the new context after every successful refresh, so the caller can store it.
     """
@@ -90,10 +92,10 @@ def transportation(
             used = pre_refreshed or snapshot
             response = await send_with(used, request)
             if pre_refreshed is None or not _is_session_rejected(response):
-                return require_typed(response)
+                return require_signed(response, used.server_public_key)
 
             fresh = await refreshed(used)
-            return require_typed(await send_with(fresh, request) if fresh else response)
+            return require_signed(await send_with(fresh, request) if fresh else response, (fresh or used).server_public_key)
 
     return Transportation()
 
