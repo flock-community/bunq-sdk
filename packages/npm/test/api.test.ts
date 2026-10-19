@@ -83,8 +83,8 @@ describe("API test", async () => {
         });
         
         if (res.status === 200) {
-            expect(res.body[0].display_name).toBeTruthy();
-            expect(res.body).toHaveLength(1);
+            expect(res.body.Response[0].display_name).toBeTruthy();
+            expect(res.body.Response).toHaveLength(1);
         } else {
             throw new Error("Cannot list monetary accounts");
         }
@@ -99,7 +99,7 @@ describe("API test", async () => {
         });
         
         if (res.status === 200) {
-            const account = res.body[0];
+            const account = res.body.Response[0];
             expect(Number.isNaN(parseFloat(account.balance?.value ?? ""))).toBe(false);
             expect(account.balance?.currency).toBe("EUR");
         } else {

@@ -20,7 +20,7 @@ export const serialization: Wirespec.Serialization = {
         return utf8Encoder.encode(typeof t === "string" ? t : JSON.stringify(t));
     },
     deserializeBody<T>(raw: Uint8Array, type: string): T {
-        const body: {Response?: Record<string, unknown>[]} = JSON.parse(utf8Decoder.decode(raw));
+        const body: {Response?: Record<string, unknown>[], Pagination?: unknown} = JSON.parse(utf8Decoder.decode(raw));
         if (typeof body !== "object" || body === null || Array.isArray(body)) {
             throw new Error("Invalid bunq response: neither Response nor Error");
         }
@@ -30,6 +30,10 @@ export const serialization: Wirespec.Serialization = {
             }
             // error responses have no Response envelope and are typed as such by the generated client
             return body as T;
+        }
+        if (body.Pagination !== undefined) {
+            // list responses keep the items and the cursor urls
+            return {Response: body.Response.flatMap(item => Object.values(item)), Pagination: body.Pagination} as T;
         }
         if (type.endsWith(arrayType)) {
             return body.Response.flatMap(item => Object.values(item)) as T;
