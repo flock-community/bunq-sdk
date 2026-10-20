@@ -6,10 +6,10 @@ import com.bunq.sdk.generated.endpoint.ReadUser;
 import com.bunq.sdk.generated.model.UserPerson;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,13 +58,22 @@ public class SdkTest {
             -----END PUBLIC KEY-----
             """;
 
-    private static final Config config = new Config(
-            BunqServer.BUNQ_SANDBOX_SERVER,
-            "PeterScript",
-            "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
-            PRIVATE_KEY_PEM,
-            PUBLIC_KEY_PEM
-    );
+    // One fresh sandbox user per test run: bunq answers 429 for minutes when several clients set up sessions with one API key at the same time.
+    private static final Config config = newConfig();
+
+    private static Config newConfig() {
+        try {
+            return new Config(
+                    BunqServer.BUNQ_SANDBOX_SERVER,
+                    "PeterScript",
+                    DeadSessionTest.newSandboxApiKey(),
+                    PRIVATE_KEY_PEM,
+                    PUBLIC_KEY_PEM
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot create sandbox user", e);
+        }
+    }
 
     private static final Context context = Context.initContext(config);
     private static final Client client = Wirespec.bunqClient(context);
@@ -73,7 +82,7 @@ public class SdkTest {
     public void testREADUser() throws Exception {
         ReadUser.Response<?> res = client.readUser(context.userId()).get();
         if (res instanceof ReadUser.Response200 response) {
-            assertEquals("Donald Byrne", response.body().UserPerson().flatMap(UserPerson::legal_name).orElseThrow());
+            assertFalse(response.body().UserPerson().flatMap(UserPerson::legal_name).orElseThrow().isBlank());
         } else if (res instanceof ReadUser.Response400) {
             throw new RuntimeException("Cannot read user");
         }
@@ -83,7 +92,7 @@ public class SdkTest {
     public void testListAllMonetaryAccountBankForUser() throws Exception {
         ListAllMonetaryAccountBankForUser.Response<?> res = client.listAllMonetaryAccountBankForUser(context.userId(), Optional.empty(), Optional.empty(), Optional.empty()).get();
         if (res instanceof ListAllMonetaryAccountBankForUser.Response200 response) {
-            assertEquals("D. Byrne", response.body().get(0).display_name().orElseThrow());
+            assertFalse(response.body().get(0).display_name().orElseThrow().isBlank());
         } else {
             throw new RuntimeException("Cannot list monetary accounts");
         }
@@ -106,11 +115,7 @@ public class SdkTest {
         assertEquals(1, response1.body().size());
         var monetaryAccountBankListing1 = response1.body().get(0);
         assertNotNull(monetaryAccountBankListing1);
-        assertEquals(1989601L, monetaryAccountBankListing1.id().orElseThrow());
-        assertTrue(monetaryAccountBankListing1.balance()
-                .flatMap(balance -> balance.value())
-                .map(value -> new BigDecimal(value).compareTo(BigDecimal.ZERO) > 0)
-                .orElse(false));
+        assertTrue(monetaryAccountBankListing1.id().isPresent());
 
         // Refresh the session
         Context refreshedContext = context.refreshSession();

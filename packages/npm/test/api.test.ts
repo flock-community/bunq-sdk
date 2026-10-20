@@ -46,31 +46,35 @@ UWmmCQB0dhg2j2teZOcUJDM8h/QoNnl6TtZZzmOb5WFGQQjLWEMaVH3+SHWUYeFU
 rQIDAQAB
 -----END PUBLIC KEY-----`;
 
-const config = createConfig(
-    BUNQ_SANDBOX_SERVER,
-    "PeterScript",
-    "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
-    PRIVATE_KEY_PEM,
-    PUBLIC_KEY_PEM
-);
+// One fresh sandbox user per describe block: bunq answers 429 for minutes when several clients set up sessions with one API key at the same time.
+async function sandboxConfig() {
+    // no session and no server public key exist yet, so this one call is not signature-verified; the API key is never checked
+    const config = createConfig(BUNQ_SANDBOX_SERVER, "PeterScript", "unused", PRIVATE_KEY_PEM, PUBLIC_KEY_PEM);
+    const unauthenticated = generatedClient(serialization, {transport: async request => requireTyped(await rawHandler(config, request))});
+    const sandboxUser = await unauthenticated.createSandboxUserPerson({body: {}});
+    if (sandboxUser.status !== 200 || !sandboxUser.body.ApiKey?.api_key) {
+        throw new Error("Cannot create sandbox user");
+    }
+    return createConfig(BUNQ_SANDBOX_SERVER, "PeterScript", sandboxUser.body.ApiKey.api_key, PRIVATE_KEY_PEM, PUBLIC_KEY_PEM);
+}
 
 describe("API test", async () => {
-    const context = await initContext(config);
+    const context = await initContext(await sandboxConfig());
     const client = bunqClient(context);
 
-    test('readUser should return Donald Byrne', async () => {
+    test('readUser should return a legal name', async () => {
         const res = await client.readUser({
             "itemId": context.userId
         });
         
         if (res.status === 200) {
-            expect(res.body.UserPerson?.legal_name).toBe("Donald Byrne");
+            expect(res.body.UserPerson?.legal_name).toBeTruthy();
         } else {
             throw new Error("Cannot read user");
         }
     });
 
-    test('listAllMonetaryAccountBankForUser should return D. Byrne account', async () => {
+    test('listAllMonetaryAccountBankForUser should return one account', async () => {
         const res = await client.listAllMonetaryAccountBankForUser({
             "userID": context.userId,
             count: undefined,
@@ -79,14 +83,14 @@ describe("API test", async () => {
         });
         
         if (res.status === 200) {
-            expect(res.body[0].display_name).toBe("D. Byrne");
+            expect(res.body[0].display_name).toBeTruthy();
             expect(res.body).toHaveLength(1);
         } else {
             throw new Error("Cannot list monetary accounts");
         }
     });
 
-    test('account should have positive balance', async () => {
+    test('account should have a balance in EUR', async () => {
         const res = await client.listAllMonetaryAccountBankForUser({
             "userID": context.userId,
             count: undefined,
@@ -96,8 +100,7 @@ describe("API test", async () => {
         
         if (res.status === 200) {
             const account = res.body[0];
-            const balance = parseFloat(account.balance?.value || "0");
-            expect(balance).toBeGreaterThan(0);
+            expect(Number.isNaN(parseFloat(account.balance?.value ?? ""))).toBe(false);
             expect(account.balance?.currency).toBe("EUR");
         } else {
             throw new Error("Cannot list monetary accounts");
@@ -131,14 +134,7 @@ describe("API test", async () => {
 
 describe("dead session", () => {
     test('a deleted session is refreshed once and the call succeeds', async () => {
-        // no session and no server public key exist yet, so this one call is not signature-verified
-        const unauthenticated = generatedClient(serialization, {transport: async request => requireTyped(await rawHandler(config, request))});
-        const sandboxUser = await unauthenticated.createSandboxUserPerson({body: {}});
-        if (sandboxUser.status !== 200 || !sandboxUser.body.ApiKey?.api_key) {
-            throw new Error("Cannot create sandbox user");
-        }
-        const sandboxConfig = createConfig(BUNQ_SANDBOX_SERVER, "PeterScript", sandboxUser.body.ApiKey.api_key, PRIVATE_KEY_PEM, PUBLIC_KEY_PEM);
-        const context = await initContext(sandboxConfig);
+        const context = await initContext(await sandboxConfig());
         let refreshes = 0;
         const client = generatedClient(serialization, transportation(context, async ctx => { refreshes++; return refreshSession(ctx); }));
 
