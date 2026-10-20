@@ -137,7 +137,7 @@ class ApiTest {
         context: Context
     ): MonetaryAccountBankRead {
         val accountId = when (val list = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
-            is ListAllMonetaryAccountBankForUser.Response200 -> list.body.first().id ?: fail("Account without id")
+            is ListAllMonetaryAccountBankForUser.Response200 -> list.body.Response.first().id ?: fail("Account without id")
             is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
         }
         val res = client.readMonetaryAccountBankForUser(context.userId, accountId)
@@ -171,8 +171,26 @@ class ApiTest {
     fun `a list is paged by following the older_url id`() = runTest {
         val context = initContext(config)
         val client = bunqClient(context)
+        val accountId = when (val list = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
+            is ListAllMonetaryAccountBankForUser.Response200 -> list.body.Response.first().id ?: fail("Account without id")
+            is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
+        }
+        // the sandbox user of this test file is new and has no request inquiries: create 2 to page over
+        repeat(2) {
+            val created = client.createRequestInquiryForUserMonetaryAccount(
+                context.userId,
+                accountId,
+                CreateRequestInquiry(
+                    amount_inquired = Amount("0.01", "EUR"),
+                    counterparty_alias = Pointer("EMAIL", "sugardaddy@bunq.com", "Sugar Daddy", null),
+                    description = "Pagination test",
+                    allow_bunqme = false,
+                )
+            )
+            assertTrue(created is CreateRequestInquiryForUserMonetaryAccount.Response200)
+        }
         suspend fun page(older: Long?) = when (val res =
-            client.listAllRequestInquiryForUserMonetaryAccount(context.userId, 1989601, 1, null, older)) {
+            client.listAllRequestInquiryForUserMonetaryAccount(context.userId, accountId, 1, null, older)) {
             is ListAllRequestInquiryForUserMonetaryAccount.Response200 -> res.body
             is ListAllRequestInquiryForUserMonetaryAccount.Response400 -> fail("Could not list request inquiries")
         }
