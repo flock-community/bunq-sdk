@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +18,7 @@ public class PaginationTest {
     private static ListAllMonetaryAccountBankForUser.Response<?> listFrom(String body) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
-            byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(200, bytes.length);
-            exchange.getResponseBody().write(bytes);
-            exchange.close();
+            TestServerKey.respond(exchange, 200, body);
         });
         server.start();
         try {
@@ -30,7 +26,7 @@ public class PaginationTest {
                     new BunqServer("http://127.0.0.1:" + server.getAddress().getPort() + "/", ""),
                     "test", "key", BunqSigningKeysGenerator.generateBunqSigningKeys(),
                     null, null, null, null, null, null);
-            var context = new Context("", 1, 1, "token", 1, Instant.now(), "installation", config);
+            var context = new Context(TestServerKey.PUBLIC_PEM, 1, 1, "token", 1, Instant.now().plusSeconds(3600), "installation", config);
             return Wirespec.bunqClient(context)
                     .listAllMonetaryAccountBankForUser(1L, Optional.of(2L), Optional.empty(), Optional.empty()).join();
         } finally {
