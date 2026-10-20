@@ -19,16 +19,33 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.math.BigDecimal
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import kotlin.collections.firstOrNull
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 
-private val config = Config(
+// One fresh sandbox user per test run: bunq answers 429 for minutes when several clients set up sessions with one API key at the same time.
+private fun newSandboxApiKey(): String {
+    val request = HttpRequest.newBuilder(URI.create(BUNQ_SANDBOX_SERVER.baseUrl + "sandbox-user-person"))
+        .header("User-Agent", "ApiTest")
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString("{}"))
+        .build()
+    val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+    assertEquals(200, response.statusCode())
+    return objectMapper.readTree(response.body())["Response"].firstNotNullOf { it["ApiKey"] }["api_key"].asString()
+}
+
+private val config by lazy { Config(
     bunqServer = BUNQ_SANDBOX_SERVER,
-    apiKey = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
+    apiKey = newSandboxApiKey(),
     serviceName = "PeterScript",
     signingKeys = SigningKeys.FromPem(
         """
@@ -73,7 +90,7 @@ private val config = Config(
             |-----END PUBLIC KEY-----
         """.trimMargin(),
     )
-)
+) }
 
 class ApiTest {
 
@@ -87,7 +104,7 @@ class ApiTest {
             is ReadUser.Response200 -> res.body
             is ReadUser.Response400 -> error("Cannot read user")
         }
-        assertEquals("Donald Byrne", body.UserPerson?.legal_name)
+        assertFalse(body.UserPerson?.legal_name.isNullOrBlank())
     }
 
     @Test
@@ -99,9 +116,9 @@ class ApiTest {
             is ListAllMonetaryAccountBankForUser.Response200 -> res.body
             is ListAllMonetaryAccountBankForUser.Response400 -> error("Could not get bank accounts")
         }
-        assertEquals(1989601, body.firstOrNull()?.id)
+        assertNotNull(body.firstOrNull()?.id)
         assertEquals("EUR", body.firstOrNull()?.balance?.currency)
-        assertTrue { (body.firstOrNull()?.balance?.value?.toBigDecimal() ?: BigDecimal.ZERO) > BigDecimal.ZERO }
+        assertNotNull(body.firstOrNull()?.balance?.value?.toBigDecimal())
     }
 
     @Test
@@ -109,15 +126,19 @@ class ApiTest {
         val context = initContext(config)
         val client = bunqClient(context)
         val body = getBankAccount(client, context)
-        assertEquals(1989601, body.MonetaryAccountBank?.id)
-        assertTrue { (body.MonetaryAccountBank?.balance?.value?.toBigDecimal() ?: BigDecimal.ZERO) > BigDecimal.ZERO }
+        assertNotNull(body.MonetaryAccountBank?.id)
+        assertNotNull(body.MonetaryAccountBank?.balance?.value?.toBigDecimal())
     }
 
     private suspend fun getBankAccount(
         client: Client,
         context: Context
     ): MonetaryAccountBankRead {
-        val res = client.readMonetaryAccountBankForUser(context.userId, 1989601)
+        val accountId = when (val list = client.listAllMonetaryAccountBankForUser(context.userId, null, null, null)) {
+            is ListAllMonetaryAccountBankForUser.Response200 -> list.body.first().id ?: fail("Account without id")
+            is ListAllMonetaryAccountBankForUser.Response400 -> fail("Could not get bank accounts")
+        }
+        val res = client.readMonetaryAccountBankForUser(context.userId, accountId)
         val body = when (res) {
             is ReadMonetaryAccountBankForUser.Response200 -> res.body
             is ReadMonetaryAccountBankForUser.Response400 -> fail("Could not get bank account")
@@ -138,7 +159,7 @@ class ApiTest {
                 older_id = null
             )
         if (res is ListAllMonetaryAccountBankForUser.Response200) {
-            assertEquals("D. Byrne", res.body[0].display_name)
+            assertFalse(res.body[0].display_name.isNullOrBlank())
         } else {
             fail { "Cannot list monetary accounts" }
         }
@@ -162,8 +183,7 @@ class ApiTest {
         assertEquals(1, body.size)
         val monetaryAccountBankListing = body.firstOrNull()
         assertNotNull(monetaryAccountBankListing)
-        assertEquals(1989601, monetaryAccountBankListing.id)
-        assertTrue { (body.firstOrNull()?.balance?.value?.toBigDecimal() ?: BigDecimal.ZERO) > BigDecimal.ZERO }
+        assertNotNull(monetaryAccountBankListing.id)
 
         val refreshSession = context.refreshSession()
         val refreshedClient = bunqClient(refreshSession)

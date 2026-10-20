@@ -18,6 +18,17 @@ from transport import Serialization
 from wirespec import transportation
 
 
+async def new_sandbox_api_key() -> str:
+    """One fresh sandbox user per test: bunq answers 429 for minutes when several clients set up sessions with one API key at the same time."""
+    async with httpx.AsyncClient() as http:
+        response = await http.post(
+            BUNQ_SANDBOX_SERVER.base_url + 'sandbox-user-person',
+            headers={'User-Agent': 'Python SDK Test', 'Content-Type': 'application/json'},
+            content=b'{}')
+    response.raise_for_status()
+    return response.json()['Response'][0]['ApiKey']['api_key']
+
+
 class SessionRefreshTest(unittest.IsolatedAsyncioTestCase):
     """Test session refresh functionality"""
     
@@ -30,7 +41,7 @@ class SessionRefreshTest(unittest.IsolatedAsyncioTestCase):
         config = create_config(
             bunq_server=BUNQ_SANDBOX_SERVER,
             service_name="Python SDK Test",
-            api_key="sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95",
+            api_key=await new_sandbox_api_key(),
             private_key_pem=private_key_pem,
             public_key_pem=public_key_pem
         )
@@ -69,12 +80,7 @@ class SessionRefreshTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_dead_session_is_refreshed_once_and_the_call_succeeds(self):
         """Fresh sandbox user, session deleted on the server: the next call refreshes once and returns 200."""
-        async with httpx.AsyncClient() as http:
-            sandbox_user = await http.post(
-                BUNQ_SANDBOX_SERVER.base_url + 'sandbox-user-person',
-                headers={'User-Agent': 'Python SDK Test', 'Content-Type': 'application/json'},
-                content=b'{}')
-        api_key = sandbox_user.json()['Response'][0]['ApiKey']['api_key']
+        api_key = await new_sandbox_api_key()
         private_key_pem, public_key_pem = BunqSigningKeysGenerator.generate_bunq_signing_keys_as_pem()
         config = create_config(
             bunq_server=BUNQ_SANDBOX_SERVER,

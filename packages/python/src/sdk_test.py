@@ -5,23 +5,22 @@ from api.endpoint.ReadUser import Response200 as ReadUserResponse200
 from bunq_server import BUNQ_SANDBOX_SERVER
 from config import Config
 from context import init_context
+from session_refresh_test import new_sandbox_api_key
 from signing_keys import SigningKeysFromPem
 from signing_test import PRIVATE_KEY_PEM, PUBLIC_KEY_PEM
 from wirespec import bunq_client
 
-USER_API_KEY = "sandbox_83f4f88a10706750ec2fdcbc1ce97b582a986f2846d33dcaaa974d95"
-
-config = Config(
-    bunq_server=BUNQ_SANDBOX_SERVER,
-    api_key=USER_API_KEY,
-    service_name='PeterScript',
-    signing_keys=SigningKeysFromPem(PRIVATE_KEY_PEM, PUBLIC_KEY_PEM),
-)
 
 
 class Testing(unittest.IsolatedAsyncioTestCase):
 
     async def asyncSetUp(self):
+        config = Config(
+            bunq_server=BUNQ_SANDBOX_SERVER,
+            api_key=await new_sandbox_api_key(),
+            service_name='PeterScript',
+            signing_keys=SigningKeysFromPem(PRIVATE_KEY_PEM, PUBLIC_KEY_PEM),
+        )
         self.context = await init_context(config)
         self.client = bunq_client(self.context)
 
@@ -31,7 +30,7 @@ class Testing(unittest.IsolatedAsyncioTestCase):
         match res:
             case ReadUserResponse200(body=body):
                 if body.UserPerson is None: raise Exception("User not found")
-                self.assertEqual(body.UserPerson.display_name, "D. Byrne")
+                self.assertTrue(body.UserPerson.display_name)
             case _:
                 self.fail(res)
 
@@ -45,7 +44,7 @@ class Testing(unittest.IsolatedAsyncioTestCase):
 
         match res:
             case ListAccountsResponse200(body=body):
-                self.assertEqual(body[0].display_name, "D. Byrne")
+                self.assertTrue(body[0].display_name)
             case _:
                 self.fail(res)
 

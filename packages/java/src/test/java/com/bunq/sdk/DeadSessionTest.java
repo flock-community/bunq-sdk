@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 /** Runs against the bunq sandbox with a freshly created sandbox user. */
 public class DeadSessionTest {
 
-    private static String newSandboxApiKey() throws Exception {
+    static String newSandboxApiKey() throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create(BunqServer.BUNQ_SANDBOX_SERVER.baseUrl() + "sandbox-user-person"))
                 .header("User-Agent", "DeadSessionTest")
                 .header("Content-Type", "application/json")
