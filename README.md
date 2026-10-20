@@ -38,10 +38,10 @@ Each SDK package uses the Wirespec Gradle plugin to:
 
 ## Requirements
 
-Wirespec 0.21.1 generates the client code in all four packages.
+Wirespec 0.22.4 generates the client code in all four packages.
 
-- Kotlin: Kotlin 2.3+, JVM 17+, Wirespec 0.21.x runtime. Bring your own kotlinx-coroutines (the client functions are `suspend`).
-- Java: Java 17+.
+- Kotlin: Kotlin 2.3+, JVM 17+, Wirespec 0.22.x runtime (a consumer that uses Wirespec itself must use 0.22.x as well, because both share one runtime on the classpath). Bring your own kotlinx-coroutines (the client functions are `suspend`).
+- Java: Java 17+, Wirespec 0.22.x runtime (same rule for consumers that use Wirespec themselves).
 - TypeScript: Node.js 18+ (global `fetch`; CI uses Node 20), TypeScript 5.
 - Python: Python 3.10+ (the generated code uses `match`/`case`).
 
@@ -186,7 +186,7 @@ asyncio.run(main())
 
 ## Migrating from 0.x
 
-The packages moved from Wirespec 0.16.3 to 0.21.1 and use the generated client instead of our own `Sdk`/`handler` code.
+The packages moved from Wirespec 0.16.3 to 0.22.4 and use the generated client instead of our own `Sdk`/`handler` code.
 
 All languages:
 
@@ -209,7 +209,7 @@ Kotlin:
 - Response header fields `XBunq...` are now `xBunq...`; `toRequest`/`fromResponse` are now `toRawRequest`/`fromRawResponse`.
 - Query parameters have no defaults: pass `null` for unused ones. Generated GET/DELETE requests carry `body: Unit`.
 - `objectMapper` is `internal`. `serialization` is the non-generic `Wirespec.Serialization`, and raw bodies are `ByteArray`.
-- Requires Kotlin 2.3+, JVM 17+ and the Wirespec 0.21.x runtime. The runtime uses Jackson 3 (`tools.jackson`). kotlinx-coroutines is not exposed.
+- Requires Kotlin 2.3+, JVM 17+ and the Wirespec 0.22.x runtime. The runtime uses Jackson 3 (`tools.jackson`). kotlinx-coroutines is not exposed.
 
 Java:
 

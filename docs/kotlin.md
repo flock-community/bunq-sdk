@@ -3,7 +3,7 @@
 ## Requirements
 
 - Kotlin 2.3+ and JVM 17+
-- Wirespec 0.21.x runtime (a consumer that uses Wirespec itself must use 0.21.x as well, because both share one runtime on the classpath)
+- Wirespec 0.22.x runtime (a consumer that uses Wirespec itself must use 0.22.x as well, because both share one runtime on the classpath)
 - kotlinx-coroutines in your own project: the client functions are `suspend`
 - Spring Boot 3.x: the SDK uses Jackson 3 (`tools.jackson`), which needs `com.fasterxml.jackson.core:jackson-annotations` 2.20 or later. Spring Boot 3's dependency management pins an older 2.x and the app fails at startup with `ClassNotFoundException` (for example `JsonSerializeAs`). Raise the Jackson BOM version in your build:
 
