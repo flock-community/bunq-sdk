@@ -4,6 +4,7 @@
 
 - Java 17+ (the package is built with a Java 17 toolchain)
 - Jackson 2 (included as a dependency)
+- Wirespec 0.22.x runtime (a consumer that uses Wirespec itself must use 0.22.x as well, because both share one runtime on the classpath)
 
 ## Install
 

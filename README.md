@@ -216,6 +216,7 @@ Java:
 - `Wirespec.serialization` is the non-generic `Serialization`, and raw request and response bodies are `Optional<byte[]>`.
 - Requests used a hardcoded sandbox base URL; they now use `config.bunqServer().baseUrl()`.
 - The optional config headers (Cache-Control, language, region, client request id, geolocation) are now sent.
+- Requires Java 17+ and the Wirespec 0.22.x runtime.
 
 TypeScript:
 
