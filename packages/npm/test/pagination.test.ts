@@ -4,6 +4,7 @@ import {AddressInfo} from 'node:net';
 import {generateKeyPairSync} from 'node:crypto';
 import {createConfig} from "../src/config";
 import {Context} from "../src/context";
+import {respond, serverPublicKey} from "./server-key";
 import {bunqClient} from "../src/transportation";
 
 describe('list pagination', () => {
@@ -13,8 +14,7 @@ describe('list pagination', () => {
 
     async function listAnswering(body: string) {
         server = createServer((req, res) => {
-            res.statusCode = 200;
-            res.end(body);
+            respond(res, 200, body);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
         const baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}/`;
@@ -24,8 +24,8 @@ describe('list pagination', () => {
             publicKeyEncoding: {type: 'spki', format: 'pem'},
         });
         const context: Context = {
-            serverPublicKey: '', deviceId: 1, sessionId: 1, sessionToken: 'token', userId: 1,
-            sessionExpiryTime: new Date(), installationToken: 'installation',
+            serverPublicKey, deviceId: 1, sessionId: 1, sessionToken: 'token', userId: 1,
+            sessionExpiryTime: new Date(Date.now() + 3600_000), installationToken: 'installation',
             config: createConfig({baseUrl, pinnedKey: ''}, 'test', 'key', privateKey, publicKey),
         };
         return bunqClient(context).listAllMonetaryAccountBankForUser({
