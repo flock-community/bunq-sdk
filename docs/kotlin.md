@@ -189,7 +189,17 @@ val context = initContext(config)
 
 `exchangeCode` throws `BunqApiException(status, body)` for any status other than 200 and for a 200 without an `access_token` string (including a non-JSON body), for example 400 `{"error":"invalid_grant",...}` for an invalid or expired code. Use `BUNQ_PUBLIC_OAUTH` with `BUNQ_PUBLIC_SERVER` for production.
 
-Testing: the authorize step needs a browser and a bunq login, so it is not covered by automated tests. `authorizeUrl` and the token exchange (against a local HTTP server) are tested offline only; the real bunq endpoints have not been called by the tests.
+### Testing OAuth against the sandbox
+
+`OAuthTest` covers `authorizeUrl` and the token exchange offline (local HTTP server). `OAuthSandboxTest` runs the whole flow against the bunq sandbox: it creates a sandbox user, registers an OAuth client with `http://127.0.0.1:<port>/callback` as redirect URL, starts a local callback server, exchanges the code and calls `readUser` with the token.
+
+The authorize page does not take a login. For a pending request it shows a QR code, and the user approves by scanning it with the bunq sandbox app, so the test needs a person and is skipped unless `BUNQ_OAUTH_E2E=1`. The test prints the authorize URL and waits up to 5 minutes for the redirect.
+
+```bash
+BUNQ_OAUTH_E2E=1 ./gradlew :packages:kotlin:test --tests com.bunq.sdk.OAuthSandboxTest -i
+```
+
+The sandbox app logs in with the credentials of a sandbox user from the [developer portal](https://developer.bunq.com/), which a user created by the test does not have. Pass the API key of a sandbox user you can log in with as `BUNQ_OAUTH_E2E_API_KEY`; the test then reuses that user's OAuth client or creates one. `BUNQ_OAUTH_E2E_TIMEOUT_SECONDS` changes the wait.
 
 ### Which user and accounts a grant gives access to
 
