@@ -22,7 +22,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     shared = true
     preProcessor = OpenApiPreProcessor
 
-    // Workaround for the Wirespec 0.21.1 Python emitter emitting circular sibling imports in model files; remove once fixed.
+    // Workaround for the Wirespec 0.22.4 Python emitter emitting circular sibling imports in model files; remove once fixed.
     // Annotations are lazy (`from __future__ import annotations`), so sibling imports can move below the classes.
     val siblingImport = Regex("""^from \.\w.*$""")
     doLast {
