@@ -5,10 +5,15 @@
 - Kotlin 2.3+ and JVM 17+
 - Wirespec 0.21.x runtime (a consumer that uses Wirespec itself must use 0.21.x as well, because both share one runtime on the classpath)
 - kotlinx-coroutines in your own project: the client functions are `suspend`
+- Spring Boot 3.x: the SDK uses Jackson 3 (`tools.jackson`), which needs `com.fasterxml.jackson.core:jackson-annotations` 2.20 or later. Spring Boot 3's dependency management pins an older 2.x and the app fails at startup with `ClassNotFoundException` (for example `JsonSerializeAs`). Raise the Jackson BOM version in your build:
+
+```kotlin
+extra["jackson-bom.version"] = "2.22.0"
+```
 
 ## Install
 
-Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships in the first release after #8. Replace `<release>` with that tag.
+Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships from 0.1.0.
 
 ```kotlin
 repositories {
@@ -17,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.flock-community.bunq-sdk:kotlin:<release>")
+    implementation("com.github.flock-community.bunq-sdk:kotlin:0.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 }
 ```

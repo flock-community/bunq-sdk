@@ -7,7 +7,7 @@
 
 ## Install
 
-Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships in the first release after #8. Replace `<release>` with that tag.
+Add the JitPack repository and depend on a release tag. The published artifacts of 0.0.3 and earlier have the old `Sdk`/`handler` API; the client described here ships from 0.1.0.
 
 Gradle (Kotlin DSL):
 
@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.flock-community.bunq-sdk:java:<release>")
+    implementation("com.github.flock-community.bunq-sdk:java:0.1.0")
 }
 ```
 

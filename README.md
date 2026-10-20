@@ -230,6 +230,18 @@ If you want to modify the SDKs:
 
 For the npm package, `src/gen` is generated and not committed: run `./gradlew :packages:npm:wirespec` before `npm run build` or `npm test`.
 
+### Releasing
+
+Kotlin and Java are published through JitPack, configured in `jitpack.yml`.
+
+1. On GitHub, create a release with tag `X.Y.Z` from `main`.
+2. JitPack builds `kotlin` and `java` on the first request for that version. Opening `https://jitpack.io/#flock-community/bunq-sdk` does not start a build; clicking "Get it" next to the version or resolving the dependency does.
+3. Check the build log:
+
+```text
+https://jitpack.io/com/github/flock-community/bunq-sdk/X.Y.Z/build.log
+```
+
 ## License
 
 This project is licensed under the terms of the LICENSE file included in the repository.
