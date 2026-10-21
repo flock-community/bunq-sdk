@@ -7,6 +7,8 @@ plugins {
 repositories {
     mavenCentral()
     mavenLocal()
+    // JitPack replaces mavenCentral() with a Google mirror that lags behind Maven Central; the Plugin Portal also serves Wirespec
+    gradlePluginPortal()
 }
 
 dependencies {
