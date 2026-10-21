@@ -59,10 +59,10 @@ class OAuthSandboxTest {
         println("sandbox user ${context.userId}")
 
         // 3: the OAuth client (one per user), and the redirect URL on it
-        val existing = (client.listAllOauthClientForUser(context.userId, null, null, null) as ListAllOauthClientForUser.Response200).body
+        val existing = (client.listAllOauthClientForUser(context.userId, null, null, null) as ListAllOauthClientForUser.Response200).body.Response
         val oauthClient = existing.firstOrNull() ?: run {
             check(client.createOauthClientForUser(context.userId, OauthClient("ACTIVE")) is CreateOauthClientForUser.Response200)
-            (client.listAllOauthClientForUser(context.userId, null, null, null) as ListAllOauthClientForUser.Response200).body.first()
+            (client.listAllOauthClientForUser(context.userId, null, null, null) as ListAllOauthClientForUser.Response200).body.Response.first()
         }
         val clientId = assertNotNull(oauthClient.client_id)
         val clientSecret = assertNotNull(oauthClient.secret)
