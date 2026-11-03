@@ -120,12 +120,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      # The PHP emitter is not in a Wirespec release yet: build the compiler from source (see docs/php.md)
+      # The PHP emitter is not in a Wirespec release yet: build the compiler from source (see docs/php.md).
+      # The ref is the branch of flock-community/wirespec#763; switch it to master once that is merged.
       - name: Checkout Wirespec
         uses: actions/checkout@v4
         with:
           repository: flock-community/wirespec
-          ref: main
+          ref: ccr-cd2812be-wpuamx
           path: build/wirespec
       - uses: actions/setup-java@v4
         with:
