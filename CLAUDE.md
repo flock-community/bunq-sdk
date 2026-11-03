@@ -1,15 +1,7 @@
-# Claude Code Memory
+# bunq-sdk
 
-## Instructions for Claude
-- **MUST** check `.claude-conversation.md` at the start of EVERY conversation to understand current context and ongoing work
-- **MUST** update `.claude-conversation.md` throughout conversations to maintain state - do this proactively, not just when reminded
-- Update the file after completing any significant work or task
-- Clear conversation state when starting new topics
-- If you haven't been updating the conversation file consistently, acknowledge this and commit to doing better
+Four SDKs (Java, Kotlin, TypeScript, Python) under `packages/`, all generated from one OpenAPI spec (`openapi.json`) with Wirespec. To change an SDK, change the spec or `buildSrc/src/main/kotlin/OpenApiPreProcessor.kt` and regenerate.
 
-## Project Context
-- bunq-sdk repository with Kotlin and npm packages
-- Working on session management features
+`packages/python/src/api` and `packages/npm/src/gen` are generated and git-ignored. The Python and npm tests need them, so run `./gradlew :packages:python:wirespec` or `./gradlew :packages:npm:wirespec` first.
 
-## Commands
-(Add any frequently used commands here as they come up)
+CI (`.github/workflows/build.yml`) runs each Python test file by name, so a new Python test file also has to be added there.
