@@ -5,18 +5,19 @@
 
 
 
-This repository showcases how four different SDKs (Java, Kotlin, TypeScript/JavaScript, and Python) are generated from a single OpenAPI specification using Wirespec. All projects follow the same structure and build process.
+This repository showcases how five different SDKs (Java, Kotlin, TypeScript/JavaScript, Python and PHP) are generated from a single OpenAPI specification using Wirespec. All projects follow the same structure and build process.
 
 ## Overview
 
 The repository contains:
 
 - A single OpenAPI specification (`openapi.json`) in the root directory
-- Four SDK packages in the `packages` directory:
+- Five SDK packages in the `packages` directory:
   - Java SDK
   - Kotlin SDK
   - NPM (TypeScript/JavaScript) SDK
   - Python SDK
+  - PHP SDK
 - Custom build logic in the `buildSrc` directory
 - Gradle build configuration for all packages
 
@@ -33,21 +34,22 @@ The repository uses a single OpenAPI specification (`openapi.json`) as the sourc
 Each SDK package uses the Wirespec Gradle plugin to:
 1. Read the OpenAPI specification
 2. Apply pre-processing (via `OpenApiPreProcessor`)
-3. Generate code with Wirespec's own emitter for that language
+3. Generate code with Wirespec's own emitter for that language (PHP runs the Wirespec compiler directly, see [PHP](docs/php.md#wirespec-version))
 4. Include the generated code in the build
 
 ## Requirements
 
-Wirespec 0.22.4 generates the client code in all four packages.
+Wirespec 0.22.4 generates the client code in the Java, Kotlin, TypeScript and Python packages. The PHP package uses Wirespec's PHP emitter, which is not released yet: it is built from source (see [PHP](docs/php.md#wirespec-version)).
 
 - Kotlin: Kotlin 2.3+, JVM 17+, Wirespec 0.22.x runtime (a consumer that uses Wirespec itself must use 0.22.x as well, because both share one runtime on the classpath). Bring your own kotlinx-coroutines (the client functions are `suspend`).
 - Java: Java 17+, Wirespec 0.22.x runtime (same rule for consumers that use Wirespec themselves).
 - TypeScript: Node.js 18+ (global `fetch`; CI uses Node 20), TypeScript 5.
 - Python: Python 3.10+ (the generated code uses `match`/`case`).
+- PHP: PHP 8.2+ with the `curl`, `json` and `openssl` extensions.
 
 ## Using the SDKs
 
-Each SDK has the same three steps: create a `Config`, call `initContext` to create a session, and create the client from the context. The client is the one Wirespec generates, with one method per bunq operation (camelCase in Kotlin, Java and TypeScript, snake_case in Python).
+Each SDK has the same three steps: create a `Config`, call `initContext` to create a session, and create the client from the context. The client is the one Wirespec generates, with one method per bunq operation (camelCase in Kotlin, Java, TypeScript and PHP, snake_case in Python).
 
 To get an API key for the bunq sandbox, create a sandbox user. The request needs no authentication and no headers:
 
@@ -63,6 +65,7 @@ For install steps, configuration and more examples per language, see:
 - [Kotlin](docs/kotlin.md) (also covers [OAuth](docs/kotlin.md#oauth): authorize URL and code exchange to get an access token)
 - [TypeScript/npm](docs/typescript.md)
 - [Python](docs/python.md)
+- [PHP](docs/php.md)
 
 `Context` holds the session token, installation token and `config` (API key and private key); treat a stored context as a secret.
 
@@ -75,11 +78,11 @@ The client refreshes the session by itself. When bunq answers 403 "Insufficient 
 
 Keep using the same client instance so that calls share the refreshed session.
 
-The client also refreshes before sending when `sessionExpiryTime` is in the past or less than 30 seconds away, and reports every refreshed `Context` to an optional `onContextChange` callback. See Persist and restore a Context in the SDK docs ([Kotlin](docs/kotlin.md#persist-and-restore-a-context), [Java](docs/java.md#persist-and-restore-a-context), [TypeScript](docs/typescript.md#persist-and-restore-a-context), [Python](docs/python.md#persist-and-restore-a-context)).
+The client also refreshes before sending when `sessionExpiryTime` is in the past or less than 30 seconds away, and reports every refreshed `Context` to an optional `onContextChange` callback. See Persist and restore a Context in the SDK docs ([Kotlin](docs/kotlin.md#persist-and-restore-a-context), [Java](docs/java.md#persist-and-restore-a-context), [TypeScript](docs/typescript.md#persist-and-restore-a-context), [Python](docs/python.md#persist-and-restore-a-context), [PHP](docs/php.md#persist-and-restore-a-context)).
 
 If the refresh fails, a warning is logged and the call throws the API exception with status 403 (see [Error Handling](#error-handling)). A 403 for another reason (for example a missing permission), or a 403 with a body that is not JSON, throws the same exception without a refresh.
 
-`Context.refreshSession()` (`refreshSession(context)` in TypeScript and Python) still creates a session by hand and returns a new `Context`. An existing client does not use it; create a new client from the returned context.
+`Context.refreshSession()` (`refreshSession(context)` in TypeScript and Python, `Bunq::refreshSession($context)` in PHP) still creates a session by hand and returns a new `Context`. An existing client does not use it; create a new client from the returned context.
 
 ## Error Handling
 
@@ -91,6 +94,7 @@ An operation returns a typed response for two statuses only: 200 (`Response200`,
 | Java | `BunqApiException` (unchecked) | `com.bunq.sdk.BunqApiException` |
 | TypeScript | `BunqApiError` | `import {BunqApiError} from "bunq-sdk"` |
 | Python | `BunqApiError` | `from transport import BunqApiError` |
+| PHP | `BunqApiError` | `use Bunq\Sdk\BunqApiError;` |
 
 It has a `status` and a `body` (the full response body as a string). The message is `Received <status>: ` followed by the first 500 characters of the body.
 
@@ -100,11 +104,11 @@ It is thrown for:
 - a body that is not a JSON object (an HTML page from a proxy, an empty body);
 - a 200 without `Response`, or a 400 without `Error` (for example a gateway's `{"message":"Bad Request"}`).
 
-The recommended pattern is an exhaustive `when` (Kotlin), `instanceof` (Java), `if` on `status` (TypeScript) or `match` (Python) over `Response200` and `Response400`, inside a `try` for the exception. See the language pages and the examples below.
+The recommended pattern is an exhaustive `when` (Kotlin), `instanceof` (Java), `if` on `status` (TypeScript), `match` (Python) or `instanceof` (PHP) over `Response200` and `Response400`, inside a `try` for the exception. See the language pages and the examples below.
 
 - Java: the exception arrives wrapped, in a `CompletionException` when you call `join()` and in an `ExecutionException` when you call `get()`. Check `getCause()`.
 - Transport failures (no connection, timeout) throw the exception of the HTTP client.
-- `initContext` and `refreshSession` use the same rule. A typed 400 gives `Cannot create installation (status 400): <error_description>` (Kotlin and Java; the step is "create installation", "create device server" or "create session server") or `Installation failed (status 400): <error_description>` (TypeScript and Python; the steps are "Installation failed", "Device server creation failed", "Session server creation failed"). Any other status throws the API exception.
+- `initContext` and `refreshSession` use the same rule. A typed 400 gives `Cannot create installation (status 400): <error_description>` (Kotlin and Java; the step is "create installation", "create device server" or "create session server") or `Installation failed (status 400): <error_description>` (TypeScript, Python and PHP; the steps are "Installation failed", "Device server creation failed", "Session server creation failed"). Any other status throws the API exception.
 
 ## Quick Examples
 
@@ -182,6 +186,25 @@ async def main():
         print(f"Received {e.status}: {e.body}")
 
 asyncio.run(main())
+```
+
+PHP:
+```php
+use Bunq\Api\Endpoint\ReadUser;
+use Bunq\Sdk\{Bunq, BunqApiError};
+
+$context = Bunq::initContext($config);
+$client = Bunq::client($context);
+try {
+    $res = $client->readUser($context->userId);
+    if ($res instanceof ReadUser\Response200) {
+        echo $res->body->UserPerson?->legal_name, PHP_EOL;
+    } else {
+        throw new RuntimeException($res->body->Error[0]->error_description ?? '');
+    }
+} catch (BunqApiError $e) {
+    echo "Received {$e->status}: {$e->body}", PHP_EOL;
+}
 ```
 
 ## Migrating from 0.x

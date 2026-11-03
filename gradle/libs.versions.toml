@@ -1,9 +1,14 @@
 [versions]
 wirespec = "0.22.4"
+# The PHP emitter is not in a Wirespec release yet: publish Wirespec from source to Maven Local (see docs/php.md).
+wirespecPhp = "0.0.0-SNAPSHOT"
 jackson = "2.19.0"
 
 [libraries]
 wirespec_compiler = { module = "community.flock.wirespec.compiler:core-jvm", version.ref = "wirespec" }
+wirespecPhp-compiler = { module = "community.flock.wirespec.compiler:core-jvm", version.ref = "wirespecPhp" }
+wirespecPhp-emitter = { module = "community.flock.wirespec.compiler.emitters:php-jvm", version.ref = "wirespecPhp" }
+wirespecPhp-openapi = { module = "community.flock.wirespec.converter:openapi-jvm", version.ref = "wirespecPhp" }
 
 [plugins]
 wirespec = { id = "community.flock.wirespec.plugin.gradle", version.ref = "wirespec" }

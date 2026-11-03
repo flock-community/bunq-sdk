@@ -113,3 +113,53 @@ jobs:
         working-directory: packages/npm
         run: |
           npm test
+
+  build-php:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      # The PHP emitter is not in a Wirespec release yet: build the compiler from source (see docs/php.md)
+      - name: Checkout Wirespec
+        uses: actions/checkout@v4
+        with:
+          repository: flock-community/wirespec
+          ref: main
+          path: build/wirespec
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            17
+            21
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, json, openssl
+          tools: composer
+          coverage: none
+      - name: publish wirespec
+        working-directory: build/wirespec
+        run: |
+          ./gradlew \
+            :src:compiler:core:publishJvmPublicationToMavenLocal :src:compiler:core:publishKotlinMultiplatformPublicationToMavenLocal \
+            :src:compiler:emitters:php:publishJvmPublicationToMavenLocal :src:compiler:emitters:php:publishKotlinMultiplatformPublicationToMavenLocal \
+            :src:converter:common:publishJvmPublicationToMavenLocal :src:converter:common:publishKotlinMultiplatformPublicationToMavenLocal \
+            :src:converter:openapi:publishJvmPublicationToMavenLocal :src:converter:openapi:publishKotlinMultiplatformPublicationToMavenLocal
+      - name: generate
+        run: |
+          ./gradlew :packages:php:wirespec
+      - name: install
+        working-directory: packages/php
+        run: |
+          composer install --no-interaction --no-progress
+      - name: lint
+        working-directory: packages/php
+        run: |
+          find src tests gen -name '*.php' -print0 | xargs -0 -n 200 -P 4 php -l > /dev/null
+      - name: test
+        working-directory: packages/php
+        run: |
+          vendor/bin/phpunit
