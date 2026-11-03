@@ -62,11 +62,14 @@ final class Serialization implements Wirespec\Serialization
         return \is_array($value) ? \array_map(self::scalar(...), \array_values($value)) : [self::scalar($value)];
     }
 
+    /** An empty list is how a raw request or response writes a parameter without a value, so it reads back as null. */
     public function deserializeParam(array $values, string $type): mixed
     {
-        return \preg_match('/^list<(.+)>$/', $type, $list) === 1
-            ? \array_map(static fn (string $value): mixed => self::fromString($value, $list[1]), $values)
-            : self::fromString($values[0] ?? throw new \UnexpectedValueException("No value for $type"), $type);
+        return match (true) {
+            \preg_match('/^list<(.+)>$/', $type, $list) === 1 => \array_map(static fn (string $value): mixed => self::fromString($value, $list[1]), $values),
+            $values === [] => null,
+            default => self::fromString($values[0], $type),
+        };
     }
 
     /** The JSON value of a model, enum or refined value; null fields are left out. */

@@ -106,6 +106,7 @@ final class SerializationTest extends TestCase
         self::assertSame(Wirespec\Method::PATCH, $this->serialization->deserializeParam(['PATCH'], Wirespec\Method::class));
         self::assertSame('7', $this->serialization->serializePath(7, 'int'));
         self::assertSame(7, $this->serialization->deserializePath('7', 'int'));
+        self::assertNull($this->serialization->deserializeParam([], 'int'));
     }
 
     public function testGeneratedEndpointRoundTripsThroughRawRequestAndResponse(): void

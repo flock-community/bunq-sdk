@@ -56,7 +56,10 @@ final class SandboxTest extends TestCase
     {
         $refreshed = Bunq::refreshSession(self::$context);
 
-        self::assertNotSame(self::$context->sessionId, $refreshed->sessionId);
+        // bunq may keep the session id and token for the re-created session, so only the expiry is compared
+        self::assertGreaterThan(self::$context->sessionExpiryTime, $refreshed->sessionExpiryTime);
+        self::assertSame(self::$context->serverPublicKey, $refreshed->serverPublicKey);
+        self::assertSame(self::$context->userId, $refreshed->userId);
         self::assertSame(self::$context->deviceId, $refreshed->deviceId);
         self::assertSame(self::$context->installationToken, $refreshed->installationToken);
         self::assertInstanceOf(ReadUser\Response200::class, Bunq::client($refreshed)->readUser($refreshed->userId));
