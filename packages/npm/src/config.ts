@@ -41,6 +41,12 @@ export interface Config {
     readonly clientRequestId?: string;
     /** Geolocation information for API requests */
     readonly geolocation?: string;
+    /**
+     * Time in milliseconds from sending one HTTP request until its response has been read; when it passes, the request
+     * rejects with a DOMException named "TimeoutError". It applies to each request separately, so setting up a Context
+     * (three requests) can take up to three times as long. Unset keeps the limits of Node's fetch.
+     */
+    readonly requestTimeoutMs?: number;
 }
 
 /**
@@ -52,6 +58,7 @@ export function describeConfig(config: Config): string {
         bunqServer: config.bunqServer, serviceName: config.serviceName, apiKey: '***', signingKeys: '***',
         userAgent: config.userAgent, cacheControl: config.cacheControl, language: config.language,
         region: config.region, clientRequestId: config.clientRequestId, geolocation: config.geolocation,
+        requestTimeoutMs: config.requestTimeoutMs,
     })}`;
 }
 
@@ -72,6 +79,7 @@ export function createConfig(
         region?: string;
         clientRequestId?: string;
         geolocation?: string;
+        requestTimeoutMs?: number;
     }
 ): Config {
     validateBasicParameters(serviceName, apiKey);
@@ -89,6 +97,7 @@ export function createConfig(
         region: options?.region,
         clientRequestId: options?.clientRequestId,
         geolocation: options?.geolocation,
+        requestTimeoutMs: options?.requestTimeoutMs,
     };
 }
 

@@ -25,6 +25,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -54,17 +56,27 @@ public class Wirespec {
 
     private static final HttpClient client = HttpClient.newBuilder().build();
 
+    private static final Map<Duration, HttpClient> clientsByConnectTimeout = new ConcurrentHashMap<>();
+
+    /** One client per connect timeout, because the JDK sets the connect timeout on the client, not on the request. */
+    static HttpClient httpClientFor(Config config) {
+        if (config.connectTimeout() == null) {
+            return client;
+        }
+        return clientsByConnectTimeout.computeIfAbsent(config.connectTimeout(), timeout -> HttpClient.newBuilder().connectTimeout(timeout).build());
+    }
+
     public static CompletableFuture<RawResponse> send(Config config, RawRequest req) {
         // Build the URI
         String pathString = String.join("/", req.path());
         URI baseUri = URI.create(config.bunqServer().baseUrl() + pathString);
         URI uri;
 
-        if (!req.queries().isEmpty()) {
-            String queryString = req.queries().entrySet().stream()
-                    .flatMap(entry -> entry.getValue().stream()
-                            .map(v -> entry.getKey() + "=" + URLEncoder.encode(v, StandardCharsets.UTF_8)))
-                    .collect(Collectors.joining("&"));
+        String queryString = req.queries().entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(v -> entry.getKey() + "=" + URLEncoder.encode(v, StandardCharsets.UTF_8)))
+                .collect(Collectors.joining("&"));
+        if (!queryString.isEmpty()) {
             uri = URI.create(baseUri + "?" + queryString);
         } else {
             uri = baseUri;
@@ -103,8 +115,11 @@ public class Wirespec {
                                 : HttpRequest.BodyPublishers.noBody()
                 )
                 .headers(headers);
+        if (config.requestTimeout() != null) {
+            requestBuilder.timeout(config.requestTimeout());
+        }
 
-        return client.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
+        return httpClientFor(config).sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray())
                 .thenApply(response -> new RawResponse(
                         response.statusCode(),
                         response.headers().map(),
@@ -123,7 +138,7 @@ public class Wirespec {
         if (envelope != null && isObjectWith(bytes, envelope)) {
             return response;
         }
-        throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8));
+        throw new BunqApiException(response.statusCode(), new String(bytes, StandardCharsets.UTF_8), response.headers());
     }
 
     /** Like {@link #requireTyped}, and the body must carry a valid {@code X-Bunq-Server-Signature} for the server public key. */

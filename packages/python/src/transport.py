@@ -2,7 +2,7 @@ import builtins
 import json
 from dataclasses import asdict, is_dataclass
 from functools import reduce
-from typing import Any, Dict, List, Type, get_origin, get_args
+from typing import Any, Dict, List, Optional, Type, get_origin, get_args
 
 import httpx
 from dacite import from_dict
@@ -57,6 +57,16 @@ class Serialization(Wirespec.Serialization):
         return _convert(values[0], type)
 
 
+# httpx's own default, kept for every limit the config leaves unset
+HTTPX_DEFAULT_TIMEOUT = 5.0
+
+
+def timeout_for(config) -> httpx.Timeout:
+    request_timeout = HTTPX_DEFAULT_TIMEOUT if config.request_timeout is None else config.request_timeout
+    connect_timeout = HTTPX_DEFAULT_TIMEOUT if config.connect_timeout is None else config.connect_timeout
+    return httpx.Timeout(request_timeout, connect=connect_timeout)
+
+
 async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
     """Sends a signed request. Sync callers can use `asyncio.run(send(...))`."""
     headers = [(key, value) for key, values in raw_req.headers.items() for value in values if value.strip()]
@@ -65,7 +75,7 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
         headers.append(('X-Bunq-Client-Signature', Signing.sign_data(config, raw_req.body.decode('utf-8'))))
 
     # shortcut: one client per request, no connection reuse; share a client if throughput matters
-    async with httpx.AsyncClient() as http:
+    async with httpx.AsyncClient(timeout=timeout_for(config)) as http:
         res = await http.request(
             method=raw_req.method,
             url=config.bunq_server.base_url + '/'.join(raw_req.path),
@@ -81,12 +91,15 @@ async def send(config, raw_req: Wirespec.RawRequest) -> Wirespec.RawResponse:
 
 
 class BunqApiError(Exception):
-    """bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`."""
+    """bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`.
+    `headers` are the response headers with lower-case names (for example `x-bunq-client-response-id`); they are left out
+    of the message, which ends up in logs."""
 
-    def __init__(self, status: int, body: str):
+    def __init__(self, status: int, body: str, headers: Optional[Dict[str, List[str]]] = None):
         super().__init__(f"Received {status}: {body[:500]}")
         self.status = status
         self.body = body
+        self.headers = headers or {}
 
 
 def _is_object_with(body: bytes, key: str) -> bool:
@@ -103,7 +116,7 @@ def require_typed(response: Wirespec.RawResponse) -> Wirespec.RawResponse:
     envelope = {200: "Response", 400: "Error"}.get(response.statusCode)
     if envelope and _is_object_with(body, envelope):
         return response
-    raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'))
+    raise BunqApiError(response.statusCode, body.decode('utf-8', 'replace'), response.headers)
 
 
 def require_signed(response: Wirespec.RawResponse, server_public_key: str) -> Wirespec.RawResponse:
