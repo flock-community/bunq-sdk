@@ -38,7 +38,7 @@ Each SDK package uses the Wirespec Gradle plugin to:
 
 ## Requirements
 
-Wirespec 0.22.4 generates the client code in all four packages.
+Wirespec 0.22.8 generates the client code in all four packages.
 
 - Kotlin: Kotlin 2.3+, JVM 17+, Wirespec 0.22.x runtime (a consumer that uses Wirespec itself must use 0.22.x as well, because both share one runtime on the classpath). Bring your own kotlinx-coroutines (the client functions are `suspend`).
 - Java: Java 17+, Wirespec 0.22.x runtime (same rule for consumers that use Wirespec themselves).
