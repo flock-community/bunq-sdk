@@ -1,5 +1,5 @@
 [versions]
-wirespec = "0.22.4"
+wirespec = "0.22.8"
 # The PHP emitter is not in a Wirespec release yet: publish Wirespec from source to Maven Local (see docs/php.md).
 wirespecPhp = "0.0.0-SNAPSHOT"
 jackson = "2.19.0"

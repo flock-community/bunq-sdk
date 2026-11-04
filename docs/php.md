@@ -26,7 +26,7 @@ cd wirespec
   :src:converter:openapi:publishJvmPublicationToMavenLocal :src:converter:openapi:publishKotlinMultiplatformPublicationToMavenLocal
 ```
 
-The other packages use the Wirespec Gradle plugin 0.22.4, which buildSrc puts on the build classpath. The PHP package
+The other packages use the released Wirespec Gradle plugin (`wirespec` in `gradle/libs.versions.toml`), which buildSrc puts on the build classpath. The PHP package
 therefore does not apply the plugin: `:packages:php:wirespec` runs a small generator (`packages/php/codegen`) in its own
 JVM with the snapshot compiler. Once a Wirespec release has the PHP emitter, the package can switch to the plugin with
 `languages = listOf(Language.Php)`.

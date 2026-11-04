@@ -11,7 +11,7 @@ import java.io.File
 
 /**
  * Generates the PHP client from the (pre-processed) OpenAPI spec: `Generate <spec> <output dir> <package>`.
- * Runs in its own JVM because buildSrc already puts Wirespec 0.22.4, which has no PHP emitter, on the build classpath.
+ * Runs in its own JVM because buildSrc already puts the released Wirespec, which has no PHP emitter, on the build classpath.
  */
 fun main(args: Array<String>) {
     val (spec, output, packageName) = args
