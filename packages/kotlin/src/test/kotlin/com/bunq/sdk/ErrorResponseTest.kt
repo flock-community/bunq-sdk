@@ -9,6 +9,7 @@ import java.net.InetSocketAddress
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -18,9 +19,10 @@ class ErrorResponseTest {
     private fun readUser(status: Int, body: String) =
         ReadUser.fromRawResponse(serialization, Wirespec.RawResponse(status, emptyMap(), body.toByteArray()))
 
-    private fun <T> answering(status: Int, body: String, block: (Client) -> T): T {
+    private fun <T> answering(status: Int, body: String, headers: Map<String, String> = emptyMap(), block: (Client) -> T): T {
         val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
         server.createContext("/") { exchange ->
+            headers.forEach { (name, value) -> exchange.responseHeaders.add(name, value) }
             TestServerKey.respond(exchange, status, body)
         }
         server.start()
@@ -105,6 +107,19 @@ class ErrorResponseTest {
 
         assertEquals(200, e.status)
         assertEquals("[]", e.body)
+    }
+
+    @Test
+    fun `the exception carries the response headers but the message does not`() {
+        val headers = mapOf("X-Bunq-Client-Response-Id" to "response-id-123", "Retry-After" to "30")
+
+        val e = assertFailsWith<BunqApiException> {
+            answering(429, """{"Error":[{"error_description":"Too many requests."}]}""", headers) { runBlocking { it.readUser(1) } }
+        }
+
+        assertEquals(listOf("response-id-123"), e.headers.entries.single { it.key.equals("X-Bunq-Client-Response-Id", ignoreCase = true) }.value)
+        assertEquals(listOf("30"), e.headers.entries.single { it.key.equals("Retry-After", ignoreCase = true) }.value)
+        assertFalse(e.message!!.contains("response-id-123"))
     }
 
     @Test

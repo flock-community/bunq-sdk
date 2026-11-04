@@ -67,6 +67,24 @@ Context context = Context.initContext(config);
 
 `generateBunqSigningKeys()` creates a new key pair on every call. To keep the same keys across restarts, use `generateBunqSigningKeys(privateKeyFile, publicKeyFile)`, or use the constructor `new Config(server, serviceName, apiKey, privateKeyPem, publicKeyPem)` with stored PEM strings.
 
+### Timeouts
+
+`Config` has two more optional components, `connectTimeout` and `requestTimeout` (`java.time.Duration`, after `geolocation`). The 10-argument constructor above leaves both unset, which means no limit.
+
+- `connectTimeout`: time to set up the connection. When it passes, the call fails with `java.net.http.HttpConnectTimeoutException`.
+- `requestTimeout`: time from sending one HTTP request until its response headers arrive. When it passes, the call fails with `java.net.http.HttpTimeoutException` (an `IOException`).
+
+The exception arrives wrapped, like `BunqApiException` (see Error Handling). Both apply to each HTTP request separately. `initContext` sends three requests, so it can take up to three times as long.
+
+```java
+Config config = new Config(
+    BunqServer.BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", signingKeys,
+    null, null, null, null, null, null,
+    Duration.ofSeconds(10), // connectTimeout
+    Duration.ofSeconds(30)  // requestTimeout
+);
+```
+
 ## Creating the Client and Calling an Endpoint
 
 `Wirespec.bunqClient(context)` returns the client that Wirespec generates. Its methods return a `CompletableFuture` and are named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). Optional query parameters are `Optional` values: pass `Optional.empty()` for the ones you do not use.
@@ -205,7 +223,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException` (unchecked, in `com.bunq.sdk`) with `status()` and `body()`, the full response body as a string; the message is `Received <status>: <first 500 characters>`. The exception arrives wrapped, in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`, so check `getCause()`:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException` (unchecked, in `com.bunq.sdk`) with `status()`, `body()`, the full response body as a string, and `headers()`, the response headers; the message is `Received <status>: <first 500 characters>`. The exception arrives wrapped, in a `CompletionException` from `join()` and in an `ExecutionException` from `get()`, so check `getCause()`:
 
 ```java
 import com.bunq.sdk.BunqApiException;

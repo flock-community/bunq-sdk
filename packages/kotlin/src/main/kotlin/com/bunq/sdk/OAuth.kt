@@ -47,7 +47,7 @@ fun exchangeCode(server: OAuthServer, clientId: String, clientSecret: String, re
         .POST(HttpRequest.BodyPublishers.noBody())
         .build()
     val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-    if (response.statusCode() != 200) throw BunqApiException(response.statusCode(), response.body())
+    if (response.statusCode() != 200) throw BunqApiException(response.statusCode(), response.body(), response.headers().map())
     val tree = try {
         objectMapper.readTree(response.body())
     } catch (e: JacksonException) {

@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
     implementation("tools.jackson.core:jackson-databind:3.2.3")
     implementation("tools.jackson.module:jackson-module-kotlin:3.2.3")
     implementation("community.flock.wirespec.integration:jackson:${libs.versions.wirespec.get()}")

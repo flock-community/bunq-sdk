@@ -96,7 +96,7 @@ An operation returns a typed response for two statuses only: 200 (`Response200`,
 | Python | `BunqApiError` | `from transport import BunqApiError` |
 | PHP | `BunqApiError` | `use Bunq\Sdk\BunqApiError;` |
 
-It has a `status` and a `body` (the full response body as a string). The message is `Received <status>: ` followed by the first 500 characters of the body.
+It has a `status`, a `body` (the full response body as a string) and `headers` (the response headers, for example `X-Bunq-Client-Response-Id`, which bunq support asks for). The message is `Received <status>: ` followed by the first 500 characters of the body; header values are not in the message.
 
 It is thrown for:
 
@@ -107,7 +107,7 @@ It is thrown for:
 The recommended pattern is an exhaustive `when` (Kotlin), `instanceof` (Java), `if` on `status` (TypeScript), `match` (Python) or `instanceof` (PHP) over `Response200` and `Response400`, inside a `try` for the exception. See the language pages and the examples below.
 
 - Java: the exception arrives wrapped, in a `CompletionException` when you call `join()` and in an `ExecutionException` when you call `get()`. Check `getCause()`.
-- Transport failures (no connection, timeout) throw the exception of the HTTP client.
+- Transport failures (no connection, timeout) throw the exception of the HTTP client. The timeouts are set in the config; see Timeouts on the language pages.
 - `initContext` and `refreshSession` use the same rule. A typed 400 gives `Cannot create installation (status 400): <error_description>` (Kotlin and Java; the step is "create installation", "create device server" or "create session server") or `Installation failed (status 400): <error_description>` (TypeScript, Python and PHP; the steps are "Installation failed", "Device server creation failed", "Session server creation failed"). Any other status throws the API exception.
 
 ## Quick Examples

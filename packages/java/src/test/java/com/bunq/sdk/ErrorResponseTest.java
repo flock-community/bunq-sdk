@@ -8,11 +8,13 @@ import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,8 +27,13 @@ public class ErrorResponseTest {
     }
 
     private static ReadUser.Response<?> readUserFrom(int status, String body) throws Exception {
+        return readUserFrom(status, body, Map.of());
+    }
+
+    private static ReadUser.Response<?> readUserFrom(int status, String body, Map<String, String> headers) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/", exchange -> {
+            headers.forEach((name, value) -> exchange.getResponseHeaders().add(name, value));
             TestServerKey.respond(exchange, status, body);
         });
         server.start();
@@ -108,6 +115,23 @@ public class ErrorResponseTest {
 
         assertEquals(200, e.status());
         assertEquals("[]", e.body());
+    }
+
+    @Test
+    public void theExceptionCarriesTheResponseHeadersButTheMessageDoesNot() {
+        var e = assertInstanceOf(BunqApiException.class, assertThrows(CompletionException.class, () -> readUserFrom(
+                429, "{\"Error\":[{\"error_description\":\"Too many requests.\"}]}",
+                Map.of("X-Bunq-Client-Response-Id", "response-id-123", "Retry-After", "30"))).getCause());
+
+        assertEquals(List.of("response-id-123"), header(e, "X-Bunq-Client-Response-Id"));
+        assertEquals(List.of("30"), header(e, "Retry-After"));
+        assertFalse(e.getMessage().contains("response-id-123"));
+    }
+
+    private static List<String> header(BunqApiException e, String name) {
+        return e.headers().entrySet().stream()
+                .filter(h -> h.getKey() != null && h.getKey().equalsIgnoreCase(name))
+                .findFirst().orElseThrow().getValue();
     }
 
     @Test

@@ -83,16 +83,20 @@ val serialization: Wirespec.Serialization =
 
 internal val httpClient: java.net.http.HttpClient = java.net.http.HttpClient.newBuilder().build()
 
+private val httpClientsByConnectTimeout = java.util.concurrent.ConcurrentHashMap<java.time.Duration, java.net.http.HttpClient>()
+
+/** One client per connect timeout, because the JDK sets the connect timeout on the client, not on the request. */
+internal fun httpClientFor(config: Config): java.net.http.HttpClient =
+    config.connectTimeout
+        ?.let { timeout -> httpClientsByConnectTimeout.computeIfAbsent(timeout) { java.net.http.HttpClient.newBuilder().connectTimeout(it).build() } }
+        ?: httpClient
+
 fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
     val baseUri = java.net.URI(config.bunqServer.baseUrl + req.path.joinToString("/"))
-    val uri = if (req.queries.isNotEmpty()) {
-        val queryString = req.queries.entries.joinToString("&") { (key, value) ->
-            value.joinToString("&") { v -> "$key=${java.net.URLEncoder.encode(v, Charsets.UTF_8)}" }
-        }
-        java.net.URI("$baseUri?$queryString")
-    } else {
-        baseUri
-    }
+    val queryString = req.queries.entries
+        .flatMap { (key, values) -> values.map { v -> "$key=${java.net.URLEncoder.encode(v, Charsets.UTF_8)}" } }
+        .joinToString("&")
+    val uri = if (queryString.isNotEmpty()) java.net.URI("$baseUri?$queryString") else baseUri
 
     val headers = (req.headers + ("User-Agent" to listOf(config.userAgent?.takeIf { it.isNotBlank() } ?: config.serviceName)))
         .mapValues { (_, values) -> values.filter { it.isNotBlank() } }
@@ -114,10 +118,11 @@ fun send(config: Config, req: Wirespec.RawRequest): Wirespec.RawResponse {
                 ?.let { java.net.http.HttpRequest.BodyPublishers.ofByteArray(it) }
                 ?: java.net.http.HttpRequest.BodyPublishers.noBody())
         .headers(*headers)
+        .apply { config.requestTimeout?.let { timeout(it) } }
 
     // Send HTTP request
     logger.debug { "${req.method} $uri" }
-    val response = httpClient.send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofByteArray())
+    val response = httpClientFor(config).send(requestBuilder.build(), java.net.http.HttpResponse.BodyHandlers.ofByteArray())
     logger.debug { "${response.statusCode()} ${req.method} $uri" }
 
     // Construct Wirespec.RawResponse
@@ -138,7 +143,7 @@ internal fun Wirespec.RawResponse.requireTyped(): Wirespec.RawResponse {
         else -> null
     }
     if (envelope != null && tree?.isObject == true && tree.has(envelope)) return this
-    throw BunqApiException(statusCode, String(bytes, Charsets.UTF_8))
+    throw BunqApiException(statusCode, String(bytes, Charsets.UTF_8), headers)
 }
 
 /** Like [requireTyped], and the body must carry a valid `X-Bunq-Server-Signature` for [serverPublicKey]. */

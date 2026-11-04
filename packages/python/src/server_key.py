@@ -1,7 +1,7 @@
 """Stands in for bunq's server key: local test servers sign their responses with it."""
 import base64
 from http.server import BaseHTTPRequestHandler
-from typing import Optional
+from typing import Dict, Optional
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -17,9 +17,12 @@ def sign_body(body: bytes) -> str:
     return base64.b64encode(_keys.private_key().sign(body, padding.PKCS1v15(), hashes.SHA256())).decode('utf-8')
 
 
-def respond(handler: BaseHTTPRequestHandler, status: int, body: bytes, signature: Optional[str] = "valid") -> None:
+def respond(handler: BaseHTTPRequestHandler, status: int, body: bytes, signature: Optional[str] = "valid",
+            extra_headers: Optional[Dict[str, str]] = None) -> None:
     """Answers with body and an X-Bunq-Server-Signature header: valid by default, none when signature is None."""
     handler.send_response(status)
+    for name, value in (extra_headers or {}).items():
+        handler.send_header(name, value)
     if signature is not None:
         handler.send_header('X-Bunq-Server-Signature', sign_body(body) if signature == "valid" else signature)
     handler.send_header('Content-Length', str(len(body)))
