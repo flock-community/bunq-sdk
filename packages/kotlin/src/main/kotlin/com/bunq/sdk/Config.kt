@@ -9,6 +9,7 @@ import java.security.interfaces.RSAPrivateKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
+import java.time.Duration
 
 data class BunqServer(
     val baseUrl: String,
@@ -53,6 +54,14 @@ data class Config(
     val clientRequestId: String? = null,
     /** Geolocation information for API requests */
     val geolocation: String? = null,
+    /** Time to set up the connection; when it passes, the request throws [java.net.http.HttpConnectTimeoutException]. Null means no limit. */
+    val connectTimeout: Duration? = null,
+    /**
+     * Time from sending one HTTP request until its response headers arrive; when it passes, the request throws
+     * [java.net.http.HttpTimeoutException] (an [java.io.IOException]). It applies to each request separately, so
+     * setting up a [Context] (three requests) can take up to three times as long. Null means no limit.
+     */
+    val requestTimeout: Duration? = null,
 ) {
     init {
         require(serviceName.isNotBlank()) { "Service name cannot be blank" }
@@ -64,6 +73,6 @@ data class Config(
     override fun toString(): String =
         "Config(bunqServer=$bunqServer, serviceName=$serviceName, apiKey=***, signingKeys=***, userAgent=$userAgent, " +
             "cacheControl=$cacheControl, language=$language, region=$region, clientRequestId=$clientRequestId, " +
-            "geolocation=$geolocation)"
+            "geolocation=$geolocation, connectTimeout=$connectTimeout, requestTimeout=$requestTimeout)"
 }
 

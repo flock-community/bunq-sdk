@@ -21,14 +21,20 @@ class Config:
     region: Optional[str] = None
     client_request_id: Optional[str] = None
     geolocation: Optional[str] = None
-    
+    # Seconds to set up the connection; when it passes, httpx.ConnectTimeout is raised. None keeps httpx's default of 5 seconds.
+    connect_timeout: Optional[float] = None
+    # Seconds httpx waits for each read or write of one request (not the request as a whole); when it passes, an
+    # httpx.TimeoutException is raised. It applies to each request separately. None keeps httpx's default of 5 seconds.
+    request_timeout: Optional[float] = None
+
     def __repr__(self) -> str:
         # Masks api_key and signing_keys; the object still holds them.
         return (
             f"Config(bunq_server={self.bunq_server!r}, service_name={self.service_name!r}, api_key='***', "
             f"signing_keys='***', user_agent={self.user_agent!r}, cache_control={self.cache_control!r}, "
             f"language={self.language!r}, region={self.region!r}, client_request_id={self.client_request_id!r}, "
-            f"geolocation={self.geolocation!r})"
+            f"geolocation={self.geolocation!r}, connect_timeout={self.connect_timeout!r}, "
+            f"request_timeout={self.request_timeout!r})"
         )
 
     def __post_init__(self):
@@ -54,7 +60,9 @@ def create_config(
     language: Optional[str] = None,
     region: Optional[str] = None,
     client_request_id: Optional[str] = None,
-    geolocation: Optional[str] = None
+    geolocation: Optional[str] = None,
+    connect_timeout: Optional[float] = None,
+    request_timeout: Optional[float] = None,
 ) -> Config:
     """Creates and validates a configuration object.
     The configuration is validated during construction.
@@ -71,5 +79,7 @@ def create_config(
         language=language,
         region=region,
         client_request_id=client_request_id,
-        geolocation=geolocation
+        geolocation=geolocation,
+        connect_timeout=connect_timeout,
+        request_timeout=request_timeout,
     )

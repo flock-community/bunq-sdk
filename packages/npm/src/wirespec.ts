@@ -66,7 +66,8 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
         headers.set("X-Bunq-Client-Signature", Signing.signData(config, utf8Decoder.decode(rawRequest.body)));
     }
 
-    const res = await fetch(url, {method: rawRequest.method, body: rawRequest.body, headers});
+    const signal = config.requestTimeoutMs === undefined ? undefined : AbortSignal.timeout(config.requestTimeoutMs);
+    const res = await fetch(url, {method: rawRequest.method, body: rawRequest.body, headers, signal});
     const body = new Uint8Array(await res.arrayBuffer());
 
     const responseHeaders: Record<string, string[]> = {};
@@ -74,9 +75,12 @@ export const rawHandler: (config: Config, rawRequest: Wirespec.RawRequest) => Pr
     return {statusCode: res.status, headers: responseHeaders, body: body.length ? body : undefined};
 }
 
-/** bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`. */
+/**
+ * bunq (or a proxy in front of it) answered with something other than a 200 with a `Response` or a 400 with an `Error`.
+ * `headers` are the response headers (for example `x-bunq-client-response-id`); they are left out of the message, which ends up in logs.
+ */
 export class BunqApiError extends Error {
-    constructor(readonly status: number, readonly body: string) {
+    constructor(readonly status: number, readonly body: string, readonly headers: Record<string, string[]> = {}) {
         super(`Received ${status}: ${body.slice(0, 500)}`);
         this.name = "BunqApiError";
     }
@@ -96,7 +100,7 @@ export function requireTyped(response: Wirespec.RawResponse): Wirespec.RawRespon
     const text = response.body ? utf8Decoder.decode(response.body) : "";
     const envelope = {200: "Response", 400: "Error"}[response.statusCode];
     if (envelope && isObjectWith(text, envelope)) return response;
-    throw new BunqApiError(response.statusCode, text);
+    throw new BunqApiError(response.statusCode, text, response.headers);
 }
 
 

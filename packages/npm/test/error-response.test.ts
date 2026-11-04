@@ -14,8 +14,9 @@ describe('error responses', () => {
 
     afterEach(() => new Promise(resolve => server.close(resolve)));
 
-    async function readUserAnswering(status: number, body: string) {
+    async function readUserAnswering(status: number, body: string, headers: Record<string, string> = {}) {
         server = createServer((req, res) => {
+            Object.entries(headers).forEach(([name, value]) => res.setHeader(name, value));
             respond(res, status, body);
         });
         await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -79,6 +80,16 @@ describe('error responses', () => {
 
     test('a non-object JSON 200 throws', async () => {
         await expect(readUserAnswering(200, '[]')).rejects.toMatchObject({status: 200, body: '[]'});
+    });
+
+    test('the error carries the response headers but the message does not', async () => {
+        const error = await readUserAnswering(429, '{"Error":[{"error_description":"Too many requests."}]}',
+            {'X-Bunq-Client-Response-Id': 'response-id-123', 'Retry-After': '30'}).catch(e => e);
+
+        expect(error).toBeInstanceOf(BunqApiError);
+        expect(error.headers['x-bunq-client-response-id']).toEqual(['response-id-123']);
+        expect(error.headers['retry-after']).toEqual(['30']);
+        expect(error.message).not.toContain('response-id-123');
     });
 
     test('the message truncates the body but the body field keeps it whole', () => {

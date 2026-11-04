@@ -38,7 +38,15 @@ const config = createConfig(BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", privat
 
 The package is CommonJS and has no top-level `await`: call `initContext` and the client from inside `async function main() { ... } main();`, as in the next section.
 
-Generate the key pair once and store it: a new pair means a new installation at bunq. `createConfig` takes an optional last argument `{userAgent, cacheControl, language, region, clientRequestId, geolocation}`.
+Generate the key pair once and store it: a new pair means a new installation at bunq. `createConfig` takes an optional last argument `{userAgent, cacheControl, language, region, clientRequestId, geolocation, requestTimeoutMs}`.
+
+### Timeouts
+
+`requestTimeoutMs` is the time in milliseconds from sending one HTTP request until its response has been read. When it passes, the call rejects with a `DOMException` named `TimeoutError`. Unset keeps the limits of Node's `fetch`. It applies to each HTTP request separately: `initContext` sends three requests, so it can take up to three times as long. There is no connect timeout option; Node's `fetch` stops connecting after 10 seconds.
+
+```typescript
+const config = createConfig(BUNQ_SANDBOX_SERVER, "MyApp", "your-api-key", privateKey, publicKey, {requestTimeoutMs: 30_000});
+```
 
 ## Creating the Client and Calling an Endpoint
 
@@ -175,7 +183,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the error is thrown.
 
-A 400 is returned as a response with `status === 400`, whose `body` has `Error[]` with an `error_description` per entry. Every other outcome rejects with `BunqApiError` (exported from `bunq-sdk`), which has `status` and `body`, the full response body as a string; the message is `Received <status>: <first 500 characters>`:
+A 400 is returned as a response with `status === 400`, whose `body` has `Error[]` with an `error_description` per entry. Every other outcome rejects with `BunqApiError` (exported from `bunq-sdk`), which has `status`, `body`, the full response body as a string, and `headers`, the response headers with lower-case names; the message is `Received <status>: <first 500 characters>`:
 
 ```typescript
 import {BunqApiError, type BunqClient} from "bunq-sdk";

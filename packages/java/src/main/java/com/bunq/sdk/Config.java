@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 
 /**
  * Configuration class for bunq API client containing all necessary settings and credentials
@@ -32,7 +33,16 @@ public record Config(
         /** Custom client request ID for tracking */
         String clientRequestId,
         /** Geographic location information */
-        String geolocation
+        String geolocation,
+        /** Time to set up the connection; when it passes, the request fails with {@link java.net.http.HttpConnectTimeoutException}. Null means no limit. */
+        Duration connectTimeout,
+        /**
+         * Time from sending one HTTP request until its response headers arrive; when it passes, the request fails with
+         * {@link java.net.http.HttpTimeoutException} (an {@link IOException}), wrapped in a {@link java.util.concurrent.CompletionException}
+         * by {@code join()}. It applies to each request separately, so setting up a {@link Context} (three requests) can
+         * take up to three times as long. Null means no limit.
+         */
+        Duration requestTimeout
 ) {
 
 
@@ -42,6 +52,13 @@ public record Config(
      */
     public Config {
         validateBasicParameters(serviceName, apiKey);
+    }
+
+    /** Without timeouts. */
+    public Config(BunqServer bunqServer, String serviceName, String apiKey, SigningKeys signingKeys, String userAgent,
+                  String cacheControl, String language, String region, String clientRequestId, String geolocation) {
+        this(bunqServer, serviceName, apiKey, signingKeys, userAgent, cacheControl, language, region, clientRequestId,
+                geolocation, null, null);
     }
 
     /**
@@ -88,7 +105,8 @@ public record Config(
     public @NotNull String toString() {
         return "Config[bunqServer=" + bunqServer + ", serviceName=" + serviceName + ", apiKey=***, signingKeys=***"
                 + ", userAgent=" + userAgent + ", cacheControl=" + cacheControl + ", language=" + language
-                + ", region=" + region + ", clientRequestId=" + clientRequestId + ", geolocation=" + geolocation + "]";
+                + ", region=" + region + ", clientRequestId=" + clientRequestId + ", geolocation=" + geolocation
+                + ", connectTimeout=" + connectTimeout + ", requestTimeout=" + requestTimeout + "]";
     }
 
     private static void validateBasicParameters(String serviceName, String apiKey) {

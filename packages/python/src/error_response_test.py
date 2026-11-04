@@ -2,6 +2,7 @@ import threading
 import unittest
 from datetime import datetime, timedelta
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Dict, Optional
 
 from api.endpoint.ReadUser import Response200, Response400, ReadUser
 from api.wirespec import Wirespec
@@ -19,10 +20,10 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
     def read_user(self, status: int, body: str):
         return ReadUser.fromRawResponse(Serialization(), Wirespec.RawResponse(status, {}, body.encode('utf-8')))
 
-    async def read_user_answering(self, status: int, body: str):
+    async def read_user_answering(self, status: int, body: str, headers: Optional[Dict[str, str]] = None):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(handler):
-                respond(handler, status, body.encode('utf-8'))
+                respond(handler, status, body.encode('utf-8'), extra_headers=headers or {})
 
             def log_message(handler, *args):
                 pass
@@ -101,6 +102,15 @@ class ErrorResponseTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(200, raised.exception.status)
         self.assertEqual('[]', raised.exception.body)
+
+    async def test_error_carries_the_response_headers_but_the_message_does_not(self):
+        with self.assertRaises(BunqApiError) as raised:
+            await self.read_user_answering(429, '{"Error":[{"error_description":"Too many requests."}]}',
+                                           {'X-Bunq-Client-Response-Id': 'response-id-123', 'Retry-After': '30'})
+
+        self.assertEqual(['response-id-123'], raised.exception.headers['x-bunq-client-response-id'])
+        self.assertEqual(['30'], raised.exception.headers['retry-after'])
+        self.assertNotIn('response-id-123', str(raised.exception))
 
     def test_message_truncates_the_body_but_the_body_field_keeps_it_whole(self):
         error = BunqApiError(502, 'x' * 2000)

@@ -53,6 +53,26 @@ val context: Context = initContext(config)
 
 `generateBunqSigningKeys()` creates a new key pair on every call. To keep the same keys across restarts, use `generateBunqSigningKeys(privateKeyFile, publicKeyFile)`, which reuses existing files or writes new ones, or build `SigningKeys.FromPem(privateKeyAsPem, publicKeyAsPem)` from stored PEM strings.
 
+### Timeouts
+
+`Config` takes two optional `java.time.Duration` values. Unset means no limit.
+
+- `connectTimeout`: time to set up the connection. When it passes, the call throws `java.net.http.HttpConnectTimeoutException`.
+- `requestTimeout`: time from sending one HTTP request until its response headers arrive. When it passes, the call throws `java.net.http.HttpTimeoutException` (an `IOException`).
+
+Both apply to each HTTP request separately. `initContext` sends three requests, so it can take up to three times as long.
+
+```kotlin
+val config = Config(
+    bunqServer = BUNQ_SANDBOX_SERVER,
+    serviceName = "MyApp",
+    apiKey = "your-api-key",
+    signingKeys = signingKeys,
+    connectTimeout = Duration.ofSeconds(10),
+    requestTimeout = Duration.ofSeconds(30),
+)
+```
+
 ## Creating the Client and Calling an Endpoint
 
 `bunqClient(context)` returns the client that Wirespec generates. Its methods are `suspend` functions named after the operation id in camelCase (`readUser`, `listAllMonetaryAccountBankForUser`). Query parameters have no defaults: pass `null` for the ones you do not use. To call a `suspend` method from non-suspending code, wrap it in `runBlocking { }` (kotlinx-coroutines).
@@ -236,7 +256,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the exception is thrown.
 
-A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException(status, body)` (unchecked, in `com.bunq.sdk`); `body` is the full response body as a string and the message is `Received <status>: <first 500 characters>`. A `when` over `Response200` and `Response400` is exhaustive:
+A 400 is returned as `Response400`, whose body has `Error[]` with an `error_description` per entry. Every other outcome throws `BunqApiException(status, body, headers)` (unchecked, in `com.bunq.sdk`); `body` is the full response body as a string, `headers` are the response headers, and the message is `Received <status>: <first 500 characters>`. A `when` over `Response200` and `Response400` is exhaustive:
 
 ```kotlin
 import com.bunq.sdk.BunqApiException
