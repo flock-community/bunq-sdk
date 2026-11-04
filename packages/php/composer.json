@@ -1,0 +1,34 @@
+{
+    "name": "flock-community/bunq-sdk",
+    "description": "bunq API client for PHP, generated from bunq's OpenAPI specification with Wirespec",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-openssl": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bunq\\Sdk\\": "src/"
+        },
+        "classmap": [
+            "gen/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bunq\\Sdk\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
