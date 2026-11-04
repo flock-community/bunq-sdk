@@ -45,6 +45,17 @@ final class HttpTest extends TestCase
         }
     }
 
+    public function testErrorCarriesTheResponseHeadersButLeavesThemOutOfTheMessage(): void
+    {
+        try {
+            Http::requireTyped(new Wirespec\RawResponse(503, ['X-Bunq-Client-Response-Id' => ['abc-123']], 'Service Unavailable'));
+            self::fail('Expected a BunqApiError');
+        } catch (BunqApiError $error) {
+            self::assertSame(['x-bunq-client-response-id' => ['abc-123']], $error->headers);
+            self::assertStringNotContainsString('abc-123', $error->getMessage());
+        }
+    }
+
     public function testMessageTruncatesTheBodyButTheBodyFieldKeepsItWhole(): void
     {
         $body = \str_repeat('x', 2000);

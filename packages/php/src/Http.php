@@ -54,6 +54,12 @@ final class Http
         if ($request->body !== null) {
             \curl_setopt($curl, \CURLOPT_POSTFIELDS, $request->body);
         }
+        if ($config->connectTimeout !== null) {
+            \curl_setopt($curl, \CURLOPT_CONNECTTIMEOUT_MS, (int) \ceil($config->connectTimeout * 1000));
+        }
+        if ($config->requestTimeout !== null) {
+            \curl_setopt($curl, \CURLOPT_TIMEOUT_MS, (int) \ceil($config->requestTimeout * 1000));
+        }
         $body = \curl_exec($curl);
         if ($body === false) {
             throw new \RuntimeException("Request to $url failed: " . \curl_error($curl));
@@ -74,7 +80,7 @@ final class Http
         $document = \json_decode($response->body ?? '', true);
         return $envelope !== null && \is_array($document) && \array_key_exists($envelope, $document)
             ? $response
-            : throw new BunqApiError($response->statusCode, $response->body ?? '');
+            : throw new BunqApiError($response->statusCode, $response->body ?? '', \array_change_key_case($response->headers));
     }
 
     /**

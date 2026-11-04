@@ -70,6 +70,28 @@ PKCS#8 private key (`-----BEGIN PRIVATE KEY-----`) and its X.509 public key (`--
 cannot be used throws `SigningKeyValidationError`, which says what is wrong and how to fix it, for example how to
 convert a PKCS#1 key.
 
+### Timeouts
+
+`Config` takes two optional timeouts in seconds:
+
+- `connectTimeout`: time to set up the connection.
+- `requestTimeout`: curl's limit on one HTTP request as a whole, from sending it until its response has been read.
+
+When one passes, the call throws a `RuntimeException` whose message names the URL and says the operation timed out.
+A timeout left `null` keeps curl's default: 300 seconds to connect, and no limit for the request. Each applies to
+every HTTP request separately: `Bunq::initContext` sends three requests, so it can take up to three times as long.
+
+```php
+$config = new Config(
+    bunqServer: BunqServer::sandbox(),
+    serviceName: 'MyApp',
+    apiKey: 'your-api-key',
+    signingKeys: SigningKeys::fromFiles('private_key.pem', 'public_key.pem'),
+    connectTimeout: 10,
+    requestTimeout: 30,
+);
+```
+
 ## Creating the Client and Calling an Endpoint
 
 `Bunq::client($context)` returns the client that Wirespec generates, `Bunq\Api\Client`, with one method per bunq
@@ -172,8 +194,9 @@ key it carries is not known yet.
 See [Error Handling in the README](../README.md#error-handling) for when the error is thrown.
 
 A 400 is returned as `Response400`, whose body has `Error` (a list with an `error_description` per entry). Every other
-outcome throws `Bunq\Sdk\BunqApiError`, which has `status` and `body`, the full response body as a string; the message
-is `Received <status>: <first 500 characters>`:
+outcome throws `Bunq\Sdk\BunqApiError`, which has `status`, `body`, the full response body as a string, and `headers`,
+the response headers with lower-case names (for example `x-bunq-client-response-id`, which bunq support asks for); the
+message is `Received <status>: <first 500 characters>`, without the headers:
 
 ```php
 use Bunq\Sdk\BunqApiError;

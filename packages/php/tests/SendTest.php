@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bunq\Sdk\Tests;
 
 use Bunq\Api\Wirespec;
+use Bunq\Sdk\Config;
 use Bunq\Sdk\Http;
 use PHPUnit\Framework\TestCase;
 
@@ -56,6 +57,22 @@ final class SendTest extends TestCase
 
         self::assertSame('GET', $received['method']);
         self::assertArrayNotHasKey('x-bunq-client-signature', $received['headers']);
+    }
+
+    public function testQueryWithoutValuesAddsNoQuestionMark(): void
+    {
+        $received = \json_decode((string) Http::send(TestServerKey::config(self::$baseUrl), new Wirespec\RawRequest('GET', ['user'], ['count' => [], 'older_id' => []], [], null))->body, true);
+
+        self::assertSame('/v1/user', $received['uri']);
+    }
+
+    public function testRequestTimeoutStopsASlowResponse(): void
+    {
+        $config = TestServerKey::config(self::$baseUrl);
+        $slow = new Config($config->bunqServer, $config->serviceName, $config->apiKey, $config->signingKeys, requestTimeout: 0.2);
+
+        $this->expectExceptionMessageMatches('/timed out/i');
+        Http::send($slow, new Wirespec\RawRequest('GET', ['user'], ['delay' => ['2000']], [], null));
     }
 
     public function testUserAgentDefaultsToTheServiceName(): void

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Bunq\Sdk;
 
 /**
- * Everything needed to talk to bunq: the server, the API key, the signing keys and the optional request headers.
+ * Everything needed to talk to bunq: the server, the API key, the signing keys, the optional request headers and the
+ * timeouts in seconds: $connectTimeout to set up the connection, $requestTimeout for each request as a whole. A
+ * timeout that is null keeps curl's default (300 seconds to connect, no limit for the request).
  * `var_dump` and `print_r` show the API key and the signing keys masked; the object still holds them.
  */
 final readonly class Config
@@ -24,12 +26,19 @@ final readonly class Config
         public ?string $region = null,
         public ?string $clientRequestId = null,
         public ?string $geolocation = null,
+        public ?float $connectTimeout = null,
+        public ?float $requestTimeout = null,
     ) {
         if (\trim($serviceName) === '') {
             throw new InvalidConfigError('Service name cannot be blank');
         }
         if (\trim($apiKey) === '') {
             throw new InvalidConfigError('API key cannot be blank');
+        }
+        foreach (['Connect timeout' => $connectTimeout, 'Request timeout' => $requestTimeout] as $name => $timeout) {
+            if ($timeout !== null && $timeout <= 0) {
+                throw new InvalidConfigError("$name must be positive");
+            }
         }
     }
 
@@ -48,6 +57,8 @@ final readonly class Config
         ?string $region = null,
         ?string $clientRequestId = null,
         ?string $geolocation = null,
+        ?float $connectTimeout = null,
+        ?float $requestTimeout = null,
     ): self {
         return new self(
             $bunqServer,
@@ -60,6 +71,8 @@ final readonly class Config
             $region,
             $clientRequestId,
             $geolocation,
+            $connectTimeout,
+            $requestTimeout,
         );
     }
 

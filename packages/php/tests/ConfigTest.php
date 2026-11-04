@@ -39,6 +39,12 @@ final class ConfigTest extends TestCase
         }
     }
 
+    public function testNonPositiveTimeoutIsRejected(): void
+    {
+        $this->expectExceptionMessage('Request timeout must be positive');
+        new Config(BunqServer::sandbox(), 'PhpTest', 'key', SigningKeys::generate(), requestTimeout: 0.0);
+    }
+
     public function testGeneratedKeysCanBeLoadedFromTheirPem(): void
     {
         $keys = SigningKeys::generate();
