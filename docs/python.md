@@ -40,6 +40,27 @@ config = create_config(
 
 `generate_bunq_signing_keys_as_pem()` creates a new key pair on every call. To keep the same keys across restarts, store the PEM strings, or use `BunqSigningKeysGenerator.generate_bunq_signing_keys_with_files(private_key_file, public_key_file)`, which reuses existing files or writes new ones.
 
+### Timeouts
+
+`create_config` (and `Config`) take two optional values in seconds. Unset keeps httpx's default of 5 seconds.
+
+- `connect_timeout`: time to set up the connection. When it passes, the call raises `httpx.ConnectTimeout`.
+- `request_timeout`: httpx's limit on each read or write of a request, not on the request as a whole. When it passes, the call raises an `httpx.TimeoutException`, for example `httpx.ReadTimeout`.
+
+Both apply to each HTTP request separately. `init_context` sends three requests, so it can take up to three times as long.
+
+```python
+config = create_config(
+    bunq_server=BUNQ_SANDBOX_SERVER,
+    service_name="MyApp",
+    api_key="your-api-key",
+    private_key_pem=private_key_pem,
+    public_key_pem=public_key_pem,
+    connect_timeout=10,
+    request_timeout=30,
+)
+```
+
 ## Creating the Client and Calling an Endpoint
 
 `bunq_client(context)` returns the client that Wirespec generates. Its methods are `async` and named after the operation id in snake_case (`read_user`, `list_all_monetary_account_bank_for_user`). Pass `None` for query parameters you do not use. Match on the response class (`Response200` or `Response400`) to read the typed body. Any other status raises `BunqApiError` (see Error Handling).
@@ -195,7 +216,7 @@ The installation response itself is not verified: the key it carries is not know
 
 See [Error Handling in the README](../README.md#error-handling) for when the error is raised.
 
-A 400 is returned as `Response400`, whose body has `Error` (a list with an `error_description` per entry). Every other outcome raises `BunqApiError` (`from transport import BunqApiError`), which has `status` and `body`, the full response body as a string; the message is `Received <status>: <first 500 characters>`:
+A 400 is returned as `Response400`, whose body has `Error` (a list with an `error_description` per entry). Every other outcome raises `BunqApiError` (`from transport import BunqApiError`), which has `status`, `body`, the full response body as a string, and `headers`, the response headers with lower-case names; the message is `Received <status>: <first 500 characters>`:
 
 ```python
 from api.endpoint.ReadUser import Response200 as ReadUserResponse200, Response400 as ReadUserResponse400
