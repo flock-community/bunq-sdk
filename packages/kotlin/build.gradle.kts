@@ -59,7 +59,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
     format = Format.OpenAPIV3
-    languages = listOf(Language.Kotlin)
+    language = Language.Kotlin
     strict = true
     shared = false
     preProcessor = OpenApiPreProcessor
