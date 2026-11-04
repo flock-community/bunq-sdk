@@ -17,7 +17,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "api"
     format = Format.OpenAPIV3
-    languages = listOf(Language.TypeScript)
+    language = Language.TypeScript
     strict = true
     shared = true
     preProcessor = OpenApiPreProcessor

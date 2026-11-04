@@ -52,7 +52,7 @@ tasks.register<ConvertWirespecTask>("wirespec") {
     input = layout.projectDirectory.file("../../openapi.json")
     packageName = "com.bunq.sdk.generated"
     format = Format.OpenAPIV3
-    languages = listOf(Language.Java)
+    language = Language.Java
     strict = true
     shared = false
     preProcessor = OpenApiPreProcessor
